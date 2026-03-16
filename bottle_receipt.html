@@ -31,21 +31,36 @@ body{
   flex-wrap:wrap;
   align-items:center;
 }
-.btn{
-  appearance:none;
-  border:0;
-  border-radius:16px;
-  padding:12px 18px;
+.mdk-btn--pill{
+  background:#f8fafc;
+  border:1px solid #cfd6dd;
+  border-radius:12px;
+  padding:8px 14px;
+  font-weight:600;
   cursor:pointer;
-  font-weight:700;
-  font-size:15px;
   text-decoration:none;
-  display:inline-flex;
+  color:#222;
+  display:flex;
   align-items:center;
-  justify-content:center;
-  background:#e5e7eb;
-  color:#1f2937;
-  box-shadow:0 4px 12px rgba(0,0,0,.15);
+  gap:6px;
+}
+
+.mdk-btn--pill:hover{
+  transform:translateY(-1px);
+}
+
+/* Back button */
+.mdk-btn--back{
+  background:#ffc107;
+  border:none;
+  color:#4b0082;
+}
+
+/* Save button */
+.mdk-btn--primary{
+  background:#1a73e8;
+  border:none;
+  color:white;
 }
   .back{
   background:#ffc107;
@@ -136,15 +151,19 @@ td:nth-child(7) input{
 <main class="page">
 
 <div class="toolbar">
-  <button class="btn back" type="button" onclick="goBackSmart()">← Back</button>
-  <a href="dashboard.html" class="btn">🏠 Home</a>
-  <button onclick="window.print()" class="btn" type="button">🖨 Print</button>
-  <button id="editBtn" onclick="unlockForEdit()" class="btn edit" type="button" style="display:none;">✏ Edit</button>
-  <button onclick="clearForm()" class="btn" type="button">Clear</button>
-  <button onclick="saveForm()" class="btn save" type="button">Save</button>
-</div>
 
-<div class="card">
+<button class="mdk-btn--pill mdk-btn--back" onclick="goBackSmart()">← Back</button>
+
+<a href="dashboard.html" class="mdk-btn--pill">🏠 Home</a>
+
+<button class="mdk-btn--pill" onclick="window.print()">🖨 Print</button>
+
+<button class="mdk-btn--pill" onclick="clearForm()">🧹 Clear</button>
+
+<button class="mdk-btn--pill mdk-btn--primary" onclick="saveForm()">💾 Save</button>
+
+</div>
+  <div class="card">
 
 <h1>Record 3b - Bottle Receipt</h1>
 
