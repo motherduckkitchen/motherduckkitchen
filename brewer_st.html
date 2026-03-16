@@ -91,4 +91,70 @@ body{
 }
 .btn{
   display:flex;
-  align-items:center
+  align-items:center;
+  justify-content:center;
+  min-height:82px;
+  padding:16px 20px;
+  background:#2c52a0;
+  color:#fff;
+  text-decoration:none;
+  border-radius:20px;
+  font-weight:800;
+  font-size:18px;
+  text-align:center;
+  box-shadow:
+    0 10px 20px rgba(0,0,0,.18),
+    0 0 16px rgba(255,255,255,.24);
+  transition:all .15s ease;
+}
+.btn:hover{
+  transform:translateY(-2px);
+  background:#244996;
+  box-shadow:
+    0 16px 28px rgba(0,0,0,.22),
+    0 0 22px rgba(255,255,255,.34);
+}
+@media (max-width:760px){
+  .menu-grid{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="wash"></div>
+
+<main class="page">
+  <div class="wrap">
+    <img class="logo" src="logo.png" alt="Mother Duck Logo">
+    <div class="site-title">Mother Duck Kitchen</div>
+    <div class="subtitle">Brewer St</div>
+
+    <section class="card">
+      <div class="toolbar">
+        <a class="top-btn" href="dashboard.html">Home</a>
+        <a class="top-btn" href="kitchen.html">Kitchen</a>
+        <a class="top-btn" href="invoices.html?site=Brewer%20St">Invoices</a>
+      </div>
+
+      <div class="menu-grid">
+        <a class="btn" href="record13.html?site=Brewer%20St">Food Safety Program Review</a>
+        <a class="btn" href="record_5a_temp_control_log.html?site=Brewer%20St">Cook / Cool / Reheat</a>
+        <a class="btn" href="transport_log.html?site=Brewer%20St">Transfer Log</a>
+        <a class="btn" href="appliance_temps.html?site=Brewer%20St">Appliance Temps</a>
+        <a class="btn" href="cleaning_schedule_new.html?site=Brewer%20St">Daily Cleaning</a>
+        <a class="btn" href="cleaning_weekly_new.html?site=Brewer%20St">Weekly Cleaning</a>
+        <a class="btn" href="cleaning_monthly_new.html?site=Brewer%20St">Monthly Cleaning</a>
+        <a class="btn" href="equipment_log.html?site=Brewer%20St">Equipment Log</a>
+        <a class="btn" href="thermometer_calibration.html?site=Brewer%20St">Thermometer Calibration</a>
+        <a class="btn" href="staff_training.html?site=Brewer%20St">Staff Training</a>
+        <a class="btn" href="customer_complaints.html?site=Brewer%20St">Customer Complaints</a>
+        <a class="btn" href="pest_control.html?site=Brewer%20St">Pest Control</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+</body>
+</html>
