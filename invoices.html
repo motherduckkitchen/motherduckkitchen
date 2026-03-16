@@ -1,0 +1,383 @@
+ <!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mother Duck Kitchen - Invoices</title>
+  <style>
+    body{
+      margin:0;
+      font-family:Arial,Helvetica,sans-serif;
+      background:url("kitchen.jpg") center center / cover no-repeat fixed;
+      min-height:100vh;
+    }
+    .wash{
+      position:fixed;
+      inset:0;
+      background:rgba(255,255,255,.45);
+      backdrop-filter:blur(2px);
+    }
+    .page{
+      position:relative;
+      z-index:1;
+      max-width:1400px;
+      margin:0 auto;
+      padding:20px;
+    }
+    .top{
+      text-align:center;
+      margin-bottom:18px;
+    }
+    .logo{
+      width:90px;
+      display:block;
+      margin:0 auto 8px;
+    }
+    .site-title{
+      font-size:34px;
+      font-weight:700;
+      color:#fff;
+      text-shadow:0 2px 6px rgba(0,0,0,.35);
+    }
+    .subtitle{
+      color:#fff;
+      font-size:18px;
+      text-shadow:0 2px 6px rgba(0,0,0,.35);
+      margin-top:4px;
+    }
+    .card-wide{
+      max-width:900px;
+      margin:0 auto;
+      background:rgba(255,255,255,.82);
+      backdrop-filter:blur(10px);
+      border-radius:24px;
+      padding:22px;
+      box-shadow:0 12px 30px rgba(0,0,0,.18);
+    }
+    .toolbar{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+      justify-content:flex-start;
+    }
+    .nav-btn{
+      min-width:110px;
+      padding:14px 18px;
+      background:#f8fafc;
+      color:#24374a;
+      border:1px solid #d4dbe3;
+      border-radius:16px;
+      text-decoration:none;
+      font-weight:700;
+      text-align:center;
+      box-shadow:0 2px 8px rgba(0,0,0,.08);
+      cursor:pointer;
+    }
+    .panes{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+    }
+    .pane{
+      background:rgba(255,255,255,.95);
+      border-radius:22px;
+      padding:20px;
+      box-shadow:0 8px 20px rgba(0,0,0,.10);
+      min-height:420px;
+    }
+    h2{
+      margin:0 0 18px;
+      text-align:center;
+      font-size:24px;
+      color:#1f2937;
+    }
+    label{
+      display:block;
+      margin:10px 0 6px;
+      font-weight:600;
+      color:#333;
+    }
+    input, textarea{
+      width:100%;
+      box-sizing:border-box;
+      border:1px solid #cfd6dd;
+      border-radius:16px;
+      padding:14px 16px;
+      font-size:16px;
+      background:#fff;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+    textarea{
+      min-height:90px;
+      resize:vertical;
+    }
+    .save-btn{
+      width:100%;
+      margin-top:14px;
+      padding:16px 18px;
+      background:#204a9b;
+      color:#fff;
+      border:none;
+      border-radius:18px;
+      font-size:18px;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:0 6px 14px rgba(0,0,0,.15);
+    }
+    .helper{
+      text-align:center;
+      margin-top:10px;
+      color:#666;
+      font-size:14px;
+    }
+    .invoice-list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .invoice-card{
+      border:1px solid #d7dde4;
+      border-radius:16px;
+      padding:14px;
+      background:#fff;
+    }
+    .invoice-card strong{
+      display:block;
+      margin-bottom:6px;
+      color:#1f2937;
+    }
+    .invoice-card .meta{
+      color:#555;
+      font-size:14px;
+      margin:3px 0;
+    }
+    .invoice-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .mini-btn{
+      padding:8px 12px;
+      border:none;
+      border-radius:12px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .delete-btn{
+      background:#b42318;
+      color:#fff;
+    }
+    .empty{
+      color:#777;
+      font-size:14px;
+    }
+    @media (max-width: 900px){
+      .panes{
+        grid-template-columns:1fr;
+      }
+      .card-wide{
+        max-width:95%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wash"></div>
+
+  <main class="page">
+    <div class="top">
+      <img class="logo" src="logo.png" alt="Mother Duck Logo">
+      <div class="site-title">Mother Duck Kitchen</div>
+      <div id="pageSubtitle" class="subtitle">Invoices</div>
+    </div>
+
+    <section class="card-wide">
+      <div class="toolbar">
+        <button class="nav-btn" type="button" onclick="goBackSmart()">← Back</button>
+        <a class="nav-btn" href="dashboard.html">Home</a>
+        <a id="backSiteBtn" class="nav-btn" href="kitchen.html">Kitchen</a>
+      </div>
+
+      <div class="panes">
+        <div class="pane">
+          <h2 id="addTitle">Add Invoice</h2>
+
+          <label for="item">Item</label>
+          <input id="item" type="text" placeholder="Item name">
+
+          <label for="temp">Temp °C</label>
+          <input id="temp" type="text" placeholder="Temperature if needed">
+
+          <label for="note">Note</label>
+          <textarea id="note" placeholder="Supplier or note"></textarea>
+
+          <label for="photo">Photo upload</label>
+          <input id="photo" type="file" accept="image/*,application/pdf">
+
+          <button class="save-btn" onclick="saveInvoice()">Save Invoice</button>
+
+          <div class="helper">This page is for one site only.</div>
+        </div>
+
+        <div class="pane">
+          <h2 id="savedTitle">Saved Invoices</h2>
+          <div id="invoiceList" class="invoice-list"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <script src="firebase-loader.js"></script>
+  <script src="archive_shared.js"></script>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const SITE = params.get("site") || "Kitchen";
+
+    const STORAGE_KEY = SITE === "Brewer St"
+      ? "mdk_invoices_brewer_v2"
+      : "mdk_invoices_kitchen_v2";
+
+    document.getElementById("pageSubtitle").textContent = SITE + " Invoices";
+    document.getElementById("addTitle").textContent = "Add Invoice - " + SITE;
+    document.getElementById("savedTitle").textContent = "Saved Invoices - " + SITE;
+
+    const backSiteBtn = document.getElementById("backSiteBtn");
+    backSiteBtn.href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
+    backSiteBtn.textContent = SITE === "Brewer St" ? "Brewer St" : "Kitchen";
+
+    function goBackSmart() {
+      const fromArchive = sessionStorage.getItem("mdk_from_archive");
+      if (fromArchive === "1") {
+        sessionStorage.removeItem("mdk_from_archive");
+        window.location.href = "archive.html";
+        return;
+      }
+      window.location.href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
+    }
+
+    function nowStamp() {
+      const d = new Date();
+      const dd = String(d.getDate()).padStart(2, "0");
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const yyyy = d.getFullYear();
+      const hh = String(d.getHours()).padStart(2, "0");
+      const mi = String(d.getMinutes()).padStart(2, "0");
+      return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
+    }
+
+    function todayDateOnly() {
+      const d = new Date();
+      const dd = String(d.getDate()).padStart(2, "0");
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const yyyy = d.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    }
+
+    function loadInvoices() {
+      const wrap = document.getElementById("invoiceList");
+      wrap.innerHTML = "";
+
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+
+      if (!saved.length) {
+        wrap.innerHTML = '<div class="empty">No invoices saved yet.</div>';
+        return;
+      }
+
+      saved.slice().reverse().forEach(function(inv, reverseIndex) {
+        const realIndex = saved.length - 1 - reverseIndex;
+        const card = document.createElement("div");
+        card.className = "invoice-card";
+
+        card.innerHTML = `
+          <strong>${inv.item || "No item entered"}</strong>
+          <div class="meta"><b>Site:</b> ${SITE}</div>
+          <div class="meta"><b>Temp °C:</b> ${inv.temp || ""}</div>
+          <div class="meta"><b>Note:</b> ${inv.note || ""}</div>
+          <div class="meta"><b>Saved:</b> ${inv.savedAt || ""}</div>
+          <div class="meta"><b>Photo:</b> ${inv.photoName || "No photo uploaded"}</div>
+          <div class="invoice-actions">
+            <button class="mini-btn delete-btn" onclick="deleteLocalInvoice(${realIndex})">Delete</button>
+          </div>
+        `;
+
+        wrap.appendChild(card);
+      });
+    }
+
+    function deleteLocalInvoice(index) {
+      if (!confirm("Delete this local invoice card?")) return;
+
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      saved.splice(index, 1);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+      loadInvoices();
+    }
+
+    async function saveInvoice() {
+      const item = document.getElementById("item").value.trim();
+      const temp = document.getElementById("temp").value.trim();
+      const note = document.getElementById("note").value.trim();
+      const photo = document.getElementById("photo").files[0] || null;
+
+      if (!item && !note && !photo) {
+        alert("Add at least an item, note, or file first.");
+        return;
+      }
+
+      const savedAt = nowStamp();
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+
+      saved.push({
+        item,
+        temp,
+        note,
+        savedAt,
+        photoName: photo ? photo.name : ""
+      });
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+
+      try {
+        if (window.MDKArchive) {
+          await window.MDKArchive.saveRecord({
+            type: "Invoices",
+            site: SITE,
+            recordDate: todayDateOnly(),
+            notes: note,
+            file: photo,
+            fields: {
+              item: item,
+              temp: temp,
+              savedAt: savedAt,
+              photoName: photo ? photo.name : ""
+            }
+          });
+        }
+
+        document.getElementById("item").value = "";
+        document.getElementById("temp").value = "";
+        document.getElementById("note").value = "";
+        document.getElementById("photo").value = "";
+
+        loadInvoices();
+        alert("Invoice saved");
+      } catch (err) {
+        console.error("Archive save error:", err);
+        loadInvoices();
+        alert("Saved locally, but archive sync failed");
+      }
+    }
+
+    loadInvoices();
+  </script>
+</body>
+</html>

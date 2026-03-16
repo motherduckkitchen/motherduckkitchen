@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Record 6a - Daily Cleaning & Sanitising Schedule</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:url("kitchen.jpg") center/cover no-repeat fixed;
+}
+.wash{
+  position:fixed;
+  inset:0;
+  background:rgba(255,255,255,.45);
+  backdrop-filter:blur(2px);
+}
+.page{
+  position:relative;
+  z-index:1;
+  max-width:1500px;
+  margin:auto;
+  padding:20px;
+}
+.toolbar{
+  display:flex;
+  gap:10px;
+  margin-bottom:14px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.btn{
+  padding:10px 16px;
+  border-radius:10px;
+  border:none;
+  font-weight:bold;
+  cursor:pointer;
+  text-decoration:none;
+  background:#204a9b;
+  color:white;
+}
+.back{
+  background:#ffc107;
+  color:black;
+}
+.edit{
+  background:#16a34a;
+  color:white;
+}
+.card{
+  background:white;
+  padding:20px;
+  border-radius:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,.2);
+  overflow:auto;
+}
+h1{
+  margin:0;
+  font-size:28px;
+}
+.topline{
+  margin-top:12px;
+  margin-bottom:14px;
+  font-size:16px;
+  font-weight:bold;
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.topline input[type="text"]{
+  padding:6px;
+  font-size:14px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+  table-layout:fixed;
+}
+th,td{
+  border:1px solid black;
+  padding:6px;
+  font-size:13px;
+  text-align:center;
+  vertical-align:middle;
+}
+th{
+  background:#eee;
+}
+.area{
+  text-align:left;
+}
+.init-box{
+  width:100%;
+  border:none;
+  background:transparent;
+  text-align:center;
+  font-size:13px;
+}
+.chk{
+  transform:scale(1.1);
+}
+.footer{
+  margin-top:22px;
+  font-size:12px;
+  color:#333;
+}
+.locked-note{
+  margin-bottom:12px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:#fff7ed;
+  color:#9a3412;
+  border:1px solid #fdba74;
+  display:none;
+  font-weight:700;
+}
+@page{
+  size:A4 landscape;
+  margin:10mm;
+}
+@media print{
+  .toolbar{display:none;}
+  body{background:white;}
+  .wash{display:none;}
+  .page{max-width:none;padding:0;}
+  .locked-note{display:none !important;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="wash"></div>
+
+<main class="page">
+
+<div class="toolbar">
+  <button class="btn back" type="button" onclick="goBackSmart()">← Back</button>
+  <a href="dashboard.html" class="btn">Home</a>
+  <button class="btn" type="button" onclick="window.print()">Print</button>
+  <button id="editBtn" class="btn edit" type="button" onclick="unlockForEdit()" style="display:none;">Edit</button>
+  <button class="btn" type="button" onclick="clearForm()">Clear</button>
+  <button class="btn" type="button" onclick="saveForm()">Save</button>
+</div>
+
+<div class="card">
+
+<h1 id="pageTitle">Record 6a - Daily Cleaning & Sanitising Schedule</h1>
+
+<div id="lockedNote" class="locked-note">
+  This saved record is locked. Press Edit to make changes.
+</div>
+
+<div class="topline">
+  <label>Week Starting:
+    <input type="text" id="weekStart" placeholder="DD / MM / YYYY">
+  </label>
+
+  <div>Week Ending: <span id="weekEnd"></span></div>
+</div>
+
+<table>
+  <colgroup>
+    <col style="width:28%">
+    <col style="width:4%">
+    <col style="width:6%">
+    <col style="width:4%">
+    <col style="width:6%">
+    <col style="width:4%">
+    <col style="width:6%">
+    <col style="width:4%">
+    <col style="width:6%">
+    <col style="width:4%">
+    <col style="width:6%">
+  </colgroup>
+
+  <thead>
+    <tr>
+      <th class="area">Area / Equipment</th>
+      <th colspan="2">M</th>
+      <th colspan="2">T</th>
+      <th colspan="2">W</th>
+      <th colspan="2">T</th>
+      <th colspan="2">F</th>
+    </tr>
+    <tr>
+      <th class="area"></th>
+      <th>✓</th><th>Init</th>
+      <th>✓</th><th>Init</th>
+      <th>✓</th><th>Init</th>
+      <th>✓</th><th>Init</th>
+      <th>✓</th><th>Init</th>
+    </tr>
+  </thead>
+
+  <tbody id="rows"></tbody>
+</table>
+
+<div class="footer">
+  Food Safety Program - Mother Duck Kallangur (1) January 2021 - Transport Amendment.docx<br>
+  Accredited Food Safety Program - Food Act 2006 (QLD) - LI/2021/0345. Accredited by Michael Taylor (Authorised Person Moreton Bay Regional Council) 23 March 2021
+</div>
+
+</div>
+</main>
+
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="firebase-loader.js"></script>
+<script src="archive_shared.js"></script>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const SITE = params.get("site") || "Kitchen";
+const LOAD_ID = params.get("load") || "";
+
+const STORAGE_KEY = SITE === "Brewer St"
+  ? "cleaning_schedule_ticks_brewer_v3"
+  : "cleaning_schedule_ticks_kitchen_v3";
+
+let loadedRecordId = LOAD_ID || "";
+
+const pageTitle = document.getElementById("pageTitle");
+pageTitle.textContent = SITE === "Brewer St"
+  ? "Record 6a - Daily Cleaning & Sanitising Schedule (Brewer St)"
+  : "Record 6a - Daily Cleaning & Sanitising Schedule (Kitchen)";
+
+const tasks = [
+  "AFTER EACH USE - Chopping boards (if knife marks discard and order new ones)",
+  "Benches",
+  "Serving utensils",
+  "Bowls, Cups, Plates etc",
+  "Drinking jugs are clean/sanitised and put away",
+  "DAILY OR MORE OFTEN IF REQUIRED - Cupboards clean and tidy",
+  "Microwave clean inside and outside",
+  "Wipe over/clean front of ovens",
+  "Wipe over front of fridge",
+  "Wipe over front of dishwasher",
+  "Wipe over/clean windowsill, skirting and sink splash back",
+  "All cooking utensils etc put away in cupboards",
+  "Door handles and entrance doors are clean",
+  "Bin is emptied each day and bin lid/bin is wiped over and cleaned",
+  "Disinfect benches and clear of clutter",
+  "Floors mopped (PM)",
+  "All tea towels and dish cloths are cleaned",
+  "Oven trays are cleaned after each use",
+  "Sanitise all fixtures, fittings and equipment appropriately"
+];
+
+function goBackSmart() {
+  const fromArchive = sessionStorage.getItem("mdk_from_archive");
+  if (fromArchive === "1") {
+    sessionStorage.removeItem("mdk_from_archive");
+    window.location.href = "archive.html";
+    return;
+  }
+  window.location.href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
+}
+
+function formatDate(date){
+  let d = String(date.getDate()).padStart(2,'0');
+  let m = String(date.getMonth()+1).padStart(2,'0');
+  let y = date.getFullYear();
+  return d + " / " + m + " / " + y;
+}
+
+function parseAusDate(str){
+  if(!str) return null;
+  const parts = str.split("/").map(s => s.trim());
+  if(parts.length !== 3) return null;
+
+  const day = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10);
+  const year = parseInt(parts[2], 10);
+
+  if(!day || !month || !year) return null;
+
+  const d = new Date(year, month - 1, day);
+
+  if(
+    d.getFullYear() !== year ||
+    d.getMonth() !== month - 1 ||
+    d.getDate() !== day
+  ){
+    return null;
+  }
+
+  return d;
+}
+
+function updateWeek(){
+  let startVal = document.getElementById("weekStart").value.trim();
+  let start = parseAusDate(startVal);
+
+  if(!start){
+    document.getElementById("weekEnd").innerText = "";
+    return;
+  }
+
+  let end = new Date(start);
+  end.setDate(start.getDate() + 4);
+
+  document.getElementById("weekEnd").innerText = formatDate(end);
+}
+
+function buildRows(){
+  const body = document.getElementById("rows");
+  body.innerHTML = "";
+
+  tasks.forEach((task, rowIndex) => {
+    let tr = document.createElement("tr");
+
+    let tdTask = document.createElement("td");
+    tdTask.className = "area";
+    tdTask.textContent = task;
+    tr.appendChild(tdTask);
+
+    for(let d = 0; d < 5; d++){
+      let tdTick = document.createElement("td");
+      let chk = document.createElement("input");
+      chk.type = "checkbox";
+      chk.className = "chk";
+      chk.dataset.row = rowIndex;
+      chk.dataset.day = d;
+      chk.dataset.type = "tick";
+      tdTick.appendChild(chk);
+      tr.appendChild(tdTick);
+
+      let tdInit = document.createElement("td");
+      let init = document.createElement("input");
+      init.type = "text";
+      init.maxLength = 4;
+      init.className = "init-box";
+      init.dataset.row = rowIndex;
+      init.dataset.day = d;
+      init.dataset.type = "init";
+      tdInit.appendChild(init);
+      tr.appendChild(tdInit);
+    }
+
+    body.appendChild(tr);
+  });
+}
+
+function getAllFields(){
+  return document.querySelectorAll("#weekStart, #rows input");
+}
+
+function setLockedState(locked){
+  getAllFields().forEach(el => {
+    el.disabled = locked;
+  });
+  document.getElementById("editBtn").style.display = locked ? "inline-block" : "none";
+  document.getElementById("lockedNote").style.display = locked ? "block" : "none";
+}
+
+function unlockForEdit(){
+  setLockedState(false);
+}
+
+function getChecks(){
+  const checks = [];
+  document.querySelectorAll("#rows input").forEach(el => {
+    checks.push({
+      type: el.dataset.type,
+      value: el.type === "checkbox" ? el.checked : el.value
+    });
+  });
+  return checks;
+}
+
+function applyChecks(checks){
+  const inputs = document.querySelectorAll("#rows input");
+  if(Array.isArray(checks)){
+    inputs.forEach((el, i) => {
+      if(!checks[i]) return;
+      if(el.type === "checkbox"){
+        el.checked = !!checks[i].value;
+      } else {
+        el.value = checks[i].value || "";
+      }
+    });
+  }
+}
+
+async function saveForm(){
+  const data = {
+    site: SITE,
+    weekStart: document.getElementById("weekStart").value,
+    weekEnd: document.getElementById("weekEnd").innerText,
+    checks: getChecks()
+  };
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  try {
+    if (window.MDKArchive) {
+      const recordDate = data.weekStart || window.MDKArchive.formatDDMMYYYY(new Date());
+
+      const archivePayload = {
+        type: "Daily Cleaning",
+        site: SITE,
+        recordDate: recordDate,
+        fields: {
+          weekStart: data.weekStart,
+          weekEnd: data.weekEnd,
+          tasks: tasks,
+          checks: data.checks
+        }
+      };
+
+      if (loadedRecordId) {
+        await window.MDKArchive.updateRecord(loadedRecordId, archivePayload);
+      } else {
+        loadedRecordId = await window.MDKArchive.saveRecord(archivePayload);
+      }
+    }
+
+    if (loadedRecordId) {
+      setLockedState(true);
+    }
+
+    alert("Saved");
+  } catch (err) {
+    console.error("Archive save error:", err);
+    alert("Saved locally, but archive sync failed");
+  }
+}
+
+function loadForm(){
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(!saved) return;
+
+  const data = JSON.parse(saved);
+
+  if(data.weekStart){
+    document.getElementById("weekStart").value = data.weekStart;
+    updateWeek();
+  }
+
+  applyChecks(data.checks);
+}
+
+async function loadSavedArchiveRecord(){
+  if(!loadedRecordId || !window.MDKArchive) return;
+
+  try{
+    const record = await window.MDKArchive.loadRecord(loadedRecordId);
+    if(!record || !record.fields) return;
+
+    document.getElementById("weekStart").value = record.fields.weekStart || "";
+    document.getElementById("weekEnd").innerText = record.fields.weekEnd || "";
+    applyChecks(record.fields.checks || []);
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      site: SITE,
+      weekStart: record.fields.weekStart || "",
+      weekEnd: record.fields.weekEnd || "",
+      checks: record.fields.checks || []
+    }));
+
+    setLockedState(true);
+  } catch(err){
+    console.error("Load archive record error:", err);
+    alert("Could not open saved archive record.");
+  }
+}
+
+function clearForm(){
+  if(!confirm("Clear form?")) return;
+
+  document.getElementById("weekStart").value = "";
+  document.getElementById("weekEnd").innerText = "";
+
+  document.querySelectorAll("#rows input").forEach(el => {
+    if(el.type === "checkbox") el.checked = false;
+    else el.value = "";
+  });
+
+  if (loadedRecordId) {
+    setLockedState(false);
+  } else {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+}
+
+buildRows();
+document.getElementById("weekStart").addEventListener("input", updateWeek);
+
+if (loadedRecordId) {
+  loadSavedArchiveRecord();
+} else {
+  const today = new Date();
+  document.getElementById("weekStart").value = formatDate(today);
+  updateWeek();
+  loadForm();
+}
+</script>
+
+</body>
+</html>

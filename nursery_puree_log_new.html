@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Record 5c - Nursery Temperature & Puree Reheat Log</title>
+  <style>
+    body{
+      margin:0;
+      font-family:Arial,Helvetica,sans-serif;
+      background:url("kitchen.jpg") center center / cover no-repeat fixed;
+    }
+    .wash{
+      position:fixed;
+      inset:0;
+      background:rgba(255,255,255,.45);
+      backdrop-filter:blur(2px);
+    }
+    .page{
+      position:relative;
+      z-index:1;
+      max-width:1500px;
+      margin:0 auto;
+      padding:20px;
+    }
+    .toolbar{
+      display:flex;
+      gap:10px;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .btn{
+      padding:10px 16px;
+      border-radius:12px;
+      border:none;
+      cursor:pointer;
+      font-weight:700;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:#222;
+      background:#f8fafc;
+      border:1px solid #cfd6dd;
+      box-shadow:0 2px 8px rgba(0,0,0,.12);
+    }
+    .back{
+      background:#ffc107;
+      color:#4b0082;
+      border:none;
+    }
+    .save{
+      background:#007bff;
+      color:#fff;
+      border:none;
+    }
+    .edit{
+      background:#16a34a;
+      color:#fff;
+      border:none;
+    }
+    .card{
+      background:rgba(255,255,255,.95);
+      padding:20px;
+      border-radius:20px;
+      box-shadow:0 12px 30px rgba(0,0,0,.14);
+      overflow:auto;
+    }
+    h1{
+      margin:0 0 16px;
+      font-size:28px;
+      font-weight:700;
+      color:#1f2937;
+    }
+    .month-row{
+      text-align:center;
+      margin-bottom:15px;
+      font-weight:bold;
+      font-size:16px;
+    }
+    .month-row input{
+      width:120px;
+      border:none;
+      border-bottom:2px solid #333;
+      background:transparent;
+      text-align:center;
+      font-size:14px;
+      margin:0 10px;
+      outline:none;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      background:#fff;
+    }
+    th,td{
+      border:1px solid #222;
+      padding:4px;
+      text-align:center;
+      vertical-align:middle;
+      font-size:12px;
+    }
+    th{
+      background:#f4f6f8;
+      font-weight:700;
+    }
+    input{
+      width:100%;
+      border:none;
+      outline:none;
+      background:transparent;
+      text-align:center;
+      font-size:12px;
+      padding:3px;
+      box-sizing:border-box;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+    td:nth-child(4) input,
+    td:nth-child(7) input{
+      text-align:left;
+    }
+    .notes{
+      margin-top:16px;
+      font-size:13px;
+      line-height:1.5;
+      color:#222;
+    }
+    .locked-note{
+      margin-bottom:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      background:#fff7ed;
+      color:#9a3412;
+      border:1px solid #fdba74;
+      display:none;
+      font-weight:700;
+    }
+    @page{
+      size:A4 landscape;
+      margin:10mm;
+    }
+    @media print{
+      .toolbar{display:none;}
+      body{background:#fff;}
+      .wash{display:none;}
+      .page{max-width:none;padding:0;}
+      .card{box-shadow:none;border-radius:0;padding:0;}
+      h1{font-size:24px;}
+      th,td,input{font-size:11px;}
+      .notes,.month-row{font-size:11px;}
+      .locked-note{display:none !important;}
+    }
+  </style>
+</head>
+<body>
+  <div class="wash"></div>
+
+  <main class="page">
+    <div class="toolbar">
+      <button class="btn back" type="button" onclick="goBackSmart()">← Back</button>
+      <a href="dashboard.html" class="btn">Home</a>
+      <button class="btn" onclick="window.print()" type="button">Print</button>
+      <button id="editBtn" class="btn edit" onclick="unlockForEdit()" type="button" style="display:none;">Edit</button>
+      <button class="btn" onclick="clearForm()" type="button">Clear</button>
+      <button class="btn save" onclick="saveForm()" type="button">Save</button>
+    </div>
+
+    <div class="card">
+      <h1>Record 5c – Nursery Temperature &amp; Puree Reheat Log</h1>
+
+      <div id="lockedNote" class="locked-note">
+        This saved record is locked. Press Edit to make changes.
+      </div>
+
+      <div class="month-row">
+        Month: <input id="month">
+        Year: <input id="year">
+      </div>
+
+      <table>
+        <colgroup>
+          <col style="width:10%">
+          <col style="width:10%">
+          <col style="width:10%">
+          <col style="width:12%">
+          <col style="width:28%">
+          <col style="width:10%">
+          <col style="width:20%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th rowspan="2">Date</th>
+            <th colspan="2">Fridge</th>
+            <th colspan="4">Puree Reheat</th>
+          </tr>
+          <tr>
+            <th>AM</th>
+            <th>PM</th>
+            <th>Batch Date</th>
+            <th>Description</th>
+            <th>°C</th>
+            <th>Corrective Action</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+
+      <div class="notes">
+        The Fridge temperature should be at or below 5°C<br><br>
+        Purees should be reheated to 75°C and then cooled to a safe temperature prior to serving
+      </div>
+    </div>
+  </main>
+
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <script src="firebase-loader.js"></script>
+  <script src="archive_shared.js"></script>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const LOAD_ID = params.get("load") || "";
+    const STORAGE_KEY = "nursery_puree_log_new_v3";
+    let loadedRecordId = LOAD_ID || "";
+
+    function goBackSmart() {
+      const fromArchive = sessionStorage.getItem("mdk_from_archive");
+      if (fromArchive === "1") {
+        sessionStorage.removeItem("mdk_from_archive");
+        window.location.href = "archive.html";
+        return;
+      }
+      window.location.href = "nursery_new.html";
+    }
+
+    function todayDate() {
+      const d = new Date();
+      const dd = String(d.getDate()).padStart(2, "0");
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const yyyy = d.getFullYear();
+      return dd + "/" + mm + "/" + yyyy;
+    }
+
+    function buildRows() {
+      const tbody = document.getElementById("rows");
+      tbody.innerHTML = "";
+
+      for (let i = 0; i < 25; i++) {
+        const tr = document.createElement("tr");
+
+        for (let c = 0; c < 7; c++) {
+          const td = document.createElement("td");
+          const input = document.createElement("input");
+          input.type = "text";
+          input.dataset.row = i;
+          input.dataset.col = c;
+
+          if (c === 0 || c === 3) {
+            input.addEventListener("focus", function() {
+              if (!input.value && !input.disabled) input.value = todayDate();
+            });
+          }
+
+          td.appendChild(input);
+          tr.appendChild(td);
+        }
+
+        tbody.appendChild(tr);
+      }
+    }
+
+    function getAllFields() {
+      return document.querySelectorAll("#month, #year, #rows input");
+    }
+
+    function setLockedState(locked) {
+      getAllFields().forEach(el => {
+        el.disabled = locked;
+      });
+      document.getElementById("editBtn").style.display = locked ? "inline-block" : "none";
+      document.getElementById("lockedNote").style.display = locked ? "block" : "none";
+    }
+
+    function unlockForEdit() {
+      setLockedState(false);
+    }
+
+    function getRowsAsObjects() {
+      const out = [];
+      document.querySelectorAll("#rows tr").forEach(tr => {
+        const fields = tr.querySelectorAll("input");
+        out.push({
+          date: fields[0]?.value?.trim() || "",
+          fridgeAM: fields[1]?.value?.trim() || "",
+          fridgePM: fields[2]?.value?.trim() || "",
+          batchDate: fields[3]?.value?.trim() || "",
+          description: fields[4]?.value?.trim() || "",
+          temp: fields[5]?.value?.trim() || "",
+          correctiveAction: fields[6]?.value?.trim() || ""
+        });
+      });
+      return out;
+    }
+
+    function flattenRows(rows) {
+      const values = [];
+      rows.forEach(row => {
+        values.push(
+          row.date || "",
+          row.fridgeAM || "",
+          row.fridgePM || "",
+          row.batchDate || "",
+          row.description || "",
+          row.temp || "",
+          row.correctiveAction || ""
+        );
+      });
+      return values;
+    }
+
+    async function saveForm() {
+      const data = {
+        month: document.getElementById("month").value,
+        year: document.getElementById("year").value,
+        fields: []
+      };
+
+      document.querySelectorAll("#rows input").forEach(function(el) {
+        data.fields.push(el.value);
+      });
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+      try {
+        if (window.MDKArchive) {
+          let recordDate = "";
+          const rows = getRowsAsObjects();
+
+          rows.forEach(function(row) {
+            if (!recordDate && row.date.trim()) {
+              recordDate = row.date.trim();
+            }
+          });
+
+          if (!recordDate) {
+            recordDate = window.MDKArchive.formatDDMMYYYY(new Date());
+          }
+
+          const archivePayload = {
+            type: "Nursery Temperature & Puree Reheat Log",
+            site: "Nursery",
+            recordDate: recordDate,
+            fields: {
+              month: data.month,
+              year: data.year,
+              rows: rows
+            }
+          };
+
+          if (loadedRecordId) {
+            await window.MDKArchive.updateRecord(loadedRecordId, archivePayload);
+          } else {
+            loadedRecordId = await window.MDKArchive.saveRecord(archivePayload);
+          }
+        }
+
+        if (loadedRecordId) {
+          setLockedState(true);
+        }
+
+        alert("Saved");
+      } catch (err) {
+        console.error("Archive save error:", err);
+        alert("Saved locally, but archive sync failed");
+      }
+    }
+
+    function loadForm() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return;
+
+      const data = JSON.parse(saved);
+      document.getElementById("month").value = data.month || "";
+      document.getElementById("year").value = data.year || "";
+
+      const fields = document.querySelectorAll("#rows input");
+      fields.forEach(function(field, i) {
+        field.value = (data.fields && data.fields[i]) || "";
+      });
+    }
+
+    async function loadSavedArchiveRecord() {
+      if (!loadedRecordId || !window.MDKArchive) return;
+
+      try {
+        const record = await window.MDKArchive.loadRecord(loadedRecordId);
+        if (!record || !record.fields) return;
+
+        document.getElementById("month").value = record.fields.month || "";
+        document.getElementById("year").value = record.fields.year || "";
+
+        const rows = record.fields.rows || [];
+        const values = flattenRows(rows);
+        const fields = document.querySelectorAll("#rows input");
+
+        fields.forEach((el, i) => {
+          el.value = values[i] || "";
+        });
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          month: record.fields.month || "",
+          year: record.fields.year || "",
+          fields: values
+        }));
+
+        setLockedState(true);
+      } catch (err) {
+        console.error("Load archive record error:", err);
+        alert("Could not open saved archive record.");
+      }
+    }
+
+    function clearForm() {
+      if (!confirm("Clear form?")) return;
+
+      document.getElementById("month").value = "";
+      document.getElementById("year").value = "";
+
+      document.querySelectorAll("#rows input").forEach(function(el) {
+        el.value = "";
+      });
+
+      if (loadedRecordId) {
+        setLockedState(false);
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+
+    buildRows();
+
+    if (loadedRecordId) {
+      loadSavedArchiveRecord();
+    } else {
+      loadForm();
+    }
+  </script>
+</body>
+</html>

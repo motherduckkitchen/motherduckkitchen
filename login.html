@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Mother Duck Kitchen – Sign in</title>
+
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <style>
+    :root{--line:#cfd6dd}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      background:url("kitchen.jpg") center/cover fixed no-repeat;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+    }
+    body::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:rgba(173,216,230,.55);
+      backdrop-filter:blur(2px);
+    }
+    .card{
+      position:relative;
+      z-index:1;
+      width:100%;
+      max-width:380px;
+      text-align:center;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:0 8px 28px rgba(0,0,0,.15);
+      padding:26px;
+      box-sizing:border-box;
+    }
+    .logo{
+      max-width:120px;
+      display:block;
+      margin:0 auto 14px;
+    }
+    h1{
+      margin:0 0 16px;
+      font-size:20px;
+    }
+    input{
+      width:100%;
+      padding:10px;
+      margin:8px 0;
+      border:1px solid #cfd6dd;
+      border-radius:10px;
+      box-sizing:border-box;
+    }
+    button{
+      width:100%;
+      padding:10px;
+      margin-top:8px;
+      border:0;
+      border-radius:10px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .login{
+      background:#0d6efd;
+      color:#fff;
+    }
+    .error{
+      color:#e11d48;
+      min-height:1.2em;
+      margin-top:8px;
+    }
+    .msg{
+      color:#0f766e;
+      margin-bottom:6px;
+      min-height:1.2em;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img src="logo.png" alt="Mother Duck Kitchen" class="logo"/>
+    <h1>Sign in</h1>
+    <div id="msg" class="msg"></div>
+    <input type="email" id="email" placeholder="Email" autocomplete="username"/>
+    <input type="password" id="password" placeholder="Password" autocomplete="current-password"/>
+    <button class="login" id="loginBtn" type="button">Log in</button>
+    <div id="error" class="error"></div>
+  </div>
+
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="firebase-loader.js"></script>
+  <script>
+    const auth = window.MDK_AUTH;
+
+    const msgEl = document.getElementById("msg");
+    const errEl = document.getElementById("error");
+    const emailEl = document.getElementById("email");
+    const passEl = document.getElementById("password");
+    const btn = document.getElementById("loginBtn");
+
+    const p = new URLSearchParams(location.search);
+    if (p.get("msg") === "expired") {
+      msgEl.textContent = "Session ended after 30 minutes of inactivity. Please sign in again.";
+    }
+
+    auth.onAuthStateChanged(function(user){
+      if (user) {
+        location.replace("dashboard.html");
+      }
+    });
+
+    async function doLogin(){
+      errEl.textContent = "";
+
+      const email = (emailEl.value || "").trim();
+      const pass = passEl.value || "";
+
+      if (!email || !pass) {
+        errEl.textContent = "Please enter email and password.";
+        return;
+      }
+
+      btn.disabled = true;
+      const oldText = btn.textContent;
+      btn.textContent = "Signing in...";
+
+      try {
+        await auth.signInWithEmailAndPassword(email, pass);
+        location.replace("dashboard.html");
+      } catch (e) {
+        console.error(e);
+        errEl.textContent = e.message || "Sign-in failed.";
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
+    }
+
+    btn.addEventListener("click", doLogin);
+
+    [emailEl, passEl].forEach(function(el){
+      el.addEventListener("keydown", function(e){
+        if (e.key === "Enter") doLogin();
+      });
+    });
+  </script>
+</body>
+</html>

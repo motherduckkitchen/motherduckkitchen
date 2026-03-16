@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <style id="mdk-hide">html{visibility:hidden}</style>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script>
+  (function(){
+    const cfg = window.MDK_FIREBASE_CONFIG;
+    if (!firebase.apps.length) firebase.initializeApp(cfg);
+    const auth = firebase.auth();
+
+    const TIMEOUT = 30*60*1000; let t;
+    function reset(){
+      clearTimeout(t);
+      t = setTimeout(() => auth.signOut().then(() => location.replace("login.html?msg=expired")), TIMEOUT);
+    }
+    ["click","keydown","mousemove","touchstart","scroll","focus"].forEach(e =>
+      window.addEventListener(e, reset, {passive:true})
+    );
+
+    auth.onAuthStateChanged(u => {
+      if(!u){
+        location.replace("login.html");
+      } else {
+        document.getElementById("mdk-hide")?.remove();
+        reset();
+        window.mdkLogout = () => auth.signOut().then(() => location.replace("login.html"));
+      }
+    });
+  })();
+  </script>
+  <!-- 🔒 end guard -->
+
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Record No. 1 – Approved Suppliers List</title>
+  <link rel="stylesheet" href="shared/styles.css">
+
+  <style>
+    .locked-note{
+      margin:12px 0 14px;
+      padding:10px 12px;
+      border-radius:12px;
+      background:#fff7ed;
+      color:#9a3412;
+      border:1px solid #fdba74;
+      display:none;
+      font-weight:700;
+    }
+    .mdk-btn--edit{
+      background:#16a34a;
+      color:#fff;
+      border:none;
+    }
+    @media print{
+      .locked-note{display:none !important;}
+    }
+  </style>
+</head>
+<body>
+  <div class="mdk-wash"></div>
+  <main class="mdk-wrap">
+
+    <nav class="mdk-toolbar">
+      <button class="mdk-btn mdk-btn--light" type="button" onclick="goBackSmart()">← Back</button>
+      <a class="mdk-btn mdk-btn--light" href="dashboard.html">Home</a>
+      <button class="mdk-btn mdk-btn--light" type="button" onclick="window.print()">🖨 Print</button>
+      <button id="editBtn" class="mdk-btn mdk-btn--edit" type="button" onclick="unlockForEdit()" style="display:none;">Edit</button>
+      <button class="mdk-btn mdk-btn--light" type="button" onclick="clearForm()">✖ Clear</button>
+      <button class="mdk-btn mdk-btn--primary" type="button" onclick="saveForm()">💾 Save</button>
+    </nav>
+
+    <h1 id="pageTitle">Record No. 1 – Approved Suppliers List</h1>
+
+    <div id="lockedNote" class="locked-note">
+      This saved record is locked. Press Edit to make changes.
+    </div>
+
+    <div class="banner"><b>Guidance:</b> Maintain a current list of approved suppliers. Review annually or when suppliers change.</div>
+
+    <table>
+      <colgroup>
+        <col style="width:12%"><col style="width:22%"><col style="width:24%">
+        <col style="width:12%"><col style="width:12%"><col style="width:18%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Date Added</th>
+          <th>Supplier Name</th>
+          <th>Contact Details<br><span style="font-weight:600;color:#64748b">Phone / Email / Address</span></th>
+          <th>Approved By<br><span style="font-weight:600;color:#64748b">(Initials)</span></th>
+          <th>Review Date</th>
+          <th>Notes / Corrective Actions</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+
+    <div class="note">
+      <b>Notes:</b> Record reasons for approval (e.g., compliance evidence) and any corrective actions if supplier performance issues occur.
+    </div>
+
+    <div class="footer">
+      <div class="sig">
+        <div class="line"></div>
+        <div class="label">Supervisor signature</div>
+      </div>
+      <div class="sig">
+        <div class="line"></div>
+        <div class="label">Date</div>
+      </div>
+    </div>
+  </main>
+
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <script src="firebase-loader.js"></script>
+  <script src="archive_shared.js"></script>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const LOAD_ID = params.get("load") || "";
+
+    const STORAGE_KEY = "record1_suppliers_shared_v2";
+    let loadedRecordId = LOAD_ID || "";
+
+    const pad = n => String(n).padStart(2,'0');
+    const fmtDate = (d = new Date()) => `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+
+    function goBackSmart() {
+      const fromArchive = sessionStorage.getItem("mdk_from_archive");
+      if (fromArchive === "1") {
+        sessionStorage.removeItem("mdk_from_archive");
+        window.location.href = "audit_archive.html";
+        return;
+      }
+      window.location.href = "dashboard.html";
+    }
+
+    function addRow(){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input class="center" data-autodate placeholder="dd/mm/yyyy"></td>
+        <td><input placeholder="Supplier / Company"></td>
+        <td><input placeholder="Phone, Email, Address"></td>
+        <td><input class="init center" maxlength="3" placeholder=""></td>
+        <td><input class="center" data-autodate placeholder="dd/mm/yyyy"></td>
+        <td><input placeholder="Notes / actions"></td>
+      `;
+      return tr;
+    }
+
+    function build(){
+      const tbody = document.getElementById('rows');
+      tbody.innerHTML = "";
+      for(let i = 0; i < 12; i++) tbody.appendChild(addRow());
+
+      document.querySelectorAll('[data-autodate]').forEach(el => {
+        el.addEventListener('focus', () => {
+          if(!el.value && !el.disabled) el.value = fmtDate();
+        });
+      });
+    }
+
+    function getAllFields(){
+      return document.querySelectorAll('#rows input');
+    }
+
+    function setLockedState(locked){
+      getAllFields().forEach(el => {
+        el.disabled = locked;
+      });
+      document.getElementById("editBtn").style.display = locked ? "inline-block" : "none";
+      document.getElementById("lockedNote").style.display = locked ? "block" : "none";
+    }
+
+    function unlockForEdit(){
+      setLockedState(false);
+    }
+
+    function getRowsAsObjects(){
+      return [...document.querySelectorAll('#rows tr')].map(tr => {
+        const inputs = tr.querySelectorAll('input');
+        return {
+          dateAdded: inputs[0]?.value?.trim() || "",
+          supplierName: inputs[1]?.value?.trim() || "",
+          contactDetails: inputs[2]?.value?.trim() || "",
+          approvedBy: inputs[3]?.value?.trim() || "",
+          reviewDate: inputs[4]?.value?.trim() || "",
+          notes: inputs[5]?.value?.trim() || ""
+        };
+      });
+    }
+
+    function flattenRows(rows){
+      const out = [];
+      rows.forEach(row => {
+        out.push(
+          row.dateAdded || "",
+          row.supplierName || "",
+          row.contactDetails || "",
+          row.approvedBy || "",
+          row.reviewDate || "",
+          row.notes || ""
+        );
+      });
+      return out;
+    }
+
+    function applyFlatValues(values){
+      const trs = document.querySelectorAll('#rows tr');
+      let idx = 0;
+      trs.forEach(tr => {
+        const inputs = tr.querySelectorAll('input');
+        inputs.forEach(input => {
+          input.value = values[idx] || "";
+          idx++;
+        });
+      });
+    }
+
+    function loadForm(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return;
+        const values = JSON.parse(raw);
+        applyFlatValues(values);
+      }catch(e){}
+    }
+
+    async function loadSavedArchiveRecord(){
+      if(!loadedRecordId || !window.MDKArchive) return;
+
+      try{
+        const record = await window.MDKArchive.loadRecord(loadedRecordId);
+        if(!record || !record.fields) return;
+
+        const rows = record.fields.rows || [];
+        const values = flattenRows(rows);
+        applyFlatValues(values);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+        setLockedState(true);
+      }catch(err){
+        console.error("Load archive record error:", err);
+        alert("Could not open saved archive record.");
+      }
+    }
+
+    async function saveForm(){
+      const rows = getRowsAsObjects();
+      const values = flattenRows(rows);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+
+      try{
+        if(window.MDKArchive){
+          let recordDate = "";
+          for (const row of rows) {
+            if (row.dateAdded) {
+              recordDate = row.dateAdded;
+              break;
+            }
+          }
+
+          if(!recordDate){
+            recordDate = window.MDKArchive.formatDDMMYYYY(new Date());
+          }
+
+          const archivePayload = {
+            type: "Approved Suppliers List",
+            site: "All Sites",
+            recordDate: recordDate,
+            fields: {
+              rows: rows
+            }
+          };
+
+          if (loadedRecordId) {
+            await window.MDKArchive.updateRecord(loadedRecordId, archivePayload);
+          } else {
+            loadedRecordId = await window.MDKArchive.saveRecord(archivePayload);
+          }
+        }
+
+        if (loadedRecordId) {
+          setLockedState(true);
+        }
+
+        alert('Saved');
+      }catch(err){
+        console.error("Archive save error:", err);
+        alert("Saved locally, but archive sync failed");
+      }
+    }
+
+    function clearForm(){
+      if(!confirm("Clear form?")) return;
+
+      getAllFields().forEach(el => {
+        el.value = '';
+      });
+
+      if (loadedRecordId) {
+        setLockedState(false);
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+
+    build();
+
+    if (loadedRecordId) {
+      loadSavedArchiveRecord();
+    } else {
+      loadForm();
+    }
+  </script>
+</body>
+</html>

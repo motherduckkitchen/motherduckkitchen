@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Record 6b – Weekly Cleaning Schedule</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:url("kitchen.jpg") center/cover no-repeat fixed;
+}
+.wash{
+  position:fixed;
+  inset:0;
+  background:rgba(255,255,255,.45);
+  backdrop-filter:blur(2px);
+}
+.page{
+  position:relative;
+  z-index:1;
+  max-width:1400px;
+  margin:auto;
+  padding:20px;
+}
+.toolbar{
+  display:flex;
+  gap:10px;
+  margin-bottom:14px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.btn{
+  padding:10px 16px;
+  border-radius:10px;
+  border:none;
+  font-weight:bold;
+  cursor:pointer;
+  text-decoration:none;
+  background:#204a9b;
+  color:white;
+}
+.back{
+  background:#ffc107;
+  color:black;
+}
+.edit{
+  background:#16a34a;
+  color:white;
+}
+.card{
+  background:white;
+  padding:20px;
+  border-radius:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,.2);
+  overflow:auto;
+}
+h1{
+  margin:0 0 14px 0;
+  font-size:28px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  margin-bottom:18px;
+}
+th,td{
+  border:1px solid black;
+  padding:6px;
+  font-size:13px;
+  text-align:center;
+  vertical-align:middle;
+}
+th{
+  background:#efede4;
+}
+.area{
+  text-align:left;
+  width:38%;
+}
+.week-input{
+  width:180px;
+  border:none;
+  outline:none;
+  background:transparent;
+  font-size:14px;
+  font-weight:600;
+}
+.chk{
+  transform:scale(1.2);
+}
+.footer{
+  margin-top:16px;
+  font-size:12px;
+  color:#333;
+}
+.locked-note{
+  margin-bottom:12px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:#fff7ed;
+  color:#9a3412;
+  border:1px solid #fdba74;
+  display:none;
+  font-weight:700;
+}
+@page{
+  size:A4 landscape;
+  margin:10mm;
+}
+@media print{
+  .toolbar{display:none;}
+  body{background:white;}
+  .wash{display:none;}
+  .page{max-width:none;padding:0;}
+  .card{box-shadow:none;border-radius:0;padding:0;}
+  .locked-note{display:none !important;}
+}
+</style>
+</head>
+<body>
+
+<div class="wash"></div>
+
+<main class="page">
+
+<div class="toolbar">
+  <button class="btn back" type="button" onclick="goBackSmart()">← Back</button>
+  <a href="dashboard.html" class="btn">Home</a>
+  <button class="btn" type="button" onclick="window.print()">Print</button>
+  <button id="editBtn" class="btn edit" type="button" onclick="unlockForEdit()" style="display:none;">Edit</button>
+  <button class="btn" type="button" onclick="clearForm()">Clear</button>
+  <button class="btn" type="button" onclick="saveForm()">Save</button>
+</div>
+
+<div class="card">
+
+<h1 id="pageTitle">Record 6b – Weekly Cleaning Schedule</h1>
+
+<div id="lockedNote" class="locked-note">
+  This saved record is locked. Press Edit to make changes.
+</div>
+
+<div id="weeklyBlocks"></div>
+
+<div class="footer">
+  Food Safety Program - Mother Duck Kallangur (1) January 2021 - Transport Amendment.docx<br>
+  Accredited Food Safety Program - Food Act 2006 (QLD) - LI/2021/0345. Accredited by Michael Taylor (Authorised Person Moreton Bay Regional Council) 23 March 2021
+</div>
+
+</div>
+</main>
+
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="firebase-loader.js"></script>
+<script src="archive_shared.js"></script>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const SITE = params.get("site") || "Kitchen";
+const LOAD_ID = params.get("load") || "";
+
+const STORAGE_KEY = SITE === "Brewer St"
+  ? "weekly_clean_blocks_brewer_v4"
+  : "weekly_clean_blocks_kitchen_v4";
+
+let loadedRecordId = LOAD_ID || "";
+
+const pageTitle = document.getElementById("pageTitle");
+pageTitle.textContent = SITE === "Brewer St"
+  ? "Record 6b – Weekly Cleaning Schedule (Brewer St)"
+  : "Record 6b – Weekly Cleaning Schedule (Kitchen)";
+
+const tasks = [
+  "Clean out fridge (wipe over shelves and inside doors)",
+  "Clean inside of ovens",
+  "Clean out chemical cupboard (refill chemicals when required)",
+  "Clean pantry (wiping over every shelf and checking for expired food items) if expired discard food items. Wipe over pantry windowsill.",
+  "Sweep and mop pantry floor"
+];
+
+function goBackSmart() {
+  const fromArchive = sessionStorage.getItem("mdk_from_archive");
+  if (fromArchive === "1") {
+    sessionStorage.removeItem("mdk_from_archive");
+    window.location.href = "archive.html";
+    return;
+  }
+  window.location.href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
+}
+
+function buildBlocks(){
+  const wrap = document.getElementById("weeklyBlocks");
+  wrap.innerHTML = "";
+
+  for(let block = 0; block < 4; block++){
+    const table = document.createElement("table");
+
+    let html = `
+      <thead>
+        <tr>
+          <th class="area">
+            Week Commencing:
+            <input class="week-input" type="date" data-type="weekstart" data-block="${block}">
+          </th>
+          <th colspan="5">Initial as Completed</th>
+        </tr>
+        <tr>
+          <th class="area">WEEKLY or more often if required</th>
+          <th>M</th>
+          <th>T</th>
+          <th>W</th>
+          <th>T</th>
+          <th>F</th>
+        </tr>
+      </thead>
+      <tbody>
+    `;
+
+    tasks.forEach((task, rowIndex) => {
+      html += `<tr><td class="area">${task}</td>`;
+      for(let day = 0; day < 5; day++){
+        html += `<td><input type="checkbox" class="chk" data-type="tick" data-block="${block}" data-row="${rowIndex}" data-day="${day}"></td>`;
+      }
+      html += `</tr>`;
+    });
+
+    html += `</tbody>`;
+    table.innerHTML = html;
+    wrap.appendChild(table);
+  }
+}
+
+function getAllFields(){
+  return document.querySelectorAll('input[data-type="weekstart"], input[data-type="tick"]');
+}
+
+function setLockedState(locked){
+  getAllFields().forEach(el => {
+    el.disabled = locked;
+  });
+  document.getElementById("editBtn").style.display = locked ? "inline-block" : "none";
+  document.getElementById("lockedNote").style.display = locked ? "block" : "none";
+}
+
+function unlockForEdit(){
+  setLockedState(false);
+}
+
+function collectFormData(){
+  const data = {
+    site: SITE,
+    weeks: [],
+    ticks: [],
+    tasks: tasks
+  };
+
+  document.querySelectorAll('input[data-type="weekstart"]').forEach(el => {
+    data.weeks.push(el.value);
+  });
+
+  document.querySelectorAll('input[data-type="tick"]').forEach(el => {
+    data.ticks.push(el.checked);
+  });
+
+  return data;
+}
+
+function applyFormData(data){
+  const weekInputs = document.querySelectorAll('input[data-type="weekstart"]');
+  weekInputs.forEach((el, i) => {
+    el.value = (data.weeks && data.weeks[i]) || "";
+  });
+
+  const tickInputs = document.querySelectorAll('input[data-type="tick"]');
+  tickInputs.forEach((el, i) => {
+    el.checked = !!(data.ticks && data.ticks[i]);
+  });
+}
+
+async function saveForm(){
+  const data = collectFormData();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  try {
+    if (window.MDKArchive) {
+      let recordDate = "";
+      const firstWeek = (data.weeks || []).find(v => v && v.trim());
+
+      if (firstWeek) {
+        const startDate = new Date(firstWeek + "T00:00:00");
+        const dd = String(startDate.getDate()).padStart(2, "0");
+        const mm = String(startDate.getMonth() + 1).padStart(2, "0");
+        const yyyy = startDate.getFullYear();
+        recordDate = dd + "/" + mm + "/" + yyyy;
+      } else {
+        recordDate = window.MDKArchive.formatDDMMYYYY(new Date());
+      }
+
+      const archivePayload = {
+        type: "Weekly Cleaning",
+        site: SITE,
+        recordDate: recordDate,
+        fields: data
+      };
+
+      if (loadedRecordId) {
+        await window.MDKArchive.updateRecord(loadedRecordId, archivePayload);
+      } else {
+        loadedRecordId = await window.MDKArchive.saveRecord(archivePayload);
+      }
+    }
+
+    if (loadedRecordId) {
+      setLockedState(true);
+    }
+
+    alert("Saved");
+  } catch (err) {
+    console.error("Archive save error:", err);
+    alert("Saved locally, but archive sync failed");
+  }
+}
+
+function loadForm(){
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(!saved) return;
+  const data = JSON.parse(saved);
+  applyFormData(data);
+}
+
+async function loadSavedArchiveRecord(){
+  if(!loadedRecordId || !window.MDKArchive) return;
+
+  try{
+    const record = await window.MDKArchive.loadRecord(loadedRecordId);
+    if(!record || !record.fields) return;
+
+    applyFormData(record.fields);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(record.fields));
+    setLockedState(true);
+  } catch(err){
+    console.error("Load archive record error:", err);
+    alert("Could not open saved archive record.");
+  }
+}
+
+function clearForm(){
+  if(!confirm("Clear form?")) return;
+
+  document.querySelectorAll('input[data-type="weekstart"]').forEach(el => {
+    el.value = "";
+  });
+
+  document.querySelectorAll('input[data-type="tick"]').forEach(el => {
+    el.checked = false;
+  });
+
+  if (loadedRecordId) {
+    setLockedState(false);
+  } else {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+}
+
+buildBlocks();
+
+if (loadedRecordId) {
+  loadSavedArchiveRecord();
+} else {
+  loadForm();
+}
+</script>
+
+</body>
+</html>

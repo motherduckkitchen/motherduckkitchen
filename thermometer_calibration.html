@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Record 7a - Thermometer Calibration Log</title>
+  <style>
+    body{
+      margin:0;
+      font-family:Arial,Helvetica,sans-serif;
+      background:url("kitchen.jpg") center center / cover no-repeat fixed;
+    }
+    .wash{
+      position:fixed;
+      inset:0;
+      background:rgba(255,255,255,.45);
+      backdrop-filter:blur(2px);
+    }
+    .page{
+      position:relative;
+      z-index:1;
+      max-width:1500px;
+      margin:0 auto;
+      padding:20px;
+    }
+    .toolbar{
+      display:flex;
+      gap:10px;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .btn{
+      padding:10px 16px;
+      border-radius:12px;
+      border:none;
+      cursor:pointer;
+      font-weight:700;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:#222;
+      background:#f8fafc;
+      border:1px solid #cfd6dd;
+      box-shadow:0 2px 8px rgba(0,0,0,.12);
+    }
+    .back{
+      background:#ffc107;
+      color:#4b0082;
+      border:none;
+    }
+    .save{
+      background:#007bff;
+      color:#fff;
+      border:none;
+    }
+    .edit{
+      background:#16a34a;
+      color:#fff;
+      border:none;
+    }
+    .card{
+      background:rgba(255,255,255,.95);
+      padding:20px;
+      border-radius:20px;
+      box-shadow:0 12px 30px rgba(0,0,0,.14);
+      overflow:auto;
+    }
+    h1{
+      margin:0 0 16px;
+      font-size:28px;
+      font-weight:700;
+      color:#1f2937;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      background:#fff;
+    }
+    th,td{
+      border:1px solid #222;
+      padding:6px;
+      text-align:center;
+      vertical-align:middle;
+      font-size:12px;
+    }
+    th{
+      background:#f4f6f8;
+      font-weight:700;
+    }
+    input{
+      width:100%;
+      border:none;
+      outline:none;
+      background:transparent;
+      text-align:center;
+      font-size:12px;
+      padding:4px;
+      box-sizing:border-box;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+    td:first-child input{
+      text-align:left;
+    }
+    .notes{
+      margin-top:16px;
+      font-size:13px;
+      line-height:1.5;
+      color:#222;
+    }
+    .lines{
+      margin-top:10px;
+    }
+    .line{
+      border-bottom:2px solid #666;
+      height:22px;
+      margin-top:6px;
+    }
+    .warn{
+      background:#ffe2e2 !important;
+      color:#9b1c1c;
+      font-weight:700;
+    }
+    .locked-note{
+      margin-bottom:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      background:#fff7ed;
+      color:#9a3412;
+      border:1px solid #fdba74;
+      display:none;
+      font-weight:700;
+    }
+    @page{
+      size:A4 landscape;
+      margin:10mm;
+    }
+    @media print{
+      .toolbar{display:none;}
+      body{background:#fff;}
+      .wash{display:none;}
+      .page{max-width:none;padding:0;}
+      .card{box-shadow:none;border-radius:0;padding:0;}
+      h1{font-size:24px;}
+      th,td,input{font-size:11px;}
+      .notes{font-size:11px;}
+      .locked-note{display:none !important;}
+    }
+  </style>
+</head>
+<body>
+  <div class="wash"></div>
+
+  <main class="page">
+    <div class="toolbar">
+      <button class="btn back" onclick="goBackSmart()">← Back</button>
+      <a href="dashboard.html" class="btn">🏠 Home</a>
+      <button class="btn" onclick="window.print()" type="button">🖨 Print</button>
+      <button id="editBtn" class="btn edit" onclick="unlockForEdit()" type="button" style="display:none;">✏ Edit</button>
+      <button class="btn" onclick="clearForm()" type="button">🧹 Clear</button>
+      <button class="btn save" onclick="saveForm()" type="button">💾 Save</button>
+    </div>
+
+    <div class="card">
+      <h1 id="pageTitle">Record 7a - Thermometer Calibration Log</h1>
+
+      <div id="lockedNote" class="locked-note">
+        This saved record is locked. Press Edit to make changes.
+      </div>
+
+      <table>
+        <colgroup>
+          <col style="width:16%">
+          <col style="width:8%">
+          <col style="width:6%">
+          <col style="width:6%">
+          <col style="width:6%">
+          <col style="width:6%">
+          <col style="width:6%">
+          <col style="width:6%">
+          <col style="width:6%">
+          <col style="width:6%">
+          <col style="width:6%">
+          <col style="width:6%">
+          <col style="width:6%">
+          <col style="width:6%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Thermometer</th>
+            <th></th>
+            <th>Jan</th>
+            <th>Feb</th>
+            <th>Mar</th>
+            <th>Apr</th>
+            <th>May</th>
+            <th>Jun</th>
+            <th>Jul</th>
+            <th>Aug</th>
+            <th>Sep</th>
+            <th>Oct</th>
+            <th>Nov</th>
+            <th>Dec</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+
+      <div class="notes">
+        Thermometers must be accurate to ± 1°C of the Ice Point (0°C) and the Boiling Point (100°C)
+      </div>
+
+      <div class="notes">
+        <strong>CORRECTIVE ACTIONS: (Date &amp; Action Taken)</strong>
+        <div class="lines">
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+          <div class="line"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <script src="firebase-loader.js"></script>
+  <script src="archive_shared.js"></script>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const SITE = params.get("site") || "Kitchen";
+    const LOAD_ID = params.get("load") || "";
+
+    const STORAGE_KEY = SITE === "Brewer St"
+      ? "thermometer_calibration_brewer_v4"
+      : "thermometer_calibration_kitchen_v4";
+
+    let loadedRecordId = LOAD_ID || "";
+
+    const pageTitle = document.getElementById("pageTitle");
+    pageTitle.textContent = SITE === "Brewer St"
+      ? "Record 7a - Thermometer Calibration Log (Brewer St)"
+      : "Record 7a - Thermometer Calibration Log (Kitchen)";
+
+    function goBackSmart() {
+      const fromArchive = sessionStorage.getItem("mdk_from_archive");
+      if (fromArchive === "1") {
+        sessionStorage.removeItem("mdk_from_archive");
+        window.location.href = "audit_archive.html";
+        return;
+      }
+      window.location.href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
+    }
+
+    function todayDate() {
+      const d = new Date();
+      const dd = String(d.getDate()).padStart(2, "0");
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const yyyy = d.getFullYear();
+      return dd + "/" + mm + "/" + yyyy;
+    }
+
+    function checkWarning(input, rowLabel) {
+      const raw = input.value.trim().replace(",", ".");
+      const value = parseFloat(raw);
+
+      input.classList.remove("warn");
+      input.title = "";
+
+      if (raw === "" || Number.isNaN(value)) return;
+
+      if (rowLabel === "Ice Point" && value > 1) {
+        input.classList.add("warn");
+        input.title = "Warning: above 1°C";
+      }
+
+      if (rowLabel === "Boiling Point" && value < 95) {
+        input.classList.add("warn");
+        input.title = "Warning: below 95°C";
+      }
+    }
+
+    function buildRows() {
+      const tbody = document.getElementById("rows");
+      tbody.innerHTML = "";
+
+      for (let thermo = 0; thermo < 3; thermo++) {
+        const labels = ["Date", "Initials", "Ice Point", "Boiling Point"];
+
+        for (let r = 0; r < labels.length; r++) {
+          const tr = document.createElement("tr");
+
+          if (r === 0) {
+            const tdThermo = document.createElement("td");
+            tdThermo.rowSpan = 4;
+            const inputThermo = document.createElement("input");
+            inputThermo.type = "text";
+            inputThermo.placeholder = "Thermometer name";
+            inputThermo.dataset.kind = "thermometerName";
+            inputThermo.dataset.thermo = thermo;
+            tdThermo.appendChild(inputThermo);
+            tr.appendChild(tdThermo);
+          }
+
+          const tdLabel = document.createElement("td");
+          tdLabel.textContent = labels[r];
+          tr.appendChild(tdLabel);
+
+          for (let m = 0; m < 12; m++) {
+            const td = document.createElement("td");
+            const input = document.createElement("input");
+            input.type = "text";
+            input.dataset.rowlabel = labels[r];
+            input.dataset.thermo = thermo;
+            input.dataset.month = m;
+
+            if (labels[r] === "Date") {
+              input.addEventListener("focus", function () {
+                if (!input.value && !input.disabled) input.value = todayDate();
+              });
+            }
+
+            if (labels[r] === "Ice Point" || labels[r] === "Boiling Point") {
+              input.placeholder = "°C";
+              input.addEventListener("input", function () {
+                checkWarning(input, labels[r]);
+              });
+            }
+
+            td.appendChild(input);
+            tr.appendChild(td);
+          }
+
+          tbody.appendChild(tr);
+        }
+      }
+    }
+
+    function getAllFields() {
+      return document.querySelectorAll("table input");
+    }
+
+    function lockAllFields() {
+      getAllFields().forEach(el => {
+        el.disabled = true;
+      });
+      document.getElementById("editBtn").style.display = "inline-flex";
+      document.getElementById("lockedNote").style.display = "block";
+    }
+
+    function unlockForEdit() {
+      getAllFields().forEach(el => {
+        el.disabled = false;
+      });
+      document.getElementById("lockedNote").style.display = "none";
+    }
+
+    function getStructuredData() {
+      const thermometers = [];
+
+      for (let thermo = 0; thermo < 3; thermo++) {
+        const nameInput = document.querySelector(`input[data-kind="thermometerName"][data-thermo="${thermo}"]`);
+
+        const months = [];
+        for (let m = 0; m < 12; m++) {
+          months.push({
+            date: document.querySelector(`input[data-rowlabel="Date"][data-thermo="${thermo}"][data-month="${m}"]`)?.value?.trim() || "",
+            initials: document.querySelector(`input[data-rowlabel="Initials"][data-thermo="${thermo}"][data-month="${m}"]`)?.value?.trim() || "",
+            icePoint: document.querySelector(`input[data-rowlabel="Ice Point"][data-thermo="${thermo}"][data-month="${m}"]`)?.value?.trim() || "",
+            boilingPoint: document.querySelector(`input[data-rowlabel="Boiling Point"][data-thermo="${thermo}"][data-month="${m}"]`)?.value?.trim() || ""
+          });
+        }
+
+        thermometers.push({
+          thermometerName: nameInput?.value?.trim() || "",
+          months: months
+        });
+      }
+
+      return { thermometers };
+    }
+
+    function flattenStructuredData(data) {
+      const values = [];
+      (data.thermometers || []).forEach(t => {
+        values.push(t.thermometerName || "");
+        (t.months || []).forEach(m => {
+          values.push(m.date || "");
+          values.push(m.initials || "");
+          values.push(m.icePoint || "");
+          values.push(m.boilingPoint || "");
+        });
+      });
+      return values;
+    }
+
+    function applyWarnings() {
+      const fields = document.querySelectorAll("table input");
+      fields.forEach(function(field) {
+        const rowLabel = field.dataset.rowlabel;
+        if (rowLabel === "Ice Point" || rowLabel === "Boiling Point") {
+          checkWarning(field, rowLabel);
+        }
+      });
+    }
+
+    async function saveForm() {
+      const data = [];
+      document.querySelectorAll("table input").forEach(function(el) {
+        data.push(el.value);
+      });
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+      try {
+        if (window.MDKArchive) {
+          let recordDate = "";
+          const dateInputs = document.querySelectorAll('input[data-rowlabel="Date"]');
+
+          dateInputs.forEach(function(el) {
+            if (!recordDate && el.value.trim()) {
+              recordDate = el.value.trim();
+            }
+          });
+
+          if (!recordDate) {
+            recordDate = window.MDKArchive.formatDDMMYYYY(new Date());
+          }
+
+          const archivePayload = {
+            type: "Thermometer Calibration",
+            site: SITE,
+            recordDate: recordDate,
+            fields: getStructuredData()
+          };
+
+          if (loadedRecordId) {
+            await window.MDKArchive.updateRecord(loadedRecordId, archivePayload);
+          } else {
+            loadedRecordId = await window.MDKArchive.saveRecord(archivePayload);
+          }
+        }
+
+        if (loadedRecordId) {
+          lockAllFields();
+        }
+
+        alert("Saved");
+      } catch (err) {
+        console.error("Archive save error:", err);
+        alert("Saved locally, but archive sync failed");
+      }
+    }
+
+    function loadForm() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return;
+      const data = JSON.parse(saved);
+      const fields = document.querySelectorAll("table input");
+      fields.forEach(function(field, i) {
+        field.value = data[i] || "";
+      });
+      applyWarnings();
+    }
+
+    async function loadSavedArchiveRecord() {
+      if (!loadedRecordId || !window.MDKArchive) return;
+
+      try {
+        const record = await window.MDKArchive.loadRecord(loadedRecordId);
+        if (!record || !record.fields) return;
+
+        const values = flattenStructuredData(record.fields);
+        const fields = document.querySelectorAll("table input");
+        fields.forEach((field, i) => {
+          field.value = values[i] || "";
+        });
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+        applyWarnings();
+        lockAllFields();
+      } catch (err) {
+        console.error("Load archive record error:", err);
+        alert("Could not open saved archive record.");
+      }
+    }
+
+    function clearForm() {
+      if (!confirm("Clear form?")) return;
+      document.querySelectorAll("table input").forEach(function(el) {
+        el.value = "";
+        el.classList.remove("warn");
+        el.title = "";
+        el.disabled = false;
+      });
+
+      document.getElementById("lockedNote").style.display = "none";
+      document.getElementById("editBtn").style.display = loadedRecordId ? "inline-flex" : "none";
+
+      if (!loadedRecordId) {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+
+    buildRows();
+
+    if (loadedRecordId) {
+      loadSavedArchiveRecord();
+    } else {
+      loadForm();
+    }
+  </script>
+</body>
+</html>

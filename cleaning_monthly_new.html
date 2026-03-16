@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Record 6c – Cleaning Schedule - Monthly</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:url("kitchen.jpg") center/cover no-repeat fixed;
+}
+.wash{
+  position:fixed;
+  inset:0;
+  background:rgba(255,255,255,.45);
+  backdrop-filter:blur(2px);
+}
+.page{
+  position:relative;
+  z-index:1;
+  max-width:1500px;
+  margin:auto;
+  padding:20px;
+}
+.toolbar{
+  display:flex;
+  gap:10px;
+  margin-bottom:14px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.btn{
+  padding:10px 16px;
+  border-radius:10px;
+  border:none;
+  font-weight:bold;
+  cursor:pointer;
+  text-decoration:none;
+  background:#204a9b;
+  color:white;
+}
+.back{
+  background:#ffc107;
+  color:black;
+}
+.edit{
+  background:#16a34a;
+  color:white;
+}
+.card{
+  background:white;
+  padding:20px;
+  border-radius:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,.2);
+  overflow:auto;
+}
+h1{
+  margin:0 0 14px 0;
+  font-size:28px;
+}
+.topline{
+  margin:10px 0 18px 0;
+  display:flex;
+  gap:24px;
+  flex-wrap:wrap;
+  align-items:center;
+  font-weight:600;
+}
+.topline input[type="date"]{
+  padding:8px;
+  font-size:14px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  margin-bottom:18px;
+}
+th,td{
+  border:1px solid black;
+  padding:6px;
+  font-size:13px;
+  text-align:center;
+  vertical-align:middle;
+}
+th{
+  background:#efede4;
+}
+.area{
+  text-align:left;
+}
+.init{
+  width:100%;
+  border:none;
+  outline:none;
+  background:transparent;
+  text-align:center;
+  font-size:13px;
+}
+.textbox{
+  width:100%;
+  border:none;
+  outline:none;
+  background:transparent;
+  font-size:13px;
+  text-align:left;
+}
+.note{
+  margin-top:18px;
+  font-size:13px;
+}
+.footer{
+  margin-top:16px;
+  font-size:12px;
+  color:#333;
+}
+.locked-note{
+  margin-bottom:12px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:#fff7ed;
+  color:#9a3412;
+  border:1px solid #fdba74;
+  display:none;
+  font-weight:700;
+}
+@page{
+  size:A4 landscape;
+  margin:10mm;
+}
+@media print{
+  .toolbar{display:none;}
+  body{background:white;}
+  .wash{display:none;}
+  .page{max-width:none;padding:0;}
+  .card{box-shadow:none;border-radius:0;padding:0;}
+  .locked-note{display:none !important;}
+}
+</style>
+</head>
+<body>
+
+<div class="wash"></div>
+
+<main class="page">
+
+<div class="toolbar">
+  <button class="btn back" type="button" onclick="goBackSmart()">← Back</button>
+  <a href="dashboard.html" class="btn">Home</a>
+  <button class="btn" type="button" onclick="window.print()">Print</button>
+  <button id="editBtn" class="btn edit" type="button" onclick="unlockForEdit()" style="display:none;">Edit</button>
+  <button class="btn" type="button" onclick="clearForm()">Clear</button>
+  <button class="btn" type="button" onclick="saveForm()">Save</button>
+</div>
+
+<div class="card">
+
+<h1 id="pageTitle">Record 6c – Cleaning Schedule - Monthly</h1>
+
+<div id="lockedNote" class="locked-note">
+  This saved record is locked. Press Edit to make changes.
+</div>
+
+<div class="topline">
+  <label>
+    Year:
+    <input id="yearDate" type="date">
+  </label>
+  <div>
+    Display Year:
+    <span id="showYear"></span>
+  </div>
+</div>
+
+<table>
+  <colgroup>
+    <col style="width:28%">
+    <col style="width:6%">
+    <col style="width:6%">
+    <col style="width:6%">
+    <col style="width:6%">
+    <col style="width:6%">
+    <col style="width:6%">
+    <col style="width:6%">
+    <col style="width:6%">
+    <col style="width:6%">
+    <col style="width:6%">
+    <col style="width:6%">
+    <col style="width:6%">
+  </colgroup>
+
+  <thead>
+    <tr>
+      <th rowspan="2">MONTHLY or more often if required</th>
+      <th colspan="12">Initial as Completed</th>
+    </tr>
+    <tr>
+      <th>Jan</th>
+      <th>Feb</th>
+      <th>Mar</th>
+      <th>Apr</th>
+      <th>May</th>
+      <th>Jun</th>
+      <th>Jul</th>
+      <th>Aug</th>
+      <th>Sept</th>
+      <th>Oct</th>
+      <th>Nov</th>
+      <th>Dec</th>
+    </tr>
+  </thead>
+
+  <tbody id="monthlyRows"></tbody>
+</table>
+
+<div class="note">
+  Note: Please list all areas, equipment, etc. to be cleaned monthly (or less regularly than weekly)
+</div>
+
+<br>
+
+<table>
+  <colgroup>
+    <col style="width:40%">
+    <col style="width:15%">
+    <col style="width:15%">
+    <col style="width:15%">
+    <col style="width:15%">
+  </colgroup>
+
+  <thead>
+    <tr>
+      <th colspan="5">Quarterly / Yearly cleaning and sanitising</th>
+    </tr>
+    <tr>
+      <th>Quarterly / Yearly cleaning task</th>
+      <th>Resp. Person</th>
+      <th>Date scheduled</th>
+      <th>Date completed</th>
+      <th>Checked by</th>
+    </tr>
+  </thead>
+
+  <tbody id="yearlyRows"></tbody>
+</table>
+
+<div class="note">
+  Note: Please list all areas, equipment, etc. to be cleaned yearly (or less regularly than monthly)
+</div>
+
+<div class="footer">
+  Food Safety Program - Mother Duck Kallangur (1) January 2021 - Transport Amendment.docx<br>
+  Accredited Food Safety Program - Food Act 2006 (QLD) - LI/2021/0345. Accredited by Michael Taylor (Authorised Person Moreton Bay Regional Council) 23 March 2021
+</div>
+
+</div>
+</main>
+
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="firebase-loader.js"></script>
+<script src="archive_shared.js"></script>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const SITE = params.get("site") || "Kitchen";
+const LOAD_ID = params.get("load") || "";
+
+const STORAGE_KEY = SITE === "Brewer St"
+  ? "cleaning_monthly_clean_brewer_v3"
+  : "cleaning_monthly_clean_kitchen_v3";
+
+let loadedRecordId = LOAD_ID || "";
+
+document.getElementById("pageTitle").textContent =
+  SITE === "Brewer St"
+    ? "Record 6c – Cleaning Schedule - Monthly (Brewer St)"
+    : "Record 6c – Cleaning Schedule - Monthly (Kitchen)";
+
+const monthlyTasks = [
+  "Clear out cupboards and wipe over shelves. Kitchen and Pantry",
+  "Clear out drawers/cutlery drawers",
+  "Wipe over ceiling fan",
+  "Deep clean oven surrounds",
+  "Clean tops of cupboards",
+  "Deep clean splashback areas"
+];
+
+const yearlyTasks = [
+  "Deep clean storage areas",
+  "Review cleaning chemicals and supplies",
+  "Check maintenance cleaning items"
+];
+
+function goBackSmart() {
+  const fromArchive = sessionStorage.getItem("mdk_from_archive");
+  if (fromArchive === "1") {
+    sessionStorage.removeItem("mdk_from_archive");
+    window.location.href = "archive.html";
+    return;
+  }
+  window.location.href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
+}
+
+function formatDDMMYYYYFromISO(isoDate) {
+  if (!isoDate) return "";
+  const d = new Date(isoDate + "T00:00:00");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return dd + "/" + mm + "/" + yyyy;
+}
+
+function updateYearDisplay(){
+  const val = document.getElementById("yearDate").value;
+  if(!val){
+    document.getElementById("showYear").innerText = "";
+    return;
+  }
+  const d = new Date(val + "T00:00:00");
+  document.getElementById("showYear").innerText = d.getFullYear();
+}
+
+function buildMonthlyRows(){
+  const body = document.getElementById("monthlyRows");
+  body.innerHTML = "";
+
+  monthlyTasks.forEach((task, r) => {
+    const tr = document.createElement("tr");
+
+    const tdTask = document.createElement("td");
+    tdTask.className = "area";
+    tdTask.textContent = task;
+    tr.appendChild(tdTask);
+
+    for(let m = 0; m < 12; m++){
+      const td = document.createElement("td");
+      const input = document.createElement("input");
+      input.type = "text";
+      input.maxLength = 4;
+      input.className = "init";
+      input.dataset.section = "monthly";
+      input.dataset.row = r;
+      input.dataset.col = m;
+      td.appendChild(input);
+      tr.appendChild(td);
+    }
+
+    body.appendChild(tr);
+  });
+}
+
+function buildYearlyRows(){
+  const body = document.getElementById("yearlyRows");
+  body.innerHTML = "";
+
+  yearlyTasks.forEach((task, r) => {
+    const tr = document.createElement("tr");
+
+    for(let c = 0; c < 5; c++){
+      const td = document.createElement("td");
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = c === 0 ? "textbox" : "init";
+      input.dataset.section = "yearly";
+      input.dataset.row = r;
+      input.dataset.col = c;
+
+      if(c === 0) input.value = task;
+
+      td.appendChild(input);
+      tr.appendChild(td);
+    }
+
+    body.appendChild(tr);
+  });
+}
+
+function getAllFields(){
+  return document.querySelectorAll("#yearDate, #monthlyRows input, #yearlyRows input");
+}
+
+function setLockedState(locked){
+  getAllFields().forEach(el => {
+    el.disabled = locked;
+  });
+  document.getElementById("editBtn").style.display = locked ? "inline-block" : "none";
+  document.getElementById("lockedNote").style.display = locked ? "block" : "none";
+}
+
+function unlockForEdit(){
+  setLockedState(false);
+}
+
+function collectFormData(){
+  const data = {
+    yearDate: document.getElementById("yearDate").value,
+    displayYear: document.getElementById("showYear").innerText,
+    monthlyTasks: monthlyTasks,
+    yearlyTasks: yearlyTasks,
+    monthly: [],
+    yearly: []
+  };
+
+  document.querySelectorAll("#monthlyRows input").forEach(el => data.monthly.push(el.value));
+  document.querySelectorAll("#yearlyRows input").forEach(el => data.yearly.push(el.value));
+
+  return data;
+}
+
+function applyFormData(data){
+  document.getElementById("yearDate").value = data.yearDate || "";
+  updateYearDisplay();
+
+  const monthlyInputs = document.querySelectorAll("#monthlyRows input");
+  monthlyInputs.forEach((el, i) => {
+    el.value = (data.monthly && data.monthly[i]) || "";
+  });
+
+  const yearlyInputs = document.querySelectorAll("#yearlyRows input");
+  yearlyInputs.forEach((el, i) => {
+    if ((i % 5) === 0) {
+      el.value = (data.yearly && data.yearly[i]) || yearlyTasks[Math.floor(i / 5)] || "";
+    } else {
+      el.value = (data.yearly && data.yearly[i]) || "";
+    }
+  });
+}
+
+async function saveForm(){
+  const data = collectFormData();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  try {
+    if (window.MDKArchive) {
+      const recordDate = data.yearDate
+        ? formatDDMMYYYYFromISO(data.yearDate)
+        : window.MDKArchive.formatDDMMYYYY(new Date());
+
+      const archivePayload = {
+        type: "Monthly Cleaning",
+        site: SITE,
+        recordDate: recordDate,
+        fields: data
+      };
+
+      if (loadedRecordId) {
+        await window.MDKArchive.updateRecord(loadedRecordId, archivePayload);
+      } else {
+        loadedRecordId = await window.MDKArchive.saveRecord(archivePayload);
+      }
+    }
+
+    if (loadedRecordId) {
+      setLockedState(true);
+    }
+
+    alert("Saved");
+  } catch (err) {
+    console.error("Archive save error:", err);
+    alert("Saved locally, but archive sync failed");
+  }
+}
+
+function loadForm(){
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(!saved) return;
+  const data = JSON.parse(saved);
+  applyFormData(data);
+}
+
+async function loadSavedArchiveRecord(){
+  if(!loadedRecordId || !window.MDKArchive) return;
+
+  try{
+    const record = await window.MDKArchive.loadRecord(loadedRecordId);
+    if(!record || !record.fields) return;
+
+    applyFormData(record.fields);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(record.fields));
+    setLockedState(true);
+  } catch(err){
+    console.error("Load archive record error:", err);
+    alert("Could not open saved archive record.");
+  }
+}
+
+function clearForm(){
+  if(!confirm("Clear form?")) return;
+
+  document.getElementById("yearDate").value = "";
+  document.getElementById("showYear").innerText = "";
+
+  document.querySelectorAll("#monthlyRows input").forEach(el => {
+    el.value = "";
+  });
+
+  document.querySelectorAll("#yearlyRows input").forEach((el, i) => {
+    if((i % 5) === 0){
+      el.value = yearlyTasks[Math.floor(i / 5)] || "";
+    } else {
+      el.value = "";
+    }
+  });
+
+  if (loadedRecordId) {
+    setLockedState(false);
+  } else {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+}
+
+buildMonthlyRows();
+buildYearlyRows();
+document.getElementById("yearDate").addEventListener("change", updateYearDisplay);
+
+if (loadedRecordId) {
+  loadSavedArchiveRecord();
+} else {
+  loadForm();
+}
+</script>
+
+</body>
+</html>

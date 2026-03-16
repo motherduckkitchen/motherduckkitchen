@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Record 3b - Bottle Receipt</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:url("kitchen.jpg") center center / cover no-repeat fixed;
+}
+.wash{
+  position:fixed;
+  inset:0;
+  background:rgba(255,255,255,.45);
+  backdrop-filter:blur(2px);
+}
+.page{
+  position:relative;
+  z-index:1;
+  max-width:1400px;
+  margin:0 auto;
+  padding:20px;
+}
+.toolbar{
+  display:flex;
+  gap:10px;
+  margin-bottom:14px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.btn{
+  padding:10px 16px;
+  border-radius:12px;
+  border:none;
+  font-weight:700;
+  cursor:pointer;
+  background:#f8fafc;
+  border:1px solid #cfd6dd;
+  text-decoration:none;
+  color:#222;
+  box-shadow:0 2px 8px rgba(0,0,0,.12);
+}
+.back{
+  background:#ffc107;
+  color:#4b0082;
+  border:none;
+}
+.save{
+  background:#007bff;
+  color:white;
+  border:none;
+}
+.edit{
+  background:#16a34a;
+  color:#fff;
+  border:none;
+}
+.card{
+  background:rgba(255,255,255,.95);
+  padding:20px;
+  border-radius:20px;
+  box-shadow:0 12px 30px rgba(0,0,0,.14);
+  overflow:auto;
+}
+h1{
+  margin:0 0 16px;
+  font-size:28px;
+  color:#1f2937;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  background:white;
+}
+th,td{
+  border:1px solid #222;
+  padding:6px;
+  font-size:13px;
+  vertical-align:middle;
+  text-align:center;
+}
+th{
+  background:#f4f6f8;
+}
+input,select{
+  width:100%;
+  border:none;
+  outline:none;
+  background:transparent;
+  font-size:13px;
+  padding:4px;
+  box-sizing:border-box;
+  font-family:Arial,Helvetica,sans-serif;
+}
+td:nth-child(3) input,
+td:nth-child(4) input,
+td:nth-child(7) input{
+  text-align:left;
+}
+.note{
+  margin-top:16px;
+  font-size:12px;
+  color:#333;
+}
+.locked-note{
+  margin-bottom:12px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:#fff7ed;
+  color:#9a3412;
+  border:1px solid #fdba74;
+  display:none;
+  font-weight:700;
+}
+@media print{
+  .toolbar{display:none;}
+  body{background:white;}
+  .wash{display:none;}
+  .card{box-shadow:none;border-radius:0;}
+  .locked-note{display:none !important;}
+}
+</style>
+</head>
+
+<body>
+<div class="wash"></div>
+
+<main class="page">
+
+<div class="toolbar">
+  <button class="btn back" type="button" onclick="goBackSmart()">← Back</button>
+  <a href="dashboard.html" class="btn">🏠 Home</a>
+  <button onclick="window.print()" class="btn" type="button">🖨 Print</button>
+  <button id="editBtn" onclick="unlockForEdit()" class="btn edit" type="button" style="display:none;">✏ Edit</button>
+  <button onclick="clearForm()" class="btn" type="button">Clear</button>
+  <button onclick="saveForm()" class="btn save" type="button">Save</button>
+</div>
+
+<div class="card">
+
+<h1>Record 3b - Bottle Receipt</h1>
+
+<div id="lockedNote" class="locked-note">
+  This saved record is locked. Press Edit to make changes.
+</div>
+
+<table>
+  <colgroup>
+    <col style="width:12%">
+    <col style="width:8%">
+    <col style="width:20%">
+    <col style="width:22%">
+    <col style="width:14%">
+    <col style="width:16%">
+    <col style="width:8%">
+  </colgroup>
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Time</th>
+      <th>Name of Child</th>
+      <th>Visual check (labelling and packaging)</th>
+      <th>Number of bottles delivered</th>
+      <th>Time placed in refrigerator</th>
+      <th>Checked by</th>
+    </tr>
+  </thead>
+  <tbody id="rows"></tbody>
+</table>
+
+<div class="note">
+  Food Safety Program - Mother Duck Kallangur (1) January 2021 - Transport Amendment.docx<br>
+  Accredited Food Safety Program - Food Act 2006 (QLD) - LI/2021/0345. Accredited by Michael Taylor (Authorised Person Moreton Bay Regional Council) 23 March 2021
+</div>
+
+</div>
+</main>
+
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="firebase-loader.js"></script>
+<script src="archive_shared.js"></script>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const LOAD_ID = params.get("load") || "";
+const STORAGE_KEY = "bottle_receipt_v3";
+
+let loadedRecordId = LOAD_ID || "";
+
+function goBackSmart() {
+  const fromArchive = sessionStorage.getItem("mdk_from_archive");
+  if (fromArchive === "1") {
+    sessionStorage.removeItem("mdk_from_archive");
+    window.location.href = "archive.html";
+    return;
+  }
+  window.location.href = "nursery_new.html";
+}
+
+function todayDate(){
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2,"0");
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const yyyy = d.getFullYear();
+  return dd + "/" + mm + "/" + yyyy;
+}
+
+function currentTime(){
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2,"0");
+  const mm = String(d.getMinutes()).padStart(2,"0");
+  return hh + ":" + mm;
+}
+
+function buildRows(){
+  const tbody = document.getElementById("rows");
+  tbody.innerHTML = "";
+
+  for(let i = 0; i < 15; i++){
+    const tr = document.createElement("tr");
+
+    for(let c = 0; c < 7; c++){
+      const td = document.createElement("td");
+
+      if(c === 4){
+        const select = document.createElement("select");
+
+        const blank = document.createElement("option");
+        blank.value = "";
+        blank.textContent = "";
+        blank.selected = true;
+        select.appendChild(blank);
+
+        for(let n = 1; n <= 10; n++){
+          const opt = document.createElement("option");
+          opt.value = n;
+          opt.textContent = n;
+          select.appendChild(opt);
+        }
+
+        td.appendChild(select);
+      } else {
+        const input = document.createElement("input");
+        input.type = "text";
+
+        if(c === 0){
+          input.addEventListener("focus", function(){
+            if(!input.value && !input.disabled) input.value = todayDate();
+          });
+        }
+
+        if(c === 1 || c === 5){
+          input.addEventListener("focus", function(){
+            if(!input.value && !input.disabled) input.value = currentTime();
+          });
+        }
+
+        td.appendChild(input);
+      }
+
+      tr.appendChild(td);
+    }
+
+    tbody.appendChild(tr);
+  }
+}
+
+function getAllFields(){
+  return document.querySelectorAll("table input, table select");
+}
+
+function setLockedState(locked){
+  getAllFields().forEach(el => {
+    el.disabled = locked;
+  });
+  document.getElementById("editBtn").style.display = locked ? "inline-block" : "none";
+  document.getElementById("lockedNote").style.display = locked ? "block" : "none";
+}
+
+function unlockForEdit(){
+  setLockedState(false);
+}
+
+function getRowsAsObjects(){
+  const out = [];
+  document.querySelectorAll("#rows tr").forEach(tr => {
+    const fields = tr.querySelectorAll("input, select");
+    out.push({
+      date: fields[0]?.value?.trim() || "",
+      time: fields[1]?.value?.trim() || "",
+      childName: fields[2]?.value?.trim() || "",
+      visualCheck: fields[3]?.value?.trim() || "",
+      bottlesDelivered: fields[4]?.value?.trim() || "",
+      fridgeTime: fields[5]?.value?.trim() || "",
+      checkedBy: fields[6]?.value?.trim() || ""
+    });
+  });
+  return out;
+}
+
+function flattenRows(rows){
+  const values = [];
+  rows.forEach(row => {
+    values.push(
+      row.date || "",
+      row.time || "",
+      row.childName || "",
+      row.visualCheck || "",
+      row.bottlesDelivered || "",
+      row.fridgeTime || "",
+      row.checkedBy || ""
+    );
+  });
+  return values;
+}
+
+function applyFlatValues(values){
+  const fields = document.querySelectorAll("table input, table select");
+  fields.forEach((field, i) => {
+    field.value = values[i] || "";
+  });
+}
+
+async function saveForm(){
+  const data = [];
+  document.querySelectorAll("table input, table select").forEach(function(el){
+    data.push(el.value);
+  });
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  try{
+    if(window.MDKArchive){
+      const rows = getRowsAsObjects();
+      let recordDate = "";
+
+      for(const r of rows){
+        if(r.date){
+          recordDate = r.date;
+          break;
+        }
+      }
+
+      if(!recordDate){
+        recordDate = window.MDKArchive.formatDDMMYYYY(new Date());
+      }
+
+      const archivePayload = {
+        type: "Bottle Receipt",
+        site: "Nursery",
+        recordDate: recordDate,
+        fields: {
+          rows
+        }
+      };
+
+      if(loadedRecordId){
+        await window.MDKArchive.updateRecord(loadedRecordId, archivePayload);
+      } else {
+        loadedRecordId = await window.MDKArchive.saveRecord(archivePayload);
+      }
+    }
+
+    if (loadedRecordId) {
+      setLockedState(true);
+    }
+
+    alert("Saved");
+  } catch(err){
+    console.error("Archive save error:", err);
+    alert("Saved locally, but archive sync failed");
+  }
+}
+
+function loadForm(){
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(!saved) return;
+  applyFlatValues(JSON.parse(saved));
+}
+
+async function loadSavedArchiveRecord(){
+  if(!loadedRecordId || !window.MDKArchive) return;
+
+  try{
+    const record = await window.MDKArchive.loadRecord(loadedRecordId);
+    if(!record || !record.fields) return;
+
+    const rows = record.fields.rows || [];
+    const values = flattenRows(rows);
+
+    applyFlatValues(values);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+    setLockedState(true);
+  } catch(err){
+    console.error("Load archive record error:", err);
+    alert("Could not open saved archive record.");
+  }
+}
+
+function clearForm(){
+  if(!confirm("Clear form?")) return;
+
+  document.querySelectorAll("table input, table select").forEach(function(el){
+    el.value = "";
+  });
+
+  if (loadedRecordId) {
+    setLockedState(false);
+  } else {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+}
+
+buildRows();
+
+if (loadedRecordId) {
+  loadSavedArchiveRecord();
+} else {
+  loadForm();
+}
+</script>
+
+</body>
+</html>

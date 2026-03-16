@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Audit Archive</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:url("kitchen.jpg") center/cover no-repeat fixed;
+  min-height:100vh;
+}
+.wash{
+  position:fixed;
+  inset:0;
+  background:rgba(255,255,255,.42);
+  backdrop-filter:blur(4px);
+}
+.page{
+  position:relative;
+  z-index:1;
+  max-width:1200px;
+  margin:0 auto;
+  padding:24px;
+}
+.card{
+  background:rgba(255,255,255,.90);
+  backdrop-filter:blur(10px);
+  border-radius:26px;
+  padding:24px;
+  box-shadow:0 18px 40px rgba(0,0,0,.18);
+}
+h1{
+  margin:0 0 18px;
+  text-align:center;
+  font-size:34px;
+  color:#1f2937;
+}
+.topbar{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-bottom:20px;
+}
+.btn{
+  padding:12px 18px;
+  border-radius:16px;
+  background:#f8fafc;
+  color:#29405a;
+  border:1px solid #d6dde5;
+  text-decoration:none;
+  font-weight:700;
+  box-shadow:0 2px 8px rgba(0,0,0,.10);
+  cursor:pointer;
+}
+.filters{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  justify-content:center;
+  margin-bottom:20px;
+}
+select{
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid #cfd6dd;
+  font-size:15px;
+}
+.month-grid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:12px;
+  margin-bottom:20px;
+}
+.month-btn{
+  padding:16px;
+  border:none;
+  border-radius:18px;
+  background:#2c52a0;
+  color:white;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 10px 20px rgba(0,0,0,.16), 0 0 16px rgba(255,255,255,.22);
+}
+.month-btn.active{
+  background:#183e88;
+}
+.records{
+  display:grid;
+  gap:12px;
+}
+.record{
+  border:1px solid #d7dde4;
+  border-radius:16px;
+  padding:14px;
+  background:#fff;
+}
+.record strong{
+  display:block;
+  margin-bottom:6px;
+  font-size:22px;
+}
+.meta{
+  font-size:14px;
+  color:#555;
+  margin:2px 0;
+}
+.download{
+  margin-top:8px;
+  display:inline-block;
+  text-decoration:none;
+  font-weight:700;
+  color:#204a9b;
+}
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+.action-btn{
+  padding:10px 14px;
+  border:none;
+  border-radius:12px;
+  font-weight:700;
+  cursor:pointer;
+}
+.open-btn{
+  background:#204a9b;
+  color:#fff;
+}
+.delete-btn{
+  background:#b42318;
+  color:#fff;
+}
+.message{
+  font-size:16px;
+  color:#444;
+  padding:12px 4px;
+}
+@media (max-width:760px){
+  .month-grid{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+</head>
+<body>
+<div class="wash"></div>
+
+<main class="page">
+  <section class="card">
+    <h1>Audit Archive</h1>
+
+    <div class="topbar">
+      <button class="btn" type="button" onclick="goBackSmart()">← Back</button>
+      <a class="btn" href="dashboard.html">Home</a>
+      <a class="btn" href="kitchen.html">Kitchen</a>
+      <a class="btn" href="brewer_st.html">Brewer St</a>
+    </div>
+
+    <div class="filters">
+      <select id="yearSelect"></select>
+
+      <select id="siteSelect">
+        <option value="">All Sites</option>
+        <option value="Kitchen">Kitchen</option>
+        <option value="Brewer St">Brewer St</option>
+        <option value="Nursery">Nursery</option>
+        <option value="Home">Home</option>
+      </select>
+
+      <select id="typeSelect">
+        <option value="">All Record Types</option>
+        <option value="Incoming Goods">Incoming Goods</option>
+        <option value="Food Safety Program Review">Food Safety Program Review</option>
+        <option value="Cook Cool Reheat">Cook Cool Reheat</option>
+        <option value="Transfer Log">Transfer Log</option>
+        <option value="Appliance Temps">Appliance Temps</option>
+        <option value="Daily Cleaning">Daily Cleaning</option>
+        <option value="Weekly Cleaning">Weekly Cleaning</option>
+        <option value="Monthly Cleaning">Monthly Cleaning</option>
+        <option value="Equipment Log">Equipment Log</option>
+        <option value="Thermometer Calibration">Thermometer Calibration</option>
+        <option value="Customer Complaints">Customer Complaints</option>
+        <option value="Staff Training">Staff Training</option>
+        <option value="Staff Illness / Accident">Staff Illness / Accident</option>
+        <option value="Bottle Receipt">Bottle Receipt</option>
+        <option value="Nursery Temperature & Puree Reheat Log">Nursery Temperature & Puree Reheat Log</option>
+        <option value="Invoices">Invoices</option>
+        <option value="Pest Control">Pest Control</option>
+        <option value="Food Recall">Food Recall</option>
+        <option value="Heating Log">Heating Log</option>
+      </select>
+    </div>
+
+    <div class="month-grid" id="monthGrid"></div>
+    <div class="records" id="recordsWrap"></div>
+  </section>
+</main>
+
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="firebase-loader.js"></script>
+<script src="archive_shared.js"></script>
+
+<script>
+const monthGrid = document.getElementById("monthGrid");
+const recordsWrap = document.getElementById("recordsWrap");
+const yearSelect = document.getElementById("yearSelect");
+const siteSelect = document.getElementById("siteSelect");
+const typeSelect = document.getElementById("typeSelect");
+
+let activeMonth = new Date().getMonth() + 1;
+window.MDKArchiveCache = window.MDKArchiveCache || {};
+
+function goBackSmart() {
+  history.back();
+}
+
+function buildYears() {
+  const currentYear = new Date().getFullYear();
+  yearSelect.innerHTML = "";
+  for (let y = currentYear - 2; y <= currentYear + 1; y++) {
+    const opt = document.createElement("option");
+    opt.value = y;
+    opt.textContent = y;
+    if (y === currentYear) opt.selected = true;
+    yearSelect.appendChild(opt);
+  }
+}
+
+async function buildMonths() {
+  const counts = await window.MDKArchive.listMonthCounts(yearSelect.value);
+  monthGrid.innerHTML = "";
+
+  for (let i = 1; i <= 12; i++) {
+    const btn = document.createElement("button");
+    btn.className = "month-btn" + (i === activeMonth ? " active" : "");
+    btn.textContent = `${window.MDKArchive.monthName(i)} (${counts[i] || 0})`;
+    btn.onclick = async function() {
+      activeMonth = i;
+      await buildMonths();
+      await loadRecords();
+    };
+    monthGrid.appendChild(btn);
+  }
+}
+
+function getOpenPage(record) {
+  const pageMap = {
+    "Cook Cool Reheat": "record_5a_temp_control_log.html",
+    "Bottle Receipt": "bottle_receipt.html",
+    "Daily Cleaning": "cleaning_schedule_new.html",
+    "Weekly Cleaning": "cleaning_weekly_new.html",
+    "Monthly Cleaning": "cleaning_monthly_new.html",
+    "Appliance Temps": "appliance_temps.html",
+    "Heating Log": "record_5_heating_log.html",
+    "Thermometer Calibration": "thermometer_calibration.html",
+    "Pest Control": "pest_control.html",
+    "Customer Complaints": "customer_complaints.html",
+    "Staff Training": "staff_training.html",
+    "Food Recall": "food_recall.html",
+    "Equipment Log": "equipment_log.html",
+    "Food Safety Program Review": "record13.html",
+    "Nursery Temperature & Puree Reheat Log": "nursery_puree_log_new.html",
+    "Transfer Log": record.site === "Brewer St" ? "record_5b_transport_brewer_balanced.html" : "transport_log.html"
+  };
+  return pageMap[record.type] || "";
+}
+
+function openSavedRecord(id) {
+  const record = window.MDKArchiveCache[id];
+  if (!record) {
+    alert("Saved record not found.");
+    return;
+  }
+
+  const page = getOpenPage(record);
+  if (!page) {
+    alert("No page linked for this record type yet.");
+    return;
+  }
+
+  sessionStorage.setItem("mdk_from_archive", "1");
+
+  const siteParam = record.site ? `&site=${encodeURIComponent(record.site)}` : "";
+  window.location.href = `${page}?load=${encodeURIComponent(id)}${siteParam}`;
+}
+
+async function deleteSavedRecord(id) {
+  try {
+    const ok = await window.MDKArchive.deleteRecord(id);
+    if (ok) {
+      delete window.MDKArchiveCache[id];
+      await buildMonths();
+      await loadRecords();
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Could not delete record.");
+  }
+}
+
+async function loadRecords() {
+  recordsWrap.innerHTML = '<div class="message">Loading...</div>';
+
+  try {
+    const items = await window.MDKArchive.listRecords({
+      year: yearSelect.value,
+      monthNum: activeMonth,
+      site: siteSelect.value,
+      type: typeSelect.value
+    });
+
+    window.MDKArchiveCache = {};
+    items.forEach(item => {
+      window.MDKArchiveCache[item.id] = item;
+    });
+
+    if (!items.length) {
+      recordsWrap.innerHTML = '<div class="message">No saved records for this month.</div>';
+      return;
+    }
+
+    recordsWrap.innerHTML = "";
+
+    items.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "record";
+
+      card.innerHTML = `
+        <strong>${item.type || ""}</strong>
+        <div class="meta"><b>Site:</b> ${item.site || ""}</div>
+        <div class="meta"><b>Record Date:</b> ${item.recordDate || ""}</div>
+        <div class="meta"><b>Month:</b> ${item.monthName || ""} ${item.year || ""}</div>
+        <div class="meta"><b>Notes:</b> ${item.notes || ""}</div>
+        <div class="meta"><b>Fields saved:</b> ${item.fields ? Object.keys(item.fields).length : 0}</div>
+        <div class="actions">
+          <button class="action-btn open-btn" onclick="openSavedRecord('${item.id}')">Open</button>
+          <button class="action-btn delete-btn" onclick="deleteSavedRecord('${item.id}')">Delete</button>
+        </div>
+      `;
+
+      if (item.fileInfo && item.fileInfo.downloadURL) {
+        const link = document.createElement("a");
+        link.className = "download";
+        link.href = item.fileInfo.downloadURL;
+        link.target = "_blank";
+        link.textContent = `Open file: ${item.fileInfo.name || "attachment"}`;
+        card.appendChild(link);
+      }
+
+      recordsWrap.appendChild(card);
+    });
+  } catch (err) {
+    console.error(err);
+    recordsWrap.innerHTML = '<div class="message">Archive query error.</div>';
+  }
+}
+
+yearSelect.addEventListener("change", async function() {
+  await buildMonths();
+  await loadRecords();
+});
+siteSelect.addEventListener("change", loadRecords);
+typeSelect.addEventListener("change", loadRecords);
+
+buildYears();
+buildMonths().then(loadRecords);
+</script>
+</body>
+</html>
