@@ -134,15 +134,16 @@ th{
 
 <main class="page">
 
-<div class="toolbar">
-  <button class="btn back" type="button" onclick="goBackSmart()">← Back</button>
-  <a href="dashboard.html" class="btn">Home</a>
-  <button class="btn" type="button" onclick="window.print()">Print</button>
-  <button id="editBtn" class="btn edit" type="button" onclick="unlockForEdit()" style="display:none;">Edit</button>
-  <button class="btn" type="button" onclick="clearForm()">Clear</button>
-  <button class="btn" type="button" onclick="saveForm()">Save</button>
-</div>
-
+ <main class="page">
+    <div class="toolbar">
+      <button class="btn back" onclick="history.back()">← Back</button>
+      <a href="dashboard.html" class="btn">🏠 Home</a>
+      <button class="btn" onclick="window.print()" type="button">🖨 Print</button>
+      <button id="editBtn" class="btn edit" onclick="unlockForEdit()" type="button" style="display:none;">✏ Edit</button>
+      <button class="btn" onclick="clearForm()" type="button">🧹 Clear</button>
+      <button class="btn save" onclick="saveForm()" type="button">💾 Save</button>
+    </div>
+   
 <div class="card">
 
 <h1 id="pageTitle">Record 6b – Weekly Cleaning Schedule</h1>
