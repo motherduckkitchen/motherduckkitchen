@@ -47,91 +47,31 @@ body{
   color:#1f2937;
   box-shadow:0 4px 12px rgba(0,0,0,.15);
 }
-
 .btn:hover{
   transform:translateY(-1px);
 }
-
-/* BACK */
-.back{
-  background:#ffc107;
-  color:#4b0082;
-}
-
-.back:hover{
-  background:#e0a800;
-}
-
-/* SAVE */
-.save{
-  background:#1a73e8;
-  color:#ffffff;
-}
-
-.save:hover{
-  background:#1765cc;
-}
-
-/* EDIT */
-.edit{
-  background:#16a34a;
-  color:#ffffff;
-}
-  
-.btn:hover{
-  transform:translateY(-1px);
-}
-
 .back{
   background:#f5b400;
   color:#3b2b00;
 }
-
 .back:hover{
   background:#d79d00;
 }
-
-.save{
-  background:#1e88ff;
-  color:#ffffff;
-}
-
-.save:hover{
-  background:#1976d2;
-}
-
-.edit{
-  background:#16a34a;
-  color:#ffffff;
-}
-
-.edit:hover{
-  background:#15803d;
-}
-  
-.back{
-  background:#f5b400;
-  color:#3b2b00;
-}
-
-.back:hover{
-  background:#d79d00;
-}
-
 .save{
   background:#2c52a0;
   color:#fff;
 }
-
 .save:hover{
   background:#244996;
 }
-
 .edit{
   background:#16a34a;
   color:#fff;
 }
-  .card{
+.edit:hover{
+  background:#15803d;
+}
+.card{
   background:white;
   padding:20px;
   border-radius:20px;
@@ -207,33 +147,29 @@ th{
 <div class="wash"></div>
 
 <main class="page">
+  <div class="toolbar">
+    <button class="btn back" type="button" onclick="goBackSmart()">← Back</button>
+    <a href="dashboard.html" class="btn">🏠 Home</a>
+    <button class="btn" onclick="window.print()" type="button">🖨 Print</button>
+    <button id="editBtn" class="btn edit" onclick="unlockForEdit()" type="button" style="display:none;">✏ Edit</button>
+    <button class="btn" onclick="clearForm()" type="button">🧹 Clear</button>
+    <button class="btn save" onclick="saveForm()" type="button">💾 Save</button>
+  </div>
 
- <main class="page">
-    <div class="toolbar">
-      <button class="btn back" onclick="history.back()">← Back</button>
-      <a href="dashboard.html" class="btn">🏠 Home</a>
-      <button class="btn" onclick="window.print()" type="button">🖨 Print</button>
-      <button id="editBtn" class="btn edit" onclick="unlockForEdit()" type="button" style="display:none;">✏ Edit</button>
-      <button class="btn" onclick="clearForm()" type="button">🧹 Clear</button>
-      <button class="btn save" onclick="saveForm()" type="button">💾 Save</button>
+  <div class="card">
+    <h1 id="pageTitle">Record 6b – Weekly Cleaning Schedule</h1>
+
+    <div id="lockedNote" class="locked-note">
+      This saved record is locked. Press Edit to make changes.
     </div>
-   
-<div class="card">
 
-<h1 id="pageTitle">Record 6b – Weekly Cleaning Schedule</h1>
+    <div id="weeklyBlocks"></div>
 
-<div id="lockedNote" class="locked-note">
-  This saved record is locked. Press Edit to make changes.
-</div>
-
-<div id="weeklyBlocks"></div>
-
-<div class="footer">
-  Food Safety Program - Mother Duck Kallangur (1) January 2021 - Transport Amendment.docx<br>
-  Accredited Food Safety Program - Food Act 2006 (QLD) - LI/2021/0345. Accredited by Michael Taylor (Authorised Person Moreton Bay Regional Council) 23 March 2021
-</div>
-
-</div>
+    <div class="footer">
+      Food Safety Program - Mother Duck Kallangur (1) January 2021 - Transport Amendment.docx<br>
+      Accredited Food Safety Program - Food Act 2006 (QLD) - LI/2021/0345. Accredited by Michael Taylor (Authorised Person Moreton Bay Regional Council) 23 March 2021
+    </div>
+  </div>
 </main>
 
 <script src="firebase-config.js"></script>
