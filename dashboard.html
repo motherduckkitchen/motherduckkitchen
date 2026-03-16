@@ -1,92 +1,182 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Mother Duck Kitchen - Dashboard</title>
-  <link rel="stylesheet" href="site.css">
-  <style>
-    body { margin: 0; font-family: system-ui, sans-serif; }
-    .wrap { max-width: 1100px; margin: 40px auto; padding: 20px; }
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-    }
-    .card-link {
-      display: block;
-      background: white;
-      border-radius: 16px;
-      padding: 20px;
-      text-decoration: none;
-      color: #1746a2;
-      font-weight: 700;
-      box-shadow: 0 4px 14px rgba(0,0,0,.08);
-      border: 1px solid #e5e7eb;
-    }
-    .btn-small {
-      background: #1746a2;
-      color: white;
-      border: 0;
-      border-radius: 10px;
-      padding: 10px 16px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mother Duck Kitchen - Dashboard</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:url("kitchen.jpg") center/cover no-repeat fixed;
+  min-height:100vh;
+}
+
+.wash{
+  position:fixed;
+  inset:0;
+  background:rgba(255,255,255,.42);
+  backdrop-filter:blur(4px);
+}
+
+.page{
+  position:relative;
+  z-index:1;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+
+.wrap{
+  width:100%;
+  max-width:1100px;
+  text-align:center;
+}
+
+.logo{
+  width:90px;
+  display:block;
+  margin:0 auto 10px;
+}
+
+.site-title{
+  font-size:36px;
+  font-weight:800;
+  color:#fff;
+  text-shadow:0 3px 10px rgba(0,0,0,.30);
+  margin-bottom:20px;
+}
+
+.card{
+  max-width:960px;
+  margin:0 auto;
+  background:rgba(255,255,255,.88);
+  backdrop-filter:blur(10px);
+  border-radius:28px;
+  padding:34px;
+  box-shadow:
+    0 18px 45px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.5);
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:24px;
+}
+
+.logout{
+  background:#2c52a0;
+  color:#fff;
+  border:0;
+  border-radius:10px;
+  padding:10px 16px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+}
+
+.card-link{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:80px;
+  background:#2c52a0;
+  color:#fff;
+  text-decoration:none;
+  border-radius:20px;
+  font-weight:800;
+  font-size:17px;
+  text-align:center;
+  box-shadow:
+    0 10px 20px rgba(0,0,0,.18),
+    0 0 16px rgba(255,255,255,.24);
+  transition:.15s;
+}
+
+.card-link:hover{
+  transform:translateY(-2px);
+  background:#244996;
+}
+
+@media (max-width:760px){
+  .grid{
+    grid-template-columns:1fr;
+  }
+}
+</style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="topbar">
-      <h1>Mother Duck Kitchen Dashboard</h1>
-      <button class="btn-small" id="logoutBtn">Log out</button>
-    </div>
 
-    <div class="grid">
-      <a class="card-link" href="cleaning_schedule_new.html">Cleaning Schedule</a>
-      <a class="card-link" href="cleaning_weekly_new.html">Weekly Cleaning</a>
-      <a class="card-link" href="cleaning_monthly_new.html">Monthly Cleaning</a>
-      <a class="card-link" href="staff_illness.html">Staff Illness</a>
-      <a class="card-link" href="pest_control.html">Pest Control</a>
-      <a class="card-link" href="equipment_log.html">Equipment Log</a>
-      <a class="card-link" href="customer_complaints.html">Customer Complaints</a>
-      <a class="card-link" href="food_recall.html">Food Recall</a>
-      <a class="card-link" href="archive.html">Archive</a>
-      <a class="card-link" href="record_1_approved_suppliers.html">Approved Suppliers</a>
-      <a class="card-link" href="record_2_supplier_agreement.html">Supplier Agreement</a>
-      <a class="card-link" href="thermometer_calibration.html">Thermometer Calibration</a>
-    </div>
-  </div>
+<div class="wash"></div>
 
-  <script src="firebase-config.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script>
-    if (!firebase.apps.length) {
-      firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
-    }
+<main class="page">
 
-    const auth = firebase.auth();
+<div class="wrap">
 
-    auth.onAuthStateChanged(function(user) {
-      if (!user) {
-        location.replace("index.html");
-      }
-    });
+<img class="logo" src="logo.png">
+<div class="site-title">Mother Duck Kitchen Dashboard</div>
 
-    document.getElementById("logoutBtn").addEventListener("click", function () {
-      auth.signOut().then(function () {
-        location.replace("index.html");
-      });
-    });
-  </script>
+<section class="card">
+
+<div class="topbar">
+<div></div>
+<button class="logout" id="logoutBtn">Log out</button>
+</div>
+
+<div class="grid">
+
+<a class="card-link" href="cleaning_schedule_new.html">Cleaning Schedule</a>
+<a class="card-link" href="cleaning_weekly_new.html">Weekly Cleaning</a>
+<a class="card-link" href="cleaning_monthly_new.html">Monthly Cleaning</a>
+<a class="card-link" href="staff_illness.html">Staff Illness</a>
+<a class="card-link" href="pest_control.html">Pest Control</a>
+<a class="card-link" href="equipment_log.html">Equipment Log</a>
+<a class="card-link" href="customer_complaints.html">Customer Complaints</a>
+<a class="card-link" href="food_recall.html">Food Recall</a>
+<a class="card-link" href="archive.html">Archive</a>
+<a class="card-link" href="record_1_approved_suppliers.html">Approved Suppliers</a>
+<a class="card-link" href="record_2_supplier_agreement.html">Supplier Agreement</a>
+<a class="card-link" href="thermometer_calibration.html">Thermometer Calibration</a>
+
+</div>
+</section>
+</div>
+</main>
+
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<script>
+if (!firebase.apps.length) {
+  firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
+}
+
+const auth = firebase.auth();
+
+auth.onAuthStateChanged(function(user){
+  if(!user){
+    location.replace("index.html");
+  }
+});
+
+document.getElementById("logoutBtn").onclick=function(){
+  auth.signOut().then(function(){
+    location.replace("index.html");
+  });
+};
+</script>
+
 </body>
 </html>
