@@ -9,7 +9,11 @@
     body{
       margin:0;
       font-family:Arial,Helvetica,sans-serif;
-      background:url("kitchen%20(1).jpg") center/cover no-repeat fixed;
+      background-image:url("/motherduckkitchen/kitchen.jpg");
+      background-position:center;
+      background-size:cover;
+      background-repeat:no-repeat;
+      background-attachment:fixed;
       min-height:100vh;
     }
 
@@ -118,26 +122,11 @@
     .btn:hover{
       transform:translateY(-2px);
       background:#244996;
-      box-shadow:
-        0 16px 28px rgba(0,0,0,.22),
-        0 0 22px rgba(255,255,255,.34);
     }
 
     @media (max-width:760px){
       .menu-grid{
         grid-template-columns:1fr;
-      }
-
-      .site-title{
-        font-size:32px;
-      }
-
-      .subtitle{
-        font-size:18px;
-      }
-
-      .card{
-        padding:24px 20px 20px;
       }
     }
   </style>
