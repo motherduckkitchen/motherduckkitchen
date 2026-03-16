@@ -190,14 +190,19 @@ th{
 <main class="page">
 
  <main class="page">
-    <div class="toolbar">
-      <button class="btn back" onclick="history.back()">← Back</button>
-      <a href="dashboard.html" class="btn">🏠 Home</a>
-      <button class="btn" onclick="window.print()" type="button">🖨 Print</button>
-      <button id="editBtn" class="btn edit" onclick="unlockForEdit()" type="button" style="display:none;">✏ Edit</button>
-      <button class="btn" onclick="clearForm()" type="button">🧹 Clear</button>
-      <button class="btn save" onclick="saveForm()" type="button">💾 Save</button>
-    </div>
+   <div class="toolbar">
+
+<button class="mdk-btn--pill mdk-btn--back" onclick="goBackSmart()">← Back</button>
+
+<a href="dashboard.html" class="mdk-btn--pill">🏠 Home</a>
+
+<button class="mdk-btn--pill" onclick="window.print()">🖨 Print</button>
+
+<button class="mdk-btn--pill" onclick="clearForm()">🧹 Clear</button>
+
+<button class="mdk-btn--pill mdk-btn--primary" onclick="saveForm()">💾 Save</button>
+
+</div>
    <div class="card">
 
 <h1 id="pageTitle">Record 6c – Cleaning Schedule - Monthly</h1>
