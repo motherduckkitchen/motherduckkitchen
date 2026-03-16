@@ -67,6 +67,8 @@ body{
   justify-content:space-between;
   align-items:center;
   margin-bottom:24px;
+  gap:12px;
+  flex-wrap:wrap;
 }
 
 .logout{
@@ -77,6 +79,10 @@ body{
   padding:10px 16px;
   font-weight:700;
   cursor:pointer;
+}
+
+.logout:hover{
+  background:#244996;
 }
 
 .grid{
@@ -121,37 +127,35 @@ body{
 <div class="wash"></div>
 
 <main class="page">
+  <div class="wrap">
+    <img class="logo" src="logo.png" alt="Mother Duck Logo">
+    <div class="site-title">Mother Duck Kitchen Dashboard</div>
 
-<div class="wrap">
+    <section class="card">
+      <div class="topbar">
+        <div></div>
+        <button class="logout" id="logoutBtn">Log out</button>
+      </div>
 
-<img class="logo" src="logo.png">
-<div class="site-title">Mother Duck Kitchen Dashboard</div>
+      <div class="grid">
+        <a class="card-link" href="kitchen.html">Kitchen</a>
+        <a class="card-link" href="brewer_st.html">Brewer St</a>
 
-<section class="card">
-
-<div class="topbar">
-<div></div>
-<button class="logout" id="logoutBtn">Log out</button>
-</div>
-
-<div class="grid">
-
-<a class="card-link" href="cleaning_schedule_new.html">Cleaning Schedule</a>
-<a class="card-link" href="cleaning_weekly_new.html">Weekly Cleaning</a>
-<a class="card-link" href="cleaning_monthly_new.html">Monthly Cleaning</a>
-<a class="card-link" href="staff_illness.html">Staff Illness</a>
-<a class="card-link" href="pest_control.html">Pest Control</a>
-<a class="card-link" href="equipment_log.html">Equipment Log</a>
-<a class="card-link" href="customer_complaints.html">Customer Complaints</a>
-<a class="card-link" href="food_recall.html">Food Recall</a>
-<a class="card-link" href="archive.html">Archive</a>
-<a class="card-link" href="record_1_approved_suppliers.html">Approved Suppliers</a>
-<a class="card-link" href="record_2_supplier_agreement.html">Supplier Agreement</a>
-<a class="card-link" href="thermometer_calibration.html">Thermometer Calibration</a>
-
-</div>
-</section>
-</div>
+        <a class="card-link" href="cleaning_schedule_new.html">Cleaning Schedule</a>
+        <a class="card-link" href="cleaning_weekly_new.html">Weekly Cleaning</a>
+        <a class="card-link" href="cleaning_monthly_new.html">Monthly Cleaning</a>
+        <a class="card-link" href="staff_illness.html">Staff Illness</a>
+        <a class="card-link" href="pest_control.html">Pest Control</a>
+        <a class="card-link" href="equipment_log.html">Equipment Log</a>
+        <a class="card-link" href="customer_complaints.html">Customer Complaints</a>
+        <a class="card-link" href="food_recall.html">Food Recall</a>
+        <a class="card-link" href="archive.html">Archive</a>
+        <a class="card-link" href="record_1_approved_suppliers.html">Approved Suppliers</a>
+        <a class="card-link" href="record_2_supplier_agreement.html">Supplier Agreement</a>
+        <a class="card-link" href="thermometer_calibration.html">Thermometer Calibration</a>
+      </div>
+    </section>
+  </div>
 </main>
 
 <script src="firebase-config.js"></script>
@@ -171,12 +175,9 @@ auth.onAuthStateChanged(function(user){
   }
 });
 
-document.getElementById("logoutBtn").onclick=function(){
+document.getElementById("logoutBtn").onclick = function(){
   auth.signOut().then(function(){
     location.replace("index.html");
   });
 };
-</script>
-
-</body>
-</html>
+</script
