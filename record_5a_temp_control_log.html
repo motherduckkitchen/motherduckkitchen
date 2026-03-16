@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Record 5a - Temperature Control Log - Cook/Cool/Reheat & Serve (Kitchen)</title>
+  <title>Record 5a - Temperature Control Log - Cook/Cool/Reheat & Serve</title>
 
   <style>
     :root{
@@ -11,8 +11,7 @@
       --blue-dark:#244996;
       --yellow:#f5b400;
       --yellow-dark:#d79d00;
-      --line:#666;
-      --soft:#e9edf2;
+      --line:#4f4f4f;
     }
 
     @page{
@@ -91,7 +90,7 @@
     }
 
     .sheet{
-      background:rgba(255,255,255,.92);
+      background:rgba(255,255,255,.94);
       border-radius:22px;
       padding:18px;
       box-shadow:0 14px 34px rgba(0,0,0,.16);
@@ -99,9 +98,10 @@
     }
 
     h1{
-      margin:0 0 14px;
+      margin:0 0 10px;
       font-size:22px;
       line-height:1.2;
+      font-weight:700;
     }
 
     table{
@@ -109,7 +109,7 @@
       border-collapse:collapse;
       table-layout:fixed;
       background:#fff;
-      margin-bottom:14px;
+      margin-bottom:12px;
     }
 
     th,td{
@@ -120,71 +120,77 @@
     }
 
     th{
-      background:var(--soft);
-      font-size:12px;
+      background:#f7f7f7;
+      font-size:11px;
       line-height:1.15;
       padding:6px 4px;
       font-weight:700;
     }
 
     td{
-      height:30px;
+      height:26px;
+      background:rgba(255,255,255,.75);
     }
 
-    input,select,textarea{
+    .left{
+      text-align:left;
+    }
+
+    input,select{
       width:100%;
+      height:26px;
       box-sizing:border-box;
       border:0;
       outline:none;
       background:transparent;
-      font:inherit;
+      font:12px Arial,Helvetica,sans-serif;
       color:inherit;
+      padding:3px 5px;
     }
 
-    input,select{
-      height:30px;
-      padding:4px 6px;
-    }
-
-    textarea{
-      min-height:90px;
-      border:1px solid #cfd6dd;
-      border-radius:12px;
-      background:rgba(255,255,255,.95);
-      padding:10px 12px;
-      resize:vertical;
-    }
-
-    .left{text-align:left}
-    .center{text-align:center}
-    .init{
+    .initial{
       text-transform:uppercase;
       text-align:center;
-      max-width:60px;
-      margin:0 auto;
     }
 
-    .note{
+    .notes{
       font-size:12px;
-      line-height:1.45;
-      margin-top:10px;
+      line-height:1.5;
+      margin-top:8px;
     }
 
-    .lines{
-      margin-top:10px;
-      margin-bottom:10px;
+    .corrective-label{
+      font-size:12px;
+      font-weight:700;
+      margin-top:16px;
+      margin-bottom:6px;
     }
 
-    .line{
-      border-bottom:2px solid #666;
-      height:24px;
-      margin-bottom:4px;
+    .corrective-box{
+      width:100%;
+      min-height:100px;
+      box-sizing:border-box;
+      border:1px solid transparent;
+      outline:none;
+      resize:vertical;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          transparent 0,
+          transparent 25px,
+          #666 26px,
+          transparent 27px
+        );
+      line-height:26px;
+      padding:0 6px;
+      font:12px/26px Arial,Helvetica,sans-serif;
+      color:#111827;
     }
 
     .tiny{
       font-size:11px;
       color:#374151;
-      margin-top:12px;
+      margin-top:14px;
       line-height:1.45;
     }
 
@@ -198,6 +204,16 @@
         padding:0;
         background:#fff;
       }
+      .corrective-box{
+        background:
+          repeating-linear-gradient(
+            to bottom,
+            transparent 0,
+            transparent 25px,
+            #666 26px,
+            transparent 27px
+          );
+      }
     }
   </style>
 </head>
@@ -207,62 +223,76 @@
   <div class="wrap">
     <div class="topbar">
       <a class="btn btn-back" href="kitchen.html">← Back</a>
-      <a class="btn" href="dashboard.html">🏠 Home</a>
-      <button class="btn" type="button" onclick="window.print()">🖨️ Print</button>
-      <button class="btn" type="button" onclick="clearForm()">🧹 Clear</button>
-      <button class="btn btn-primary" type="button" onclick="saveForm()">💾 Save</button>
-      <button class="btn btn-primary" type="button" onclick="archiveForm()">🗂️ Archive</button>
+      <a class="btn btn-primary" href="dashboard.html">Home</a>
+      <button class="btn btn-primary" type="button" onclick="window.print()">Print</button>
+      <button class="btn btn-primary" type="button" onclick="clearForm()">Clear</button>
+      <button class="btn btn-primary" type="button" onclick="saveForm()">Save</button>
+      <button class="btn btn-primary" type="button" onclick="archiveForm()">Archive</button>
     </div>
 
     <div class="sheet">
-      <h1>Record 5a - Temperature Control Log - Cook/Cool/Reheat &amp; Serve (Kitchen)</h1>
+      <h1>Record 5a - Temperature Control Log - Cook/Cool/Reheat &amp; Serve</h1>
 
       <table>
         <colgroup>
           <col style="width:11%">
           <col style="width:14%">
-          <col style="width:9%">
-          <col style="width:7%">
-          <col style="width:7%">
-          <col style="width:8%">
-          <col style="width:8%">
-          <col style="width:8%">
-          <col style="width:8%">
+          <col style="width:6.5%">
           <col style="width:6%">
+          <col style="width:6%">
+          <col style="width:6%">
+          <col style="width:5.5%">
+          <col style="width:5.5%">
+          <col style="width:4.5%">
+          <col style="width:5%">
+          <col style="width:4.5%">
+          <col style="width:5.5%">
+          <col style="width:4.5%">
+          <col style="width:6%">
+          <col style="width:5%">
         </colgroup>
         <thead>
           <tr>
-            <th>Date Produced / Batch No</th>
-            <th>Item Description</th>
-            <th>Process<br>Cook / Cool / Reheat</th>
-            <th>Start Time</th>
-            <th>Finish Time</th>
-            <th>Temp / Time 1<br>(60°C)</th>
-            <th>Temp / Time 2<br>(21°C)</th>
-            <th>Temp / Time 3<br>(5°C)</th>
-            <th>Serve Temp °C</th>
+            <th rowspan="2" class="left">Date Produced/Batc<br>h No</th>
+            <th rowspan="2" class="left">Item<br>Description</th>
+            <th rowspan="2">Process<br><br>Cook<br>(Ck)<br><br>Cool<br>(Cl)<br><br>Reheat<br>(Rh)</th>
+            <th colspan="2">Cook 75°C</th>
+            <th colspan="2">Reheat 60°C</th>
+            <th colspan="6">Cool 60-21°C in 2 hrs&nbsp;&nbsp; 21-5°C in 4 hrs</th>
+            <th colspan="2">Serve</th>
+          </tr>
+          <tr>
+            <th>Start<br>Time</th>
+            <th>Finish<br>Time</th>
+            <th>Temp<br>°C</th>
+            <th>Time 1</th>
+            <th>Temp °C<br>(60°)</th>
+            <th>Tim<br>e 2</th>
+            <th>Temp °C<br>(21°)</th>
+            <th>Tim<br>e 3</th>
+            <th>Temp °C<br>(5°)</th>
+            <th>Tim<br>e</th>
+            <th>Temp<br>°C</th>
             <th>Initial</th>
           </tr>
         </thead>
         <tbody id="rows"></tbody>
       </table>
 
-      <div class="note">
-        <b>Processes:</b> Cook all potentially hazardous food to at least 75°C.<br>
-        Reheat cooled potentially hazardous food that is to be served hot to at least 60°C.<br><br>
-        Cooked potentially hazardous food that is being cooled for later use must be cooled from:<br>
-        60°C to 21°C within the first 2 hours. It must then be cooled from<br>
-        21°C to below 5°C within the next 4 hours (6 hours in all)
+      <div class="notes">
+        <b>Processes:</b>
+        <span style="margin-left:18px;">Cook all potentially hazardous Food To at least 75°C</span><br>
+        <span style="margin-left:146px;">Reheat cooled potentially hazardous food that is to be served hot to at least 60°C</span><br><br>
+
+        <span style="margin-left:146px;">Cooked Potentially Hazardous food that is being cooled for later use must be cooled</span><br>
+        <span style="margin-left:146px;">from:</span><br>
+        <span style="margin-left:146px;">60°C to 21°C within the first 2 hours. It must then be cooled</span><br>
+        <span style="margin-left:146px;">from</span><br>
+        <span style="margin-left:146px;">21°C to below 5°C within the next 4 hours ( 6 hours in all)</span>
       </div>
 
-      <div class="note" style="margin-top:14px;"><b>CORRECTIVE ACTIONS:</b></div>
-      <div class="lines">
-        <div class="line"></div>
-        <div class="line"></div>
-        <div class="line"></div>
-      </div>
-
-      <textarea id="notes" placeholder="Describe corrective actions, supervisor notified, and outcome."></textarea>
+      <div class="corrective-label">CORRECTIVE ACTIONS:</div>
+      <textarea id="correctiveActions" class="corrective-box" placeholder=""></textarea>
 
       <div class="tiny">
         Food Safety Program - Mother Duck Kallangur (1) January 2021 - Transport Amendment.docx<br>
@@ -290,23 +320,28 @@
     function makeRow(){
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td><input class="center" data-autodate placeholder="dd/mm/yyyy"></td>
-        <td><input class="left" placeholder="Item"></td>
+        <td><input data-autodate></td>
+        <td><input class="left"></td>
         <td>
           <select>
             <option value=""></option>
-            <option>Cook</option>
-            <option>Cool</option>
-            <option>Reheat</option>
+            <option>Ck</option>
+            <option>Cl</option>
+            <option>Rh</option>
           </select>
         </td>
-        <td><input class="center" data-autotime placeholder="HH:MM"></td>
-        <td><input class="center" data-autotime placeholder="HH:MM"></td>
-        <td><input class="center" placeholder="°C / time"></td>
-        <td><input class="center" placeholder="°C / time"></td>
-        <td><input class="center" placeholder="°C / time"></td>
-        <td><input class="center" placeholder="°C"></td>
-        <td><input class="init center" maxlength="3"></td>
+        <td><input data-autotime></td>
+        <td><input data-autotime></td>
+        <td><input></td>
+        <td><input data-autotime></td>
+        <td><input></td>
+        <td><input data-autotime></td>
+        <td><input></td>
+        <td><input data-autotime></td>
+        <td><input></td>
+        <td><input data-autotime></td>
+        <td><input></td>
+        <td><input class="initial" maxlength="3"></td>
       `;
       return tr;
     }
@@ -314,7 +349,7 @@
     function buildRows(){
       const tbody = document.getElementById("rows");
       tbody.innerHTML = "";
-      for(let i=0;i<10;i++){
+      for(let i=0;i<9;i++){
         tbody.appendChild(makeRow());
       }
 
@@ -339,7 +374,7 @@
       return {
         savedAt: new Date().toISOString(),
         rows,
-        notes: document.getElementById("notes").value
+        correctiveActions: document.getElementById("correctiveActions").value
       };
     }
 
@@ -353,7 +388,7 @@
           if(els[j]) els[j].value = val || "";
         });
       });
-      document.getElementById("notes").value = data.notes || "";
+      document.getElementById("correctiveActions").value = data.correctiveActions || "";
     }
 
     function saveForm(){
@@ -378,13 +413,13 @@
           el.value = "";
         }
       });
-      document.getElementById("notes").value = "";
+      document.getElementById("correctiveActions").value = "";
       localStorage.removeItem(FORM_KEY);
     }
 
     function archiveForm(){
       const data = getFormData();
-      const hasContent = data.rows.some(row => row.some(v => String(v).trim() !== "")) || data.notes.trim() !== "";
+      const hasContent = data.rows.some(row => row.some(v => String(v).trim() !== "")) || data.correctiveActions.trim() !== "";
 
       if(!hasContent){
         alert("Nothing to archive yet.");
@@ -417,3 +452,4 @@
   </script>
 </body>
 </html>
+no it like in second pic make it like that but working  fix correct action writing lines visible better too  maybe little less blur background and old title size
