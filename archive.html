@@ -156,6 +156,7 @@ select{
     <h1>Audit Archive</h1>
 
     <div class="topbar">
+      <button class="btn" type="button" onclick="goBackSmart()">← Back</button>
       <a class="btn" href="dashboard.html">Home</a>
       <a class="btn" href="kitchen.html">Kitchen</a>
       <a class="btn" href="brewer_st.html">Brewer St</a>
@@ -175,6 +176,7 @@ select{
       <select id="typeSelect">
         <option value="">All Record Types</option>
         <option value="Incoming Goods">Incoming Goods</option>
+        <option value="Approved Suppliers List">Approved Suppliers List</option>
         <option value="Food Safety Program Review">Food Safety Program Review</option>
         <option value="Cook Cool Reheat">Cook Cool Reheat</option>
         <option value="Transfer Log">Transfer Log</option>
@@ -219,6 +221,10 @@ const typeSelect = document.getElementById("typeSelect");
 let activeMonth = new Date().getMonth() + 1;
 window.MDKArchiveCache = window.MDKArchiveCache || {};
 
+function goBackSmart() {
+  window.location.href = "dashboard.html";
+}
+
 function buildYears() {
   const currentYear = new Date().getFullYear();
   yearSelect.innerHTML = "";
@@ -261,11 +267,16 @@ function getOpenPage(record) {
     "Pest Control": "pest_control.html",
     "Customer Complaints": "customer_complaints.html",
     "Staff Training": "staff_training.html",
+    "Staff Illness / Accident": "staff_illness.html",
     "Food Recall": "food_recall.html",
     "Equipment Log": "equipment_log.html",
     "Food Safety Program Review": "record13.html",
+    "Approved Suppliers List": "record1_suppliers.html",
     "Nursery Temperature & Puree Reheat Log": "nursery_puree_log_new.html",
-    "Transfer Log": record.site === "Brewer St" ? "record_5b_transport_brewer_balanced.html" : "transport_log.html"
+    "Invoices": "invoices.html",
+    "Transfer Log": record.site === "Brewer St"
+      ? "record_5b_transport_brewer.html"
+      : "transport_log.html"
   };
   return pageMap[record.type] || "";
 }
