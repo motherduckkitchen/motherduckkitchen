@@ -6,21 +6,120 @@
   <title>Mother Duck Kitchen - Sign in</title>
   <link rel="stylesheet" href="site.css">
   <style>
-    .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;z-index:1}
-    .login-card{width:100%;max-width:460px}
-    .login-card img{width:110px;display:block;margin:0 auto 10px}
-    .status{margin-top:12px;min-height:24px;color:#b42318;font-weight:700;text-align:center;white-space:pre-wrap}
+    html, body{
+      min-height:100%;
+      margin:0;
+    }
+
+    body{
+      font-family:Arial,Helvetica,sans-serif;
+      background:url("kitchen.jpg") center center / cover no-repeat fixed;
+      position:relative;
+    }
+
+    .wash{
+      position:fixed;
+      inset:0;
+      background:rgba(255,255,255,.42);
+      backdrop-filter:blur(4px);
+      z-index:0;
+    }
+
+    .login-wrap{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      position:relative;
+      z-index:1;
+    }
+
+    .login-card{
+      width:100%;
+      max-width:460px;
+      background:rgba(255,255,255,.90);
+      backdrop-filter:blur(10px);
+      border-radius:28px;
+      padding:30px 24px;
+      box-shadow:0 18px 45px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.5);
+    }
+
+    .login-card img{
+      width:110px;
+      display:block;
+      margin:0 auto 10px;
+    }
+
+    .login-title{
+      text-align:center;
+      margin:0 0 18px;
+      font-size:28px;
+      font-weight:800;
+      color:#1f2937;
+    }
+
+    .input{
+      width:100%;
+      box-sizing:border-box;
+      margin-bottom:12px;
+      padding:14px 16px;
+      border:1px solid #cfd6dd;
+      border-radius:16px;
+      font-size:16px;
+      background:#fff;
+      outline:none;
+    }
+
+    .input:focus{
+      border-color:#2c52a0;
+    }
+
+    .btn{
+      width:100%;
+      border:none;
+      border-radius:18px;
+      padding:16px 18px;
+      background:#2c52a0;
+      color:#fff;
+      font-size:18px;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:0 10px 20px rgba(0,0,0,.18);
+    }
+
+    .btn:hover{
+      background:#244996;
+    }
+
+    .btn:disabled{
+      opacity:.7;
+      cursor:not-allowed;
+    }
+
+    .status{
+      margin-top:12px;
+      min-height:24px;
+      color:#b42318;
+      font-weight:700;
+      text-align:center;
+      white-space:pre-wrap;
+    }
   </style>
 </head>
 <body>
   <div class="wash"></div>
+
   <main class="login-wrap">
-    <section class="card-white login-card">
+    <section class="login-card">
       <img src="logo.png" alt="Mother Duck Logo">
-      <h2 style="text-align:center">Sign in</h2>
+      <h2 class="login-title">Sign in</h2>
+
       <input class="input" type="email" id="email" placeholder="Email" autocomplete="username">
       <input class="input" type="password" id="password" placeholder="Password" autocomplete="current-password">
+
       <button class="btn" id="loginBtn" type="button">Log in</button>
+
       <div class="status" id="status"></div>
     </section>
   </main>
@@ -29,7 +128,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script>
-
     const statusBox = document.getElementById("status");
     const loginBtn = document.getElementById("loginBtn");
     const emailEl = document.getElementById("email");
