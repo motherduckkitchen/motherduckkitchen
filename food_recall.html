@@ -146,7 +146,7 @@
 
   <main class="page">
     <div class="toolbar">
-      <button class="btn back" onclick="history.back()">← Back</button>
+      <button class="btn back" type="button" onclick="goBackSmart()">← Back</button>
       <a href="dashboard.html" class="btn">🏠 Home</a>
       <button class="btn" onclick="window.print()" type="button">🖨 Print</button>
       <button id="editBtn" class="btn edit" onclick="unlockForEdit()" type="button" style="display:none;">✏ Edit</button>
@@ -208,11 +208,20 @@
 
     let loadedRecordId = LOAD_ID || "";
 
-    document.getElementById("backBtn").href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
     document.getElementById("pageTitle").textContent =
       SITE === "Brewer St"
         ? "Record 9 – Food Recall (Brewer St)"
         : "Record 9 – Food Recall (Kitchen)";
+
+    function goBackSmart() {
+      const fromArchive = sessionStorage.getItem("mdk_from_archive");
+      if (fromArchive === "1") {
+        sessionStorage.removeItem("mdk_from_archive");
+        window.location.href = "audit_archive.html";
+        return;
+      }
+      window.location.href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
+    }
 
     function buildRows() {
       const tbody = document.getElementById("rows");
@@ -239,19 +248,16 @@
       return document.querySelectorAll("#rows input");
     }
 
-    function lockAllFields() {
+    function setLockedState(locked) {
       getAllFields().forEach(el => {
-        el.disabled = true;
+        el.disabled = locked;
       });
-      document.getElementById("editBtn").style.display = "inline-flex";
-      document.getElementById("lockedNote").style.display = "block";
+      document.getElementById("editBtn").style.display = locked ? "inline-flex" : "none";
+      document.getElementById("lockedNote").style.display = locked ? "block" : "none";
     }
 
     function unlockForEdit() {
-      getAllFields().forEach(el => {
-        el.disabled = false;
-      });
-      document.getElementById("lockedNote").style.display = "none";
+      setLockedState(false);
     }
 
     function parseAnyDate(text) {
@@ -368,7 +374,7 @@
         }
 
         if (loadedRecordId) {
-          lockAllFields();
+          setLockedState(true);
         }
 
         alert("Saved");
@@ -403,7 +409,7 @@
           el.value = values[i] || "";
         });
 
-        lockAllFields();
+        setLockedState(true);
       } catch (err) {
         console.error("Load archive record error:", err);
         alert("Could not open saved archive record.");
@@ -414,13 +420,11 @@
       if (!confirm("Clear form?")) return;
       document.querySelectorAll("#rows input").forEach(function(el) {
         el.value = "";
-        el.disabled = false;
       });
 
-      document.getElementById("lockedNote").style.display = "none";
-      document.getElementById("editBtn").style.display = loadedRecordId ? "inline-flex" : "none";
-
-      if (!loadedRecordId) {
+      if (loadedRecordId) {
+        setLockedState(false);
+      } else {
         localStorage.removeItem(STORAGE_KEY);
       }
     }
