@@ -12,6 +12,8 @@
       --yellow:#f5b400;
       --yellow-dark:#d79d00;
       --line:#4f4f4f;
+      --green:#16a34a;
+      --green-dark:#15803d;
     }
 
     @page{
@@ -89,6 +91,15 @@
       background:var(--blue-dark);
     }
 
+    .btn-edit{
+      background:var(--green);
+      color:#fff;
+    }
+
+    .btn-edit:hover{
+      background:var(--green-dark);
+    }
+
     .sheet{
       background:rgba(255,255,255,.94);
       border-radius:22px;
@@ -102,6 +113,18 @@
       font-size:22px;
       line-height:1.2;
       font-weight:700;
+    }
+
+    .locked-note{
+      margin-bottom:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      background:#fff7ed;
+      color:#9a3412;
+      border:1px solid #fdba74;
+      display:none;
+      font-weight:700;
+      font-size:13px;
     }
 
     table{
@@ -214,6 +237,7 @@
             transparent 27px
           );
       }
+      .locked-note{display:none!important}
     }
   </style>
 </head>
@@ -222,16 +246,20 @@
 
   <div class="wrap">
     <div class="topbar">
-      <a class="btn btn-back" href="kitchen.html">← Back</a>
+      <button class="btn btn-back" type="button" onclick="goBackSmart()">← Back</button>
       <a class="btn btn-primary" href="dashboard.html">Home</a>
       <button class="btn btn-primary" type="button" onclick="window.print()">Print</button>
+      <button id="editBtn" class="btn btn-edit" type="button" onclick="unlockForEdit()" style="display:none;">Edit</button>
       <button class="btn btn-primary" type="button" onclick="clearForm()">Clear</button>
       <button class="btn btn-primary" type="button" onclick="saveForm()">Save</button>
-      <button class="btn btn-primary" type="button" onclick="archiveForm()">Archive</button>
     </div>
 
     <div class="sheet">
-      <h1>Record 5a - Temperature Control Log - Cook/Cool/Reheat &amp; Serve</h1>
+      <h1 id="pageTitle">Record 5a - Temperature Control Log - Cook/Cool/Reheat &amp; Serve</h1>
+
+      <div id="lockedNote" class="locked-note">
+        This saved record is locked. Press Edit to make changes.
+      </div>
 
       <table>
         <colgroup>
@@ -301,9 +329,39 @@
     </div>
   </div>
 
+  <script src="firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <script src="firebase-loader.js"></script>
+  <script src="archive_shared.js"></script>
+
   <script>
-    const FORM_KEY = "mdk_record5a_kitchen_current";
-    const ARCHIVE_KEY = "mdk_record5a_kitchen_archive";
+    const params = new URLSearchParams(window.location.search);
+    const SITE = params.get("site") || "Kitchen";
+    const LOAD_ID = params.get("load") || "";
+
+    const STORAGE_KEY = SITE === "Brewer St"
+      ? "mdk_record5a_brewer_current_v2"
+      : "mdk_record5a_kitchen_current_v2";
+
+    let loadedRecordId = LOAD_ID || "";
+
+    document.getElementById("pageTitle").textContent =
+      SITE === "Brewer St"
+        ? "Record 5a - Temperature Control Log - Cook/Cool/Reheat & Serve (Brewer St)"
+        : "Record 5a - Temperature Control Log - Cook/Cool/Reheat & Serve (Kitchen)";
+
+    function goBackSmart() {
+      const fromArchive = sessionStorage.getItem("mdk_from_archive");
+      if (fromArchive === "1") {
+        sessionStorage.removeItem("mdk_from_archive");
+        window.location.href = "audit_archive.html";
+        return;
+      }
+      window.location.href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
+    }
 
     function pad(n){
       return String(n).padStart(2,"0");
@@ -355,57 +413,169 @@
 
       document.querySelectorAll("[data-autodate]").forEach(el=>{
         el.addEventListener("focus", ()=>{
-          if(!el.value) el.value = fmtDate();
+          if(!el.value && !el.disabled) el.value = fmtDate();
         });
       });
 
       document.querySelectorAll("[data-autotime]").forEach(el=>{
         el.addEventListener("focus", ()=>{
-          if(!el.value) el.value = fmtTime();
+          if(!el.value && !el.disabled) el.value = fmtTime();
         });
       });
     }
 
-    function getFormData(){
-      const rows = Array.from(document.querySelectorAll("#rows tr")).map(tr =>
-        Array.from(tr.querySelectorAll("input,select")).map(el => el.value)
-      );
+    function getAllFields(){
+      return document.querySelectorAll("#rows input, #rows select, #correctiveActions");
+    }
 
-      return {
-        savedAt: new Date().toISOString(),
-        rows,
-        correctiveActions: document.getElementById("correctiveActions").value
+    function setLockedState(locked){
+      getAllFields().forEach(el => {
+        el.disabled = locked;
+      });
+      document.getElementById("editBtn").style.display = locked ? "inline-flex" : "none";
+      document.getElementById("lockedNote").style.display = locked ? "block" : "none";
+    }
+
+    function unlockForEdit(){
+      setLockedState(false);
+    }
+
+    function getRowsAsObjects(){
+      return Array.from(document.querySelectorAll("#rows tr")).map(tr => {
+        const els = tr.querySelectorAll("input,select");
+        return {
+          dateProducedBatchNo: els[0]?.value?.trim() || "",
+          itemDescription: els[1]?.value?.trim() || "",
+          process: els[2]?.value?.trim() || "",
+          cookStartTime: els[3]?.value?.trim() || "",
+          cookFinishTime: els[4]?.value?.trim() || "",
+          reheatTemp: els[5]?.value?.trim() || "",
+          reheatTime1: els[6]?.value?.trim() || "",
+          coolTemp60: els[7]?.value?.trim() || "",
+          coolTime2: els[8]?.value?.trim() || "",
+          coolTemp21: els[9]?.value?.trim() || "",
+          coolTime3: els[10]?.value?.trim() || "",
+          coolTemp5: els[11]?.value?.trim() || "",
+          serveTime: els[12]?.value?.trim() || "",
+          serveTemp: els[13]?.value?.trim() || "",
+          initial: els[14]?.value?.trim() || ""
+        };
+      });
+    }
+
+    function flattenRows(rows){
+      const values = [];
+      rows.forEach(row => {
+        values.push(
+          row.dateProducedBatchNo || "",
+          row.itemDescription || "",
+          row.process || "",
+          row.cookStartTime || "",
+          row.cookFinishTime || "",
+          row.reheatTemp || "",
+          row.reheatTime1 || "",
+          row.coolTemp60 || "",
+          row.coolTime2 || "",
+          row.coolTemp21 || "",
+          row.coolTime3 || "",
+          row.coolTemp5 || "",
+          row.serveTime || "",
+          row.serveTemp || "",
+          row.initial || ""
+        );
+      });
+      return values;
+    }
+
+    function applyFlatValues(values){
+      const els = document.querySelectorAll("#rows input, #rows select");
+      els.forEach((el, i) => {
+        el.value = values[i] || "";
+      });
+    }
+
+    async function saveForm(){
+      const data = {
+        rows: getRowsAsObjects(),
+        correctiveActions: document.getElementById("correctiveActions").value || ""
       };
-    }
 
-    function setFormData(data){
-      if(!data) return;
-      const trs = document.querySelectorAll("#rows tr");
-      (data.rows || []).forEach((row,i)=>{
-        if(!trs[i]) return;
-        const els = trs[i].querySelectorAll("input,select");
-        row.forEach((val,j)=>{
-          if(els[j]) els[j].value = val || "";
-        });
-      });
-      document.getElementById("correctiveActions").value = data.correctiveActions || "";
-    }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 
-    function saveForm(){
-      localStorage.setItem(FORM_KEY, JSON.stringify(getFormData()));
-      alert("Saved.");
+      try {
+        if (window.MDKArchive) {
+          let recordDate = "";
+          for (const row of data.rows) {
+            if (row.dateProducedBatchNo) {
+              recordDate = row.dateProducedBatchNo;
+              break;
+            }
+          }
+
+          if (!recordDate) {
+            recordDate = window.MDKArchive.formatDDMMYYYY(new Date());
+          }
+
+          const archivePayload = {
+            type: "Cook Cool Reheat",
+            site: SITE,
+            recordDate: recordDate,
+            fields: data
+          };
+
+          if (loadedRecordId) {
+            await window.MDKArchive.updateRecord(loadedRecordId, archivePayload);
+          } else {
+            loadedRecordId = await window.MDKArchive.saveRecord(archivePayload);
+          }
+        }
+
+        if (loadedRecordId) {
+          setLockedState(true);
+        }
+
+        alert("Saved.");
+      } catch (err) {
+        console.error("Archive save error:", err);
+        alert("Saved locally, but archive sync failed");
+      }
     }
 
     function loadForm(){
-      const raw = localStorage.getItem(FORM_KEY);
+      const raw = localStorage.getItem(STORAGE_KEY);
       if(!raw) return;
       try{
-        setFormData(JSON.parse(raw));
+        const data = JSON.parse(raw);
+        applyFlatValues(flattenRows(data.rows || []));
+        document.getElementById("correctiveActions").value = data.correctiveActions || "";
       }catch(e){}
+    }
+
+    async function loadSavedArchiveRecord(){
+      if(!loadedRecordId || !window.MDKArchive) return;
+
+      try{
+        const record = await window.MDKArchive.loadRecord(loadedRecordId);
+        if(!record || !record.fields) return;
+
+        applyFlatValues(flattenRows(record.fields.rows || []));
+        document.getElementById("correctiveActions").value = record.fields.correctiveActions || "";
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          rows: record.fields.rows || [],
+          correctiveActions: record.fields.correctiveActions || ""
+        }));
+
+        setLockedState(true);
+      }catch(err){
+        console.error("Load archive record error:", err);
+        alert("Could not open saved archive record.");
+      }
     }
 
     function clearForm(){
       if(!confirm("Clear this form?")) return;
+
       document.querySelectorAll("#rows input, #rows select").forEach(el=>{
         if(el.tagName === "SELECT"){
           el.selectedIndex = 0;
@@ -414,42 +584,21 @@
         }
       });
       document.getElementById("correctiveActions").value = "";
-      localStorage.removeItem(FORM_KEY);
-    }
 
-    function archiveForm(){
-      const data = getFormData();
-      const hasContent = data.rows.some(row => row.some(v => String(v).trim() !== "")) || data.correctiveActions.trim() !== "";
-
-      if(!hasContent){
-        alert("Nothing to archive yet.");
-        return;
+      if (loadedRecordId) {
+        setLockedState(false);
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
       }
-
-      let archive = [];
-      try{
-        archive = JSON.parse(localStorage.getItem(ARCHIVE_KEY) || "[]");
-      }catch(e){
-        archive = [];
-      }
-
-      const firstDate = data.rows.find(r => r[0] && r[0].trim())?.[0] || fmtDate();
-      const firstItem = data.rows.find(r => r[1] && r[1].trim())?.[1] || "Temperature Log";
-
-      archive.unshift({
-        id: Date.now(),
-        title: `${firstDate} - ${firstItem}`,
-        ...data
-      });
-
-      localStorage.setItem(ARCHIVE_KEY, JSON.stringify(archive));
-      localStorage.setItem(FORM_KEY, JSON.stringify(data));
-      alert("Archived.");
     }
 
     buildRows();
-    loadForm();
+
+    if (loadedRecordId) {
+      loadSavedArchiveRecord();
+    } else {
+      loadForm();
+    }
   </script>
 </body>
 </html>
-
