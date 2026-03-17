@@ -31,51 +31,45 @@ body{
   flex-wrap:wrap;
   align-items:center;
 }
-.mdk-btn--pill{
-  background:#f8fafc;
-  border:1px solid #cfd6dd;
-  border-radius:12px;
-  padding:8px 14px;
-  font-weight:600;
+.btn{
+  appearance:none;
+  border:0;
+  border-radius:16px;
+  padding:12px 18px;
   cursor:pointer;
+  font-weight:700;
+  font-size:15px;
   text-decoration:none;
-  color:#222;
-  display:flex;
+  display:inline-flex;
   align-items:center;
-  gap:6px;
+  justify-content:center;
+  background:#f8fafc;
+  color:#222;
+  box-shadow:0 4px 12px rgba(0,0,0,.15);
 }
-
-.mdk-btn--pill:hover{
+.btn:hover{
   transform:translateY(-1px);
 }
-
-/* Back button */
-.mdk-btn--back{
-  background:#ffc107;
-  border:none;
-  color:#4b0082;
-}
-
-/* Save button */
-.mdk-btn--primary{
-  background:#1a73e8;
-  border:none;
-  color:white;
-}
-  .back{
+.back{
   background:#ffc107;
   color:#4b0082;
-  border:none;
+}
+.back:hover{
+  background:#e0a800;
 }
 .save{
-  background:#007bff;
-  color:white;
-  border:none;
+  background:#1a73e8;
+  color:#fff;
+}
+.save:hover{
+  background:#1765cc;
 }
 .edit{
   background:#16a34a;
   color:#fff;
-  border:none;
+}
+.edit:hover{
+  background:#15803d;
 }
 .card{
   background:rgba(255,255,255,.95);
@@ -149,58 +143,51 @@ td:nth-child(7) input{
 <div class="wash"></div>
 
 <main class="page">
+  <div class="toolbar">
+    <button class="btn back" type="button" onclick="goBackSmart()">← Back</button>
+    <a href="dashboard.html" class="btn">🏠 Home</a>
+    <button class="btn" onclick="window.print()" type="button">🖨 Print</button>
+    <button id="editBtn" class="btn edit" onclick="unlockForEdit()" type="button" style="display:none;">✏ Edit</button>
+    <button class="btn" onclick="clearForm()" type="button">🧹 Clear</button>
+    <button class="btn save" onclick="saveForm()" type="button">💾 Save</button>
+  </div>
 
-<div class="toolbar">
-
-<button class="mdk-btn--pill mdk-btn--back" onclick="goBackSmart()">← Back</button>
-
-<a href="dashboard.html" class="mdk-btn--pill">🏠 Home</a>
-
-<button class="mdk-btn--pill" onclick="window.print()">🖨 Print</button>
-
-<button class="mdk-btn--pill" onclick="clearForm()">🧹 Clear</button>
-
-<button class="mdk-btn--pill mdk-btn--primary" onclick="saveForm()">💾 Save</button>
-
-</div>
   <div class="card">
+    <h1>Record 3b - Bottle Receipt</h1>
 
-<h1>Record 3b - Bottle Receipt</h1>
+    <div id="lockedNote" class="locked-note">
+      This saved record is locked. Press Edit to make changes.
+    </div>
 
-<div id="lockedNote" class="locked-note">
-  This saved record is locked. Press Edit to make changes.
-</div>
+    <table>
+      <colgroup>
+        <col style="width:12%">
+        <col style="width:8%">
+        <col style="width:20%">
+        <col style="width:22%">
+        <col style="width:14%">
+        <col style="width:16%">
+        <col style="width:8%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Name of Child</th>
+          <th>Visual check (labelling and packaging)</th>
+          <th>Number of bottles delivered</th>
+          <th>Time placed in refrigerator</th>
+          <th>Checked by</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
 
-<table>
-  <colgroup>
-    <col style="width:12%">
-    <col style="width:8%">
-    <col style="width:20%">
-    <col style="width:22%">
-    <col style="width:14%">
-    <col style="width:16%">
-    <col style="width:8%">
-  </colgroup>
-  <thead>
-    <tr>
-      <th>Date</th>
-      <th>Time</th>
-      <th>Name of Child</th>
-      <th>Visual check (labelling and packaging)</th>
-      <th>Number of bottles delivered</th>
-      <th>Time placed in refrigerator</th>
-      <th>Checked by</th>
-    </tr>
-  </thead>
-  <tbody id="rows"></tbody>
-</table>
-
-<div class="note">
-  Food Safety Program - Mother Duck Kallangur (1) January 2021 - Transport Amendment.docx<br>
-  Accredited Food Safety Program - Food Act 2006 (QLD) - LI/2021/0345. Accredited by Michael Taylor (Authorised Person Moreton Bay Regional Council) 23 March 2021
-</div>
-
-</div>
+    <div class="note">
+      Food Safety Program - Mother Duck Kallangur (1) January 2021 - Transport Amendment.docx<br>
+      Accredited Food Safety Program - Food Act 2006 (QLD) - LI/2021/0345. Accredited by Michael Taylor (Authorised Person Moreton Bay Regional Council) 23 March 2021
+    </div>
+  </div>
 </main>
 
 <script src="firebase-config.js"></script>
@@ -214,17 +201,10 @@ td:nth-child(7) input{
 <script>
 const params = new URLSearchParams(window.location.search);
 const LOAD_ID = params.get("load") || "";
-const STORAGE_KEY = "bottle_receipt_v3";
-
+const STORAGE_KEY = "bottle_receipt_v4";
 let loadedRecordId = LOAD_ID || "";
 
 function goBackSmart() {
-  const fromArchive = sessionStorage.getItem("mdk_from_archive");
-  if (fromArchive === "1") {
-    sessionStorage.removeItem("mdk_from_archive");
-    window.location.href = "archive.html";
-    return;
-  }
   window.location.href = "nursery_new.html";
 }
 
@@ -259,13 +239,12 @@ function buildRows(){
         const blank = document.createElement("option");
         blank.value = "";
         blank.textContent = "";
-        blank.selected = true;
         select.appendChild(blank);
 
         for(let n = 1; n <= 10; n++){
           const opt = document.createElement("option");
-          opt.value = n;
-          opt.textContent = n;
+          opt.value = String(n);
+          opt.textContent = String(n);
           select.appendChild(opt);
         }
 
@@ -297,7 +276,7 @@ function buildRows(){
 }
 
 function getAllFields(){
-  return document.querySelectorAll("table input, table select");
+  return document.querySelectorAll("#rows input, #rows select");
 }
 
 function setLockedState(locked){
@@ -317,13 +296,13 @@ function getRowsAsObjects(){
   document.querySelectorAll("#rows tr").forEach(tr => {
     const fields = tr.querySelectorAll("input, select");
     out.push({
-      date: fields[0]?.value?.trim() || "",
-      time: fields[1]?.value?.trim() || "",
-      childName: fields[2]?.value?.trim() || "",
-      visualCheck: fields[3]?.value?.trim() || "",
-      bottlesDelivered: fields[4]?.value?.trim() || "",
-      fridgeTime: fields[5]?.value?.trim() || "",
-      checkedBy: fields[6]?.value?.trim() || ""
+      date: fields[0] ? fields[0].value.trim() : "",
+      time: fields[1] ? fields[1].value.trim() : "",
+      childName: fields[2] ? fields[2].value.trim() : "",
+      visualCheck: fields[3] ? fields[3].value.trim() : "",
+      bottlesDelivered: fields[4] ? fields[4].value.trim() : "",
+      fridgeTime: fields[5] ? fields[5].value.trim() : "",
+      checkedBy: fields[6] ? fields[6].value.trim() : ""
     });
   });
   return out;
@@ -346,28 +325,24 @@ function flattenRows(rows){
 }
 
 function applyFlatValues(values){
-  const fields = document.querySelectorAll("table input, table select");
+  const fields = document.querySelectorAll("#rows input, #rows select");
   fields.forEach((field, i) => {
     field.value = values[i] || "";
   });
 }
 
 async function saveForm(){
-  const data = [];
-  document.querySelectorAll("table input, table select").forEach(function(el){
-    data.push(el.value);
-  });
+  const rows = getRowsAsObjects();
+  const flat = flattenRows(rows);
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(flat));
 
   try{
     if(window.MDKArchive){
-      const rows = getRowsAsObjects();
       let recordDate = "";
-
-      for(const r of rows){
-        if(r.date){
-          recordDate = r.date;
+      for (const row of rows) {
+        if (row.date) {
+          recordDate = row.date;
           break;
         }
       }
@@ -381,7 +356,7 @@ async function saveForm(){
         site: "Nursery",
         recordDate: recordDate,
         fields: {
-          rows
+          rows: rows
         }
       };
 
@@ -398,7 +373,7 @@ async function saveForm(){
 
     alert("Saved");
   } catch(err){
-    console.error("Archive save error:", err);
+    console.error("Bottle Receipt save/load error:", err);
     alert("Saved locally, but archive sync failed");
   }
 }
@@ -406,7 +381,13 @@ async function saveForm(){
 function loadForm(){
   const saved = localStorage.getItem(STORAGE_KEY);
   if(!saved) return;
-  applyFlatValues(JSON.parse(saved));
+
+  try{
+    const values = JSON.parse(saved);
+    applyFlatValues(values);
+  } catch(err){
+    console.error("Local load error:", err);
+  }
 }
 
 async function loadSavedArchiveRecord(){
@@ -414,9 +395,12 @@ async function loadSavedArchiveRecord(){
 
   try{
     const record = await window.MDKArchive.loadRecord(loadedRecordId);
-    if(!record || !record.fields) return;
+    if(!record || !record.fields) {
+      alert("Saved archive record could not be loaded.");
+      return;
+    }
 
-    const rows = record.fields.rows || [];
+    const rows = Array.isArray(record.fields.rows) ? record.fields.rows : [];
     const values = flattenRows(rows);
 
     applyFlatValues(values);
@@ -424,14 +408,14 @@ async function loadSavedArchiveRecord(){
     setLockedState(true);
   } catch(err){
     console.error("Load archive record error:", err);
-    alert("Could not open saved archive record.");
+    alert("Saved record could not be opened.");
   }
 }
 
 function clearForm(){
   if(!confirm("Clear form?")) return;
 
-  document.querySelectorAll("table input, table select").forEach(function(el){
+  document.querySelectorAll("#rows input, #rows select").forEach(function(el){
     el.value = "";
   });
 
@@ -450,6 +434,5 @@ if (loadedRecordId) {
   loadForm();
 }
 </script>
-
 </body>
 </html>
