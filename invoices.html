@@ -1,69 +1,96 @@
- <!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Mother Duck Kitchen - Invoices</title>
   <style>
+    :root{
+      --blue:#2c52a0;
+      --blue-dark:#244996;
+      --yellow:#ffc107;
+      --yellow-dark:#e0a800;
+      --panel:rgba(255,255,255,.88);
+      --card:rgba(255,255,255,.96);
+      --line:#d7dde4;
+      --text:#1f2937;
+      --muted:#5b6573;
+      --danger:#b42318;
+      --danger-dark:#971c13;
+    }
+
     body{
       margin:0;
       font-family:Arial,Helvetica,sans-serif;
       background:url("kitchen.jpg") center center / cover no-repeat fixed;
       min-height:100vh;
+      color:var(--text);
     }
+
     .wash{
       position:fixed;
       inset:0;
-      background:rgba(255,255,255,.45);
-      backdrop-filter:blur(2px);
+      background:rgba(255,255,255,.40);
+      backdrop-filter:blur(4px);
     }
+
     .page{
       position:relative;
       z-index:1;
-      max-width:1400px;
+      max-width:1200px;
       margin:0 auto;
-      padding:20px;
+      padding:24px 16px 32px;
     }
+
     .top{
       text-align:center;
       margin-bottom:18px;
     }
+
     .logo{
-      width:90px;
+      width:92px;
       display:block;
-      margin:0 auto 8px;
+      margin:0 auto 10px;
     }
+
     .site-title{
-      font-size:34px;
-      font-weight:700;
+      font-size:36px;
+      font-weight:800;
       color:#fff;
-      text-shadow:0 2px 6px rgba(0,0,0,.35);
+      text-shadow:0 3px 10px rgba(0,0,0,.30);
+      margin-bottom:4px;
     }
+
     .subtitle{
       color:#fff;
       font-size:18px;
       text-shadow:0 2px 6px rgba(0,0,0,.35);
-      margin-top:4px;
+      font-weight:700;
     }
+
     .card-wide{
-      max-width:900px;
+      max-width:1000px;
       margin:0 auto;
-      background:rgba(255,255,255,.82);
-      backdrop-filter:blur(10px);
-      border-radius:24px;
+      background:var(--panel);
+      backdrop-filter:blur(12px);
+      border-radius:28px;
       padding:22px;
-      box-shadow:0 12px 30px rgba(0,0,0,.18);
+      box-shadow:
+        0 18px 40px rgba(0,0,0,.16),
+        inset 0 1px 0 rgba(255,255,255,.45);
     }
+
     .toolbar{
       display:flex;
-      gap:14px;
+      gap:12px;
       flex-wrap:wrap;
-      margin-bottom:18px;
+      margin-bottom:20px;
       justify-content:flex-start;
     }
+
     .nav-btn{
       min-width:110px;
-      padding:14px 18px;
+      padding:12px 18px;
       background:#f8fafc;
       color:#24374a;
       border:1px solid #d4dbe3;
@@ -74,111 +101,181 @@
       box-shadow:0 2px 8px rgba(0,0,0,.08);
       cursor:pointer;
     }
+
+    .nav-btn:hover{
+      transform:translateY(-1px);
+    }
+
+    .back-btn{
+      background:var(--yellow);
+      border-color:transparent;
+      color:#4b0082;
+    }
+
+    .back-btn:hover{
+      background:var(--yellow-dark);
+    }
+
     .panes{
       display:grid;
       grid-template-columns:1fr 1fr;
-      gap:18px;
+      gap:20px;
     }
+
     .pane{
-      background:rgba(255,255,255,.95);
-      border-radius:22px;
-      padding:20px;
-      box-shadow:0 8px 20px rgba(0,0,0,.10);
-      min-height:420px;
+      background:var(--card);
+      border-radius:24px;
+      padding:22px;
+      box-shadow:0 10px 24px rgba(0,0,0,.10);
+      min-height:460px;
     }
+
     h2{
       margin:0 0 18px;
       text-align:center;
       font-size:24px;
-      color:#1f2937;
+      color:var(--text);
     }
+
+    .section-note{
+      text-align:center;
+      margin:-6px 0 18px;
+      font-size:14px;
+      color:var(--muted);
+    }
+
     label{
       display:block;
-      margin:10px 0 6px;
-      font-weight:600;
-      color:#333;
+      margin:12px 0 6px;
+      font-weight:700;
+      color:#334155;
+      font-size:14px;
     }
+
     input, textarea{
       width:100%;
       box-sizing:border-box;
       border:1px solid #cfd6dd;
       border-radius:16px;
       padding:14px 16px;
-      font-size:16px;
+      font-size:15px;
       background:#fff;
       font-family:Arial,Helvetica,sans-serif;
+      color:var(--text);
+      outline:none;
     }
+
+    input:focus, textarea:focus{
+      border-color:#8fb0e8;
+      box-shadow:0 0 0 3px rgba(44,82,160,.10);
+    }
+
     textarea{
-      min-height:90px;
+      min-height:96px;
       resize:vertical;
     }
+
     .save-btn{
       width:100%;
-      margin-top:14px;
+      margin-top:16px;
       padding:16px 18px;
-      background:#204a9b;
+      background:var(--blue);
       color:#fff;
       border:none;
       border-radius:18px;
       font-size:18px;
-      font-weight:700;
+      font-weight:800;
       cursor:pointer;
-      box-shadow:0 6px 14px rgba(0,0,0,.15);
+      box-shadow:0 8px 18px rgba(0,0,0,.15);
     }
+
+    .save-btn:hover{
+      background:var(--blue-dark);
+      transform:translateY(-1px);
+    }
+
     .helper{
       text-align:center;
       margin-top:10px;
-      color:#666;
+      color:#667085;
       font-size:14px;
     }
+
     .invoice-list{
       display:flex;
       flex-direction:column;
-      gap:12px;
+      gap:14px;
     }
+
     .invoice-card{
-      border:1px solid #d7dde4;
-      border-radius:16px;
-      padding:14px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:15px;
       background:#fff;
+      box-shadow:0 4px 10px rgba(0,0,0,.05);
     }
+
     .invoice-card strong{
       display:block;
-      margin-bottom:6px;
-      color:#1f2937;
+      margin-bottom:8px;
+      color:var(--text);
+      font-size:16px;
     }
-    .invoice-card .meta{
-      color:#555;
+
+    .meta{
+      color:var(--muted);
       font-size:14px;
-      margin:3px 0;
+      margin:4px 0;
+      line-height:1.4;
     }
+
     .invoice-actions{
       display:flex;
       gap:8px;
       flex-wrap:wrap;
-      margin-top:10px;
+      margin-top:12px;
     }
+
     .mini-btn{
-      padding:8px 12px;
+      padding:9px 13px;
       border:none;
       border-radius:12px;
       font-weight:700;
       cursor:pointer;
+      font-size:13px;
     }
+
     .delete-btn{
-      background:#b42318;
+      background:var(--danger);
       color:#fff;
     }
-    .empty{
-      color:#777;
-      font-size:14px;
+
+    .delete-btn:hover{
+      background:var(--danger-dark);
     }
+
+    .empty{
+      color:#667085;
+      font-size:14px;
+      text-align:center;
+      padding:24px 12px;
+      border:1px dashed #cfd6dd;
+      border-radius:16px;
+      background:rgba(255,255,255,.7);
+    }
+
     @media (max-width: 900px){
       .panes{
         grid-template-columns:1fr;
       }
+
       .card-wide{
-        max-width:95%;
+        max-width:96%;
+        padding:18px;
+      }
+
+      .pane{
+        min-height:auto;
       }
     }
   </style>
@@ -195,7 +292,7 @@
 
     <section class="card-wide">
       <div class="toolbar">
-        <button class="nav-btn" type="button" onclick="goBackSmart()">← Back</button>
+        <button class="nav-btn back-btn" type="button" onclick="goBackSmart()">← Back</button>
         <a class="nav-btn" href="dashboard.html">Home</a>
         <a id="backSiteBtn" class="nav-btn" href="kitchen.html">Kitchen</a>
       </div>
@@ -203,6 +300,7 @@
       <div class="panes">
         <div class="pane">
           <h2 id="addTitle">Add Invoice</h2>
+          <div class="section-note">Save invoices for this site only.</div>
 
           <label for="item">Item</label>
           <input id="item" type="text" placeholder="Item name">
@@ -211,18 +309,19 @@
           <input id="temp" type="text" placeholder="Temperature if needed">
 
           <label for="note">Note</label>
-          <textarea id="note" placeholder="Supplier or note"></textarea>
+          <textarea id="note" placeholder="Supplier, note, or extra details"></textarea>
 
           <label for="photo">Photo upload</label>
           <input id="photo" type="file" accept="image/*,application/pdf">
 
           <button class="save-btn" onclick="saveInvoice()">Save Invoice</button>
 
-          <div class="helper">This page is for one site only.</div>
+          <div class="helper">You can save an item, note, photo, or all three.</div>
         </div>
 
         <div class="pane">
           <h2 id="savedTitle">Saved Invoices</h2>
+          <div class="section-note">Most recent invoices show first.</div>
           <div id="invoiceList" class="invoice-list"></div>
         </div>
       </div>
@@ -257,7 +356,7 @@
       const fromArchive = sessionStorage.getItem("mdk_from_archive");
       if (fromArchive === "1") {
         sessionStorage.removeItem("mdk_from_archive");
-        window.location.href = "archive.html";
+        window.location.href = "audit_archive.html";
         return;
       }
       window.location.href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
