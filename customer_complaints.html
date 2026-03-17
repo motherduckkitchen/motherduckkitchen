@@ -47,7 +47,10 @@ body{
   color:#1f2937;
   box-shadow:0 4px 12px rgba(0,0,0,.15);
 }
-  .back{
+.btn:hover{
+  transform:translateY(-1px);
+}
+.back{
   background:#ffc107;
   color:#4b0082;
   border:none;
@@ -147,12 +150,12 @@ td:nth-child(6) textarea{
 <main class="page">
 
 <div class="toolbar">
- <button class="btn back" onclick="history.back()">← Back</button>
+  <button class="btn back" type="button" onclick="goBackSmart()">← Back</button>
   <a href="dashboard.html" class="btn">🏠 Home</a>
-  <button onclick="window.print()" class="btn">🖨 Print</button>
-  <button id="editBtn" onclick="unlockForEdit()" class="btn edit" style="display:none;">✏ Edit</button>
-  <button onclick="clearForm()" class="btn">Clear</button>
-  <button onclick="saveForm()" class="btn save">Save</button>
+  <button onclick="window.print()" class="btn" type="button">🖨 Print</button>
+  <button id="editBtn" onclick="unlockForEdit()" class="btn edit" type="button" style="display:none;">✏ Edit</button>
+  <button onclick="clearForm()" class="btn" type="button">Clear</button>
+  <button onclick="saveForm()" class="btn save" type="button">Save</button>
 </div>
 
 <div class="card">
@@ -219,11 +222,20 @@ const STORAGE_KEY = SITE === "Brewer St"
 
 let loadedRecordId = LOAD_ID || "";
 
-document.getElementById("backBtn").href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
 document.getElementById("pageTitle").textContent =
   SITE === "Brewer St"
     ? "Record 10 – Customer Complaints (Brewer St)"
     : "Record 10 – Customer Complaints (Kitchen)";
+
+function goBackSmart() {
+  const fromArchive = sessionStorage.getItem("mdk_from_archive");
+  if (fromArchive === "1") {
+    sessionStorage.removeItem("mdk_from_archive");
+    window.location.href = "audit_archive.html";
+    return;
+  }
+  window.location.href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
+}
 
 function todayDate(){
   const d = new Date();
