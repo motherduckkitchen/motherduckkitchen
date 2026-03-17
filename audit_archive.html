@@ -176,6 +176,7 @@ select{
       <select id="typeSelect">
         <option value="">All Record Types</option>
         <option value="Incoming Goods">Incoming Goods</option>
+        <option value="Approved Suppliers List">Approved Suppliers List</option>
         <option value="Food Safety Program Review">Food Safety Program Review</option>
         <option value="Cook Cool Reheat">Cook Cool Reheat</option>
         <option value="Transfer Log">Transfer Log</option>
@@ -221,7 +222,7 @@ let activeMonth = new Date().getMonth() + 1;
 window.MDKArchiveCache = window.MDKArchiveCache || {};
 
 function goBackSmart() {
-  history.back();
+  window.location.href = "dashboard.html";
 }
 
 function buildYears() {
@@ -253,127 +254,4 @@ async function buildMonths() {
   }
 }
 
-function getOpenPage(record) {
-  const pageMap = {
-    "Cook Cool Reheat": "record_5a_temp_control_log.html",
-    "Bottle Receipt": "bottle_receipt.html",
-    "Daily Cleaning": "cleaning_schedule_new.html",
-    "Weekly Cleaning": "cleaning_weekly_new.html",
-    "Monthly Cleaning": "cleaning_monthly_new.html",
-    "Appliance Temps": "appliance_temps.html",
-    "Heating Log": "record_5_heating_log.html",
-    "Thermometer Calibration": "thermometer_calibration.html",
-    "Pest Control": "pest_control.html",
-    "Customer Complaints": "customer_complaints.html",
-    "Staff Training": "staff_training.html",
-    "Food Recall": "food_recall.html",
-    "Equipment Log": "equipment_log.html",
-    "Food Safety Program Review": "record13.html",
-    "Nursery Temperature & Puree Reheat Log": "nursery_puree_log_new.html",
-    "Transfer Log": record.site === "Brewer St" ? "record_5b_transport_brewer_balanced.html" : "transport_log.html"
-  };
-  return pageMap[record.type] || "";
-}
-
-function openSavedRecord(id) {
-  const record = window.MDKArchiveCache[id];
-  if (!record) {
-    alert("Saved record not found.");
-    return;
-  }
-
-  const page = getOpenPage(record);
-  if (!page) {
-    alert("No page linked for this record type yet.");
-    return;
-  }
-
-  sessionStorage.setItem("mdk_from_archive", "1");
-
-  const siteParam = record.site ? `&site=${encodeURIComponent(record.site)}` : "";
-  window.location.href = `${page}?load=${encodeURIComponent(id)}${siteParam}`;
-}
-
-async function deleteSavedRecord(id) {
-  try {
-    const ok = await window.MDKArchive.deleteRecord(id);
-    if (ok) {
-      delete window.MDKArchiveCache[id];
-      await buildMonths();
-      await loadRecords();
-    }
-  } catch (err) {
-    console.error(err);
-    alert("Could not delete record.");
-  }
-}
-
-async function loadRecords() {
-  recordsWrap.innerHTML = '<div class="message">Loading...</div>';
-
-  try {
-    const items = await window.MDKArchive.listRecords({
-      year: yearSelect.value,
-      monthNum: activeMonth,
-      site: siteSelect.value,
-      type: typeSelect.value
-    });
-
-    window.MDKArchiveCache = {};
-    items.forEach(item => {
-      window.MDKArchiveCache[item.id] = item;
-    });
-
-    if (!items.length) {
-      recordsWrap.innerHTML = '<div class="message">No saved records for this month.</div>';
-      return;
-    }
-
-    recordsWrap.innerHTML = "";
-
-    items.forEach(item => {
-      const card = document.createElement("div");
-      card.className = "record";
-
-      card.innerHTML = `
-        <strong>${item.type || ""}</strong>
-        <div class="meta"><b>Site:</b> ${item.site || ""}</div>
-        <div class="meta"><b>Record Date:</b> ${item.recordDate || ""}</div>
-        <div class="meta"><b>Month:</b> ${item.monthName || ""} ${item.year || ""}</div>
-        <div class="meta"><b>Notes:</b> ${item.notes || ""}</div>
-        <div class="meta"><b>Fields saved:</b> ${item.fields ? Object.keys(item.fields).length : 0}</div>
-        <div class="actions">
-          <button class="action-btn open-btn" onclick="openSavedRecord('${item.id}')">Open</button>
-          <button class="action-btn delete-btn" onclick="deleteSavedRecord('${item.id}')">Delete</button>
-        </div>
-      `;
-
-      if (item.fileInfo && item.fileInfo.downloadURL) {
-        const link = document.createElement("a");
-        link.className = "download";
-        link.href = item.fileInfo.downloadURL;
-        link.target = "_blank";
-        link.textContent = `Open file: ${item.fileInfo.name || "attachment"}`;
-        card.appendChild(link);
-      }
-
-      recordsWrap.appendChild(card);
-    });
-  } catch (err) {
-    console.error(err);
-    recordsWrap.innerHTML = '<div class="message">Archive query error.</div>';
-  }
-}
-
-yearSelect.addEventListener("change", async function() {
-  await buildMonths();
-  await loadRecords();
-});
-siteSelect.addEventListener("change", loadRecords);
-typeSelect.addEventListener("change", loadRecords);
-
-buildYears();
-buildMonths().then(loadRecords);
-</script>
-</body>
-</html>
+function get
