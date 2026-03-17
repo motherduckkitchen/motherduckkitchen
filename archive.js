@@ -1,28 +1,248 @@
-const NS = 'mdk.v1';
+(function () {
+  if (!window.MDK_FIREBASE_CONFIG) {
+    console.error("Firebase config missing");
+    return;
+  }
 
-function k(scope,page){ return `${NS}.${scope}.${page}` }
-export function loadLive(page){ return JSON.parse(localStorage.getItem(k('live',page))||'{}') }
-export function saveLive(page,data){ localStorage.setItem(k('live',page), JSON.stringify(data)) }
+  if (!firebase.apps.length) {
+    firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
+  }
 
-export function addToArchive(page, entry){
-  const d = new Date(entry.dateISO);
-  const y = String(d.getFullYear());
-  const m = String(d.getMonth()+1).padStart(2,'0');
-  const key = `${NS}.archive`;
-  const root = JSON.parse(localStorage.getItem(key)||'{}');
-  root[y] = root[y]||{}; root[y][m] = root[y][m]||{}; root[y][m][page] = root[y][m][page]||[];
-  root[y][m][page].push(entry);
-  localStorage.setItem(key, JSON.stringify(root));
-}
+  const db = window.MDK_DB || firebase.firestore();
+  const storage = window.MDK_STORAGE || (firebase.storage ? firebase.storage() : null);
 
-export function listMonths(year){
-  const root = JSON.parse(localStorage.getItem(`${NS}.archive`)||'{}');
-  return Object.keys(root[year]||{}).sort();
-}
+  function pad(n) {
+    return String(n).padStart(2, "0");
+  }
 
-export function loadMonth(year,month,page){
-  const root = JSON.parse(localStorage.getItem(`${NS}.archive`)||'{}');
-  return (((root[year]||{})[month]||{})[page])||[];
-}
+  function formatDDMMYYYY(date) {
+    return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+  }
 
-export function clearLive(page){ localStorage.removeItem(k('live',page)) }
+  function parseDDMMYYYY(text) {
+    if (!text || typeof text !== "string") return null;
+
+    const parts = text.split("/").map(s => s.trim());
+    if (parts.length !== 3) return null;
+
+    const d = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    const y = parseInt(parts[2], 10);
+
+    if (!d || !m || !y) return null;
+
+    const dt = new Date(y, m - 1, d);
+
+    if (
+      dt.getFullYear() !== y ||
+      dt.getMonth() !== m - 1 ||
+      dt.getDate() !== d
+    ) {
+      return null;
+    }
+
+    return dt;
+  }
+
+  function monthName(monthNum) {
+    const names = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+    return names[monthNum - 1] || "";
+  }
+
+  async function uploadFile(file, folder) {
+    if (!file || !storage) return null;
+
+    const safeName = `${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
+    const fullPath = `${folder}/${safeName}`;
+    const ref = storage.ref().child(fullPath);
+
+    await ref.put(file, {
+      contentType: file.type || "application/octet-stream"
+    });
+
+    const downloadURL = await ref.getDownloadURL();
+
+    return {
+      name: file.name,
+      path: fullPath,
+      downloadURL: downloadURL,
+      contentType: file.type || ""
+    };
+  }
+
+  async function saveRecord(opts) {
+    const type = opts.type || "Unknown Record";
+    const site = opts.site || "Unknown";
+    const fields = opts.fields || {};
+    const notes = opts.notes || "";
+    const file = opts.file || null;
+
+    let recordDateObj = parseDDMMYYYY(opts.recordDate || "");
+    if (!recordDateObj) recordDateObj = new Date();
+
+    const monthNum = recordDateObj.getMonth() + 1;
+    const year = recordDateObj.getFullYear();
+
+    let fileInfo = null;
+    if (file) {
+      fileInfo = await uploadFile(file, `records/${year}/${pad(monthNum)}_${monthName(monthNum)}`);
+    }
+
+    const payload = {
+      type: type,
+      site: site,
+      recordDate: formatDDMMYYYY(recordDateObj),
+      monthNum: monthNum,
+      monthName: monthName(monthNum),
+      year: year,
+      notes: notes,
+      fields: fields,
+      fileInfo: fileInfo,
+      savedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    const docRef = await db.collection("auditRecords").add(payload);
+    return docRef.id;
+  }
+
+  async function updateRecord(id, opts) {
+    if (!id) throw new Error("Missing record id");
+
+    const type = opts.type || "Unknown Record";
+    const site = opts.site || "Unknown";
+    const fields = opts.fields || {};
+    const notes = opts.notes || "";
+    const file = opts.file || null;
+
+    let recordDateObj = parseDDMMYYYY(opts.recordDate || "");
+    if (!recordDateObj) recordDateObj = new Date();
+
+    const monthNum = recordDateObj.getMonth() + 1;
+    const year = recordDateObj.getFullYear();
+
+    let fileInfo = opts.fileInfo || null;
+    if (file) {
+      fileInfo = await uploadFile(file, `records/${year}/${pad(monthNum)}_${monthName(monthNum)}`);
+    }
+
+    const payload = {
+      type: type,
+      site: site,
+      recordDate: formatDDMMYYYY(recordDateObj),
+      monthNum: monthNum,
+      monthName: monthName(monthNum),
+      year: year,
+      notes: notes,
+      fields: fields,
+      fileInfo: fileInfo || null,
+      savedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    await db.collection("auditRecords").doc(id).update(payload);
+    return id;
+  }
+
+  async function loadRecord(id) {
+    if (!id) throw new Error("Missing record id");
+
+    const doc = await db.collection("auditRecords").doc(id).get();
+    if (!doc.exists) return null;
+
+    return {
+      id: doc.id,
+      ...doc.data()
+    };
+  }
+
+  async function deleteRecord(id) {
+    if (!id) throw new Error("Missing record id");
+
+    if (!confirm("Delete this saved archive record?")) return false;
+
+    await db.collection("auditRecords").doc(id).delete();
+    return true;
+  }
+
+  async function listRecords(filters) {
+    const year = parseInt(filters.year, 10);
+    const monthNum = parseInt(filters.monthNum, 10);
+
+    let query = db.collection("auditRecords")
+      .where("year", "==", year)
+      .where("monthNum", "==", monthNum);
+
+    if (filters.site && filters.site !== "All Sites") {
+      query = query.where("site", "==", filters.site);
+    }
+
+    if (filters.type && filters.type !== "All Record Types") {
+      query = query.where("type", "==", filters.type);
+    }
+
+    const snap = await query.get();
+
+    const rows = snap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    rows.sort((a, b) => {
+      const aTime = a.savedAt && a.savedAt.toMillis ? a.savedAt.toMillis() : 0;
+      const bTime = b.savedAt && b.savedAt.toMillis ? b.savedAt.toMillis() : 0;
+      return bTime - aTime;
+    });
+
+    return rows;
+  }
+
+  async function listMonthCounts(year) {
+    const snap = await db.collection("auditRecords")
+      .where("year", "==", parseInt(year, 10))
+      .get();
+
+    const counts = {};
+    for (let i = 1; i <= 12; i++) counts[i] = 0;
+
+    snap.forEach(doc => {
+      const data = doc.data();
+      if (data.monthNum) {
+        counts[data.monthNum] = (counts[data.monthNum] || 0) + 1;
+      }
+    });
+
+    return counts;
+  }
+
+  async function getAllRecords() {
+    const snap = await db.collection("auditRecords").get();
+
+    const rows = snap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    rows.sort((a, b) => {
+      const aTime = a.savedAt && a.savedAt.toMillis ? a.savedAt.toMillis() : 0;
+      const bTime = b.savedAt && b.savedAt.toMillis ? b.savedAt.toMillis() : 0;
+      return bTime - aTime;
+    });
+
+    return rows;
+  }
+
+  window.MDKArchive = {
+    saveRecord,
+    updateRecord,
+    loadRecord,
+    deleteRecord,
+    listRecords,
+    listMonthCounts,
+    getAllRecords,
+    formatDDMMYYYY,
+    parseDDMMYYYY,
+    monthName
+  };
+})();
