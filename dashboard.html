@@ -142,39 +142,37 @@ body{
 <div class="wash"></div>
 
 <main class="page">
-<div class="wrap">
+  <div class="wrap">
 
-<img class="logo" src="logo.png">
-<div class="site-title">Mother Duck Kitchen Dashboard</div>
+    <img class="logo" src="logo.png" alt="Mother Duck Logo">
+    <div class="site-title">Mother Duck Kitchen Dashboard</div>
 
-<section class="card">
+    <section class="card">
 
-<div class="topbar">
-  <a class="top-btn" href="kitchen.html">Kitchen</a>
-  <a class="top-btn" href="brewer_st.html">Brewer St</a>
-  <button class="logout" id="logoutBtn">Log out</button>
-</div>
+      <div class="topbar">
+        <a class="top-btn" href="kitchen.html">Kitchen</a>
+        <a class="top-btn" href="brewer_st.html">Brewer St</a>
+        <button class="logout" id="logoutBtn" type="button">Log out</button>
+      </div>
 
-<div class="menu-grid">
-  <a class="btn" href="kitchen.html">Kitchen</a>
-  <a class="btn" href="brewer_st.html">Brewer St</a>
+      <div class="grid">
+        <a class="card-link" href="invoices.html">Invoices</a>
+        <a class="card-link" href="nursery_new.html">Nursery</a>
 
-  <a class="btn" href="invoices.html">Invoices</a>
-  <a class="btn" href="nursery_new.html">Nursery</a>
+        <a class="card-link" href="record1_suppliers.html">Approved Suppliers</a>
+        <a class="card-link" href="food-safety-bible.pdf" target="_blank">Food Safety Bible</a>
 
-  <a class="btn" href="record1_suppliers.html">Approved Suppliers</a>
-  <a class="btn" href="food-safety-bible.pdf" target="_blank">Food Safety Bible</a>
+        <a class="card-link" href="pest_control.html">Pest Control</a>
+        <a class="card-link" href="food_recall.html">Food Recall</a>
 
-  <a class="btn" href="pest_control.html">Pest Control</a>
-  <a class="btn" href="food_recall.html">Food Recall</a>
+        <a class="card-link" href="staff_illness.html">Staff Illness / Accident</a>
+        <a class="card-link" href="record13.html">Food Safety Program Review</a>
 
-  <a class="btn" href="staff_illness.html">Staff Illness / Accident</a>
-  <a class="btn" href="record13.html">Food Safety Program Review</a>
+        <a class="card-link" href="audit_archive.html">Audit Archive</a>
+      </div>
 
-  <a class="btn" href="audit_archive.html">Audit Archive</a>
-</div>
-</section>
-</div>
+    </section>
+  </div>
 </main>
 
 <script src="firebase-config.js"></script>
@@ -194,7 +192,7 @@ auth.onAuthStateChanged(function(user){
   }
 });
 
-document.getElementById("logoutBtn").onclick=function(){
+document.getElementById("logoutBtn").onclick = function(){
   auth.signOut().then(function(){
     location.replace("index.html");
   });
