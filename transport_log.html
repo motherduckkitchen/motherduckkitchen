@@ -292,8 +292,6 @@ function openSavedRecord(id) {
     return;
   }
 
-  sessionStorage.setItem("mdk_from_archive", "1");
-
   const siteParam = record.site ? `&site=${encodeURIComponent(record.site)}` : "";
   window.location.href = `${page}?load=${encodeURIComponent(id)}${siteParam}`;
 }
