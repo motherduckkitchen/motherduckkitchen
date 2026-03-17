@@ -47,13 +47,29 @@ body{
   color:#1f2937;
   box-shadow:0 4px 12px rgba(0,0,0,.15);
 }
-  .back{
+.btn:hover{
+  transform:translateY(-1px);
+}
+.back{
   background:#ffc107;
-  color:black;
+  color:#4b0082;
+}
+.back:hover{
+  background:#e0a800;
 }
 .edit{
   background:#16a34a;
   color:white;
+}
+.edit:hover{
+  background:#15803d;
+}
+.save{
+  background:#2c52a0;
+  color:#fff;
+}
+.save:hover{
+  background:#244996;
 }
 .card{
   background:white;
@@ -143,76 +159,72 @@ th{
 <div class="wash"></div>
 
 <main class="page">
+  <div class="toolbar">
+    <button class="btn back" type="button" onclick="goBackSmart()">← Back</button>
+    <a href="dashboard.html" class="btn">🏠 Home</a>
+    <button class="btn" onclick="window.print()" type="button">🖨 Print</button>
+    <button id="editBtn" class="btn edit" onclick="unlockForEdit()" type="button" style="display:none;">✏ Edit</button>
+    <button class="btn" onclick="clearForm()" type="button">🧹 Clear</button>
+    <button class="btn save" onclick="saveForm()" type="button">💾 Save</button>
+  </div>
 
- <main class="page">
-    <div class="toolbar">
-      <button class="btn back" onclick="history.back()">← Back</button>
-      <a href="dashboard.html" class="btn">🏠 Home</a>
-      <button class="btn" onclick="window.print()" type="button">🖨 Print</button>
-      <button id="editBtn" class="btn edit" onclick="unlockForEdit()" type="button" style="display:none;">✏ Edit</button>
-      <button class="btn" onclick="clearForm()" type="button">🧹 Clear</button>
-      <button class="btn save" onclick="saveForm()" type="button">💾 Save</button>
+  <div class="card">
+    <h1 id="pageTitle">Record 6a - Daily Cleaning & Sanitising Schedule</h1>
+
+    <div id="lockedNote" class="locked-note">
+      This saved record is locked. Press Edit to make changes.
     </div>
-   
-<div class="card">
 
-<h1 id="pageTitle">Record 6a - Daily Cleaning & Sanitising Schedule</h1>
+    <div class="topline">
+      <label>Week Starting:
+        <input type="text" id="weekStart" placeholder="DD / MM / YYYY">
+      </label>
 
-<div id="lockedNote" class="locked-note">
-  This saved record is locked. Press Edit to make changes.
-</div>
+      <div>Week Ending: <span id="weekEnd"></span></div>
+    </div>
 
-<div class="topline">
-  <label>Week Starting:
-    <input type="text" id="weekStart" placeholder="DD / MM / YYYY">
-  </label>
+    <table>
+      <colgroup>
+        <col style="width:28%">
+        <col style="width:4%">
+        <col style="width:6%">
+        <col style="width:4%">
+        <col style="width:6%">
+        <col style="width:4%">
+        <col style="width:6%">
+        <col style="width:4%">
+        <col style="width:6%">
+        <col style="width:4%">
+        <col style="width:6%">
+      </colgroup>
 
-  <div>Week Ending: <span id="weekEnd"></span></div>
-</div>
+      <thead>
+        <tr>
+          <th class="area">Area / Equipment</th>
+          <th colspan="2">M</th>
+          <th colspan="2">T</th>
+          <th colspan="2">W</th>
+          <th colspan="2">T</th>
+          <th colspan="2">F</th>
+        </tr>
+        <tr>
+          <th class="area"></th>
+          <th>✓</th><th>Init</th>
+          <th>✓</th><th>Init</th>
+          <th>✓</th><th>Init</th>
+          <th>✓</th><th>Init</th>
+          <th>✓</th><th>Init</th>
+        </tr>
+      </thead>
 
-<table>
-  <colgroup>
-    <col style="width:28%">
-    <col style="width:4%">
-    <col style="width:6%">
-    <col style="width:4%">
-    <col style="width:6%">
-    <col style="width:4%">
-    <col style="width:6%">
-    <col style="width:4%">
-    <col style="width:6%">
-    <col style="width:4%">
-    <col style="width:6%">
-  </colgroup>
+      <tbody id="rows"></tbody>
+    </table>
 
-  <thead>
-    <tr>
-      <th class="area">Area / Equipment</th>
-      <th colspan="2">M</th>
-      <th colspan="2">T</th>
-      <th colspan="2">W</th>
-      <th colspan="2">T</th>
-      <th colspan="2">F</th>
-    </tr>
-    <tr>
-      <th class="area"></th>
-      <th>✓</th><th>Init</th>
-      <th>✓</th><th>Init</th>
-      <th>✓</th><th>Init</th>
-      <th>✓</th><th>Init</th>
-      <th>✓</th><th>Init</th>
-    </tr>
-  </thead>
-
-  <tbody id="rows"></tbody>
-</table>
-
-<div class="footer">
-  Food Safety Program - Mother Duck Kallangur (1) January 2021 - Transport Amendment.docx<br>
-  Accredited Food Safety Program - Food Act 2006 (QLD) - LI/2021/0345. Accredited by Michael Taylor (Authorised Person Moreton Bay Regional Council) 23 March 2021
-</div>
-
-</div>
+    <div class="footer">
+      Food Safety Program - Mother Duck Kallangur (1) January 2021 - Transport Amendment.docx<br>
+      Accredited Food Safety Program - Food Act 2006 (QLD) - LI/2021/0345. Accredited by Michael Taylor (Authorised Person Moreton Bay Regional Council) 23 March 2021
+    </div>
+  </div>
 </main>
 
 <script src="firebase-config.js"></script>
@@ -265,7 +277,7 @@ function goBackSmart() {
   const fromArchive = sessionStorage.getItem("mdk_from_archive");
   if (fromArchive === "1") {
     sessionStorage.removeItem("mdk_from_archive");
-    window.location.href = "archive.html";
+    window.location.href = "audit_archive.html";
     return;
   }
   window.location.href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
