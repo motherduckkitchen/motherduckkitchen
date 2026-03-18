@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Record 4 - Temperature Control Log ~ Appliances</title>
   <style>
+    *{
+      box-sizing:border-box;
+    }
+
     body{
       margin:0;
       font-family:Arial,Helvetica,sans-serif;
@@ -45,6 +49,7 @@
       text-decoration:none;
       display:flex;
       align-items:center;
+      justify-content:center;
       gap:6px;
     }
 
@@ -59,6 +64,7 @@
       color:#222;
       display:flex;
       align-items:center;
+      justify-content:center;
       gap:6px;
     }
 
@@ -72,6 +78,7 @@
       cursor:pointer;
       display:flex;
       align-items:center;
+      justify-content:center;
       gap:6px;
     }
 
@@ -85,6 +92,7 @@
       cursor:pointer;
       display:flex;
       align-items:center;
+      justify-content:center;
       gap:6px;
     }
 
@@ -93,7 +101,7 @@
       border-radius:20px;
       box-shadow:0 12px 30px rgba(0,0,0,.14);
       padding:20px;
-      overflow:auto;
+      overflow:hidden;
     }
 
     .sheet-title{
@@ -114,8 +122,16 @@
       font-weight:700;
     }
 
+    .table-wrap{
+      width:100%;
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+      border-radius:12px;
+    }
+
     table{
       width:100%;
+      min-width:1100px;
       border-collapse:collapse;
       table-layout:fixed;
       background:#fff;
@@ -136,6 +152,7 @@
 
     input{
       width:100%;
+      min-width:60px;
       border:none;
       outline:none;
       background:transparent;
@@ -164,6 +181,80 @@
       margin:8px 0;
     }
 
+    @media (max-width: 768px){
+      body{
+        background-attachment:scroll;
+      }
+
+      .page{
+        padding:12px;
+      }
+
+      .mdk-toolbar{
+        flex-direction:column;
+        align-items:stretch;
+      }
+
+      .mdk-btn--back,
+      .mdk-btn--pill,
+      .mdk-btn--primary,
+      .mdk-btn--edit{
+        width:100%;
+      }
+
+      .sheet-card{
+        padding:14px;
+        border-radius:16px;
+      }
+
+      .sheet-title{
+        font-size:22px;
+        line-height:1.25;
+        margin-bottom:12px;
+      }
+
+      .locked-note{
+        font-size:14px;
+      }
+
+      th, td{
+        font-size:12px;
+        padding:5px;
+      }
+
+      input{
+        font-size:16px;
+        padding:6px 4px;
+      }
+
+      .notes{
+        font-size:13px;
+      }
+
+      .notes ul{
+        margin-left:20px;
+        padding-left:0;
+      }
+    }
+
+    @media (max-width: 480px){
+      .page{
+        padding:10px;
+      }
+
+      .sheet-card{
+        padding:12px;
+      }
+
+      .sheet-title{
+        font-size:20px;
+      }
+
+      .notes{
+        font-size:12px;
+      }
+    }
+
     @page{
       size:A4 landscape;
       margin:10mm;
@@ -178,6 +269,13 @@
         box-shadow:none;
         border-radius:0;
         padding:0;
+      }
+      .table-wrap{
+        overflow:visible;
+      }
+      table{
+        min-width:0;
+        width:100%;
       }
       .sheet-title{
         font-size:22px;
@@ -220,37 +318,39 @@
         This saved record is locked. Press Edit to make changes.
       </div>
 
-      <table>
-        <colgroup>
-          <col style="width:11%">
-          <col style="width:6%">
-          <col style="width:9%">
-          <col style="width:4.5%">
-          <col style="width:9%">
-          <col style="width:4.5%">
-          <col style="width:9%">
-          <col style="width:4.5%">
-          <col style="width:11%">
-          <col style="width:19%">
-          <col style="width:11%">
-        </colgroup>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Kitchen Fridge Food item</th>
-            <th>°C</th>
-            <th>Kitchen Freezer Food Item</th>
-            <th>°C</th>
-            <th>Dishwasher</th>
-            <th>°C</th>
-            <th>Visual Check</th>
-            <th>Corrective Action</th>
-            <th>Sign</th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <colgroup>
+            <col style="width:11%">
+            <col style="width:6%">
+            <col style="width:9%">
+            <col style="width:4.5%">
+            <col style="width:9%">
+            <col style="width:4.5%">
+            <col style="width:9%">
+            <col style="width:4.5%">
+            <col style="width:11%">
+            <col style="width:19%">
+            <col style="width:11%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Kitchen Fridge Food item</th>
+              <th>°C</th>
+              <th>Kitchen Freezer Food Item</th>
+              <th>°C</th>
+              <th>Dishwasher</th>
+              <th>°C</th>
+              <th>Visual Check</th>
+              <th>Corrective Action</th>
+              <th>Sign</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
 
       <div class="notes">
         Record the Temperature of a Potentially Hazardous food item in each chilled storage area Twice a Day.<br><br>
