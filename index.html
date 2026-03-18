@@ -1,191 +1,153 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Mother Duck Kitchen - Sign in</title>
-  <link rel="stylesheet" href="site.css">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Mother Duck Kitchen – Sign in</title>
+
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
   <style>
-    html, body{
-      min-height:100%;
-      margin:0;
-    }
-
+    :root{--line:#cfd6dd}
+    html,body{height:100%}
     body{
-      font-family:Arial,Helvetica,sans-serif;
-      background:url("kitchen.jpg") center center / cover no-repeat fixed;
-      position:relative;
-    }
-
-    .wash{
-      position:fixed;
-      inset:0;
-      background:rgba(255,255,255,.42);
-      backdrop-filter:blur(4px);
-      z-index:0;
-    }
-
-    .login-wrap{
-      min-height:100vh;
+      margin:0;
+      font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      background-image:url("kitchen.jpg");
+      background-position:center;
+      background-size:cover;
+      background-repeat:no-repeat;
+      background-attachment:fixed;
       display:flex;
       align-items:center;
       justify-content:center;
-      padding:20px;
+      position:relative;
+    }
+    body::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:rgba(173,216,230,.55);
+      backdrop-filter:blur(2px);
+    }
+    .card{
       position:relative;
       z-index:1;
-    }
-
-    .login-card{
       width:100%;
-      max-width:460px;
-      background:rgba(255,255,255,.90);
-      backdrop-filter:blur(10px);
-      border-radius:28px;
-      padding:30px 24px;
-      box-shadow:0 18px 45px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.5);
-    }
-
-    .login-card img{
-      width:110px;
-      display:block;
-      margin:0 auto 10px;
-    }
-
-    .login-title{
+      max-width:380px;
       text-align:center;
-      margin:0 0 18px;
-      font-size:28px;
-      font-weight:800;
-      color:#1f2937;
-    }
-
-    .input{
-      width:100%;
-      box-sizing:border-box;
-      margin-bottom:12px;
-      padding:14px 16px;
-      border:1px solid #cfd6dd;
-      border-radius:16px;
-      font-size:16px;
       background:#fff;
-      outline:none;
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:0 8px 28px rgba(0,0,0,.15);
+      padding:26px;
+      box-sizing:border-box;
     }
-
-    .input:focus{
-      border-color:#2c52a0;
-    }
-
-    .btn{
+    .logo{max-width:120px;display:block;margin:0 auto 14px}
+    h1{margin:0 0 16px;font-size:20px}
+    input{
       width:100%;
-      border:none;
-      border-radius:18px;
-      padding:16px 18px;
-      background:#2c52a0;
-      color:#fff;
-      font-size:18px;
-      font-weight:800;
-      cursor:pointer;
-      box-shadow:0 10px 20px rgba(0,0,0,.18);
+      padding:10px;
+      margin:8px 0;
+      border:1px solid #cfd6dd;
+      border-radius:10px;
+      box-sizing:border-box;
     }
-
-    .btn:hover{
-      background:#244996;
-    }
-
-    .btn:disabled{
-      opacity:.7;
-      cursor:not-allowed;
-    }
-
-    .status{
-      margin-top:12px;
-      min-height:24px;
-      color:#b42318;
+    button{
+      width:100%;
+      padding:10px;
+      margin-top:8px;
+      border:0;
+      border-radius:10px;
       font-weight:700;
-      text-align:center;
-      white-space:pre-wrap;
+      cursor:pointer;
     }
+    .login{background:#0d6efd;color:#fff}
+    .error{color:#e11d48;min-height:1.2em;margin-top:8px}
+    .msg{color:#0f766e;margin-bottom:6px;min-height:1.2em}
   </style>
 </head>
 <body>
-  <div class="wash"></div>
+  <div class="card">
+    <img src="logo.png" alt="Mother Duck Kitchen" class="logo"/>
+    <h1>Sign in</h1>
+    <div id="msg" class="msg"></div>
+    <input type="email" id="email" placeholder="Email" autocomplete="username"/>
+    <input type="password" id="password" placeholder="Password" autocomplete="current-password"/>
+    <button class="login" id="loginBtn" type="button">Log in</button>
+    <div id="error" class="error"></div>
+  </div>
 
-  <main class="login-wrap">
-    <section class="login-card">
-      <img src="logo.png" alt="Mother Duck Logo">
-      <h2 class="login-title">Sign in</h2>
-
-      <input class="input" type="email" id="email" placeholder="Email" autocomplete="username">
-      <input class="input" type="password" id="password" placeholder="Password" autocomplete="current-password">
-
-      <button class="btn" id="loginBtn" type="button">Log in</button>
-
-      <div class="status" id="status"></div>
-    </section>
-  </main>
-
-  <script src="firebase-config.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script>
-    const statusBox = document.getElementById("status");
-    const loginBtn = document.getElementById("loginBtn");
-    const emailEl = document.getElementById("email");
-    const passwordEl = document.getElementById("password");
 
-    function showStatus(msg, ok = false) {
-      statusBox.textContent = msg;
-      statusBox.style.color = ok ? "#18794e" : "#b42318";
-    }
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAt0rXQIIZI2MxS0a6b6ObixF0Bf-UiiPI",
+      authDomain: "md-kitchen-live.firebaseapp.com",
+      projectId: "md-kitchen-live",
+      storageBucket: "md-kitchen-live.firebasestorage.app",
+      messagingSenderId: "552178339796",
+      appId: "1:552178339796:web:14ca54af158fd40e089041"
+    };
+
+    const msgEl = document.getElementById("msg");
+    const errEl = document.getElementById("error");
+    const emailEl = document.getElementById("email");
+    const passEl = document.getElementById("password");
+    const btn = document.getElementById("loginBtn");
 
     try {
       if (!firebase.apps.length) {
-        firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
+        firebase.initializeApp(firebaseConfig);
       }
 
       const auth = firebase.auth();
 
-      auth.onAuthStateChanged(function(user) {
+      auth.onAuthStateChanged(function(user){
         if (user) {
-          showStatus("Login success. Opening dashboard...", true);
-          setTimeout(function () {
-            location.replace("dashboard.html");
-          }, 300);
+          location.replace("dashboard.html");
         }
       });
 
-      function doLogin() {
-        const email = emailEl.value.trim();
-        const password = passwordEl.value;
+      async function doLogin(){
+        errEl.textContent = "";
 
-        if (!email || !password) {
-          showStatus("Enter email and password.");
+        const email = (emailEl.value || "").trim();
+        const pass = passEl.value || "";
+
+        if (!email || !pass) {
+          errEl.textContent = "Please enter email and password.";
           return;
         }
 
-        showStatus("Signing in...", true);
-        loginBtn.disabled = true;
+        btn.disabled = true;
+        const oldText = btn.textContent;
+        btn.textContent = "Signing in...";
 
-        auth.signInWithEmailAndPassword(email, password)
-          .then(function() {
-            showStatus("Signed in successfully.", true);
-          })
-          .catch(function(err) {
-            showStatus("Login failed: " + err.message);
-            loginBtn.disabled = false;
-          });
+        try {
+          await auth.signInWithEmailAndPassword(email, pass);
+          location.replace("dashboard.html");
+        } catch (e) {
+          console.error(e);
+          errEl.textContent = e.message || "Sign-in failed.";
+          btn.disabled = false;
+          btn.textContent = oldText;
+        }
       }
 
-      loginBtn.onclick = doLogin;
-
-      [emailEl, passwordEl].forEach(function(el) {
-        el.addEventListener("keydown", function(e) {
+      btn.addEventListener("click", doLogin);
+      [emailEl, passEl].forEach(function(el){
+        el.addEventListener("keydown", function(e){
           if (e.key === "Enter") doLogin();
         });
       });
 
-    } catch (err) {
-      showStatus("Script error: " + err.message);
+    } catch (e) {
+      console.error(e);
+      errEl.textContent = e.message || "Firebase failed to load.";
     }
   </script>
 </body>
