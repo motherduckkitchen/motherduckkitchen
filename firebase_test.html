@@ -2,28 +2,25 @@
 <meta charset="utf-8">
 <title>Firebase Config Test</title>
 
-<!-- Only compat CDN scripts (no type="module", no imports) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 
 <script>
-  // ⛳ PASTE the CDN config from Firebase Console → Project settings → Your apps → Web → SDK setup → **CDN**
-  // Use the Web App that is NOT pending deletion
   const firebaseConfig = {
-  "apiKey": "AIzaSyBRTV9KfMYjCGk1XYnsCoOBZaZ9h-sU6UA",
-  "authDomain": "motherduckkitchen-e2e1c-e2e1c.firebaseapp.com",
-  "projectId": "motherduckkitchen-e2e1c-e2e1c",
-  "storageBucket": "motherduckkitchen-e2e1c-e2e1c.firebasestorage.app",
-  "messagingSenderId": "459081978963",
-  "appId": "1:459081978963:web:8ac93c105b4a86c504a2a6",
-  "measurementId": "G-F1933BLB5H"
-};
+    apiKey: "AIzaSyD9dVq_JKb0H5UkVkxTjZiadulqdAMg4R8",
+    authDomain: "md-kitchen-live.firebaseapp.com",
+    projectId: "md-kitchen-live",
+    storageBucket: "md-kitchen-live.firebasestorage.app",
+    messagingSenderId: "552178339796",
+    appId: "1:552178339796:web:f1041a3d98955c96089041",
+    measurementId: "G-VGY8KXJBS3"
+  };
 
   try {
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const opts = firebase.app().options;
-    document.write("<pre>"+JSON.stringify(opts, null, 2)+"</pre>");
+    document.write("<pre>" + JSON.stringify(opts, null, 2) + "</pre>");
   } catch (e) {
-    document.write("<pre style='color:#b91c1c'>INIT ERROR:\n"+(e && e.message ? e.message : e)+"</pre>");
+    document.write("<pre style='color:#b91c1c'>INIT ERROR:\n" + (e && e.message ? e.message : e) + "</pre>");
     console.error(e);
   }
 </script>
