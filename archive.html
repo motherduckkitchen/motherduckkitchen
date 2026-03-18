@@ -6,6 +6,10 @@
 <title>Audit Archive</title>
 
 <style>
+*{
+  box-sizing:border-box;
+}
+
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
@@ -55,6 +59,9 @@ h1{
   font-weight:700;
   box-shadow:0 2px 8px rgba(0,0,0,.10);
   cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 .filters{
   display:flex;
@@ -67,7 +74,8 @@ select{
   padding:12px 14px;
   border-radius:14px;
   border:1px solid #cfd6dd;
-  font-size:15px;
+  font-size:16px;
+  min-height:48px;
 }
 .month-grid{
   display:grid;
@@ -102,11 +110,13 @@ select{
   display:block;
   margin-bottom:6px;
   font-size:22px;
+  line-height:1.25;
 }
 .meta{
   font-size:14px;
   color:#555;
-  margin:2px 0;
+  margin:4px 0;
+  word-break:break-word;
 }
 .download{
   margin-top:8px;
@@ -114,6 +124,7 @@ select{
   text-decoration:none;
   font-weight:700;
   color:#204a9b;
+  word-break:break-word;
 }
 .actions{
   display:flex;
@@ -140,10 +151,111 @@ select{
   font-size:16px;
   color:#444;
   padding:12px 4px;
+  text-align:center;
 }
-@media (max-width:760px){
+
+@media (max-width: 900px){
+  .month-grid{
+    grid-template-columns:repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 760px){
+  body{
+    background-attachment:scroll;
+  }
+
+  .page{
+    padding:12px;
+  }
+
+  .card{
+    padding:16px;
+    border-radius:18px;
+  }
+
+  h1{
+    font-size:26px;
+    margin-bottom:16px;
+  }
+
+  .topbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .btn{
+    width:100%;
+  }
+
+  .filters{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .filters select{
+    width:100%;
+  }
+
+  .month-grid{
+    grid-template-columns:repeat(2, 1fr);
+    gap:10px;
+  }
+
+  .month-btn{
+    padding:14px 10px;
+    font-size:14px;
+  }
+
+  .record{
+    padding:12px;
+  }
+
+  .record strong{
+    font-size:18px;
+  }
+
+  .actions{
+    flex-direction:column;
+  }
+
+  .action-btn{
+    width:100%;
+  }
+}
+
+@media (max-width: 480px){
+  .page{
+    padding:10px;
+  }
+
+  .card{
+    padding:12px;
+    border-radius:16px;
+  }
+
+  h1{
+    font-size:22px;
+  }
+
   .month-grid{
     grid-template-columns:1fr;
+  }
+
+  .month-btn{
+    font-size:15px;
+  }
+
+  .record strong{
+    font-size:17px;
+  }
+
+  .meta{
+    font-size:13px;
+  }
+
+  .download{
+    font-size:14px;
   }
 }
 </style>
