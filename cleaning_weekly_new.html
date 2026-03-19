@@ -5,18 +5,28 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Record 6b – Weekly Cleaning Schedule</title>
 
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2c52a0">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+
 <style>
+*{
+  box-sizing:border-box;
+}
+
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
   background:url("kitchen.jpg") center/cover no-repeat fixed;
 }
+
 .wash{
   position:fixed;
   inset:0;
   background:rgba(255,255,255,.45);
   backdrop-filter:blur(2px);
 }
+
 .page{
   position:relative;
   z-index:1;
@@ -24,6 +34,7 @@ body{
   margin:auto;
   padding:20px;
 }
+
 .toolbar{
   display:flex;
   gap:10px;
@@ -31,6 +42,7 @@ body{
   flex-wrap:wrap;
   align-items:center;
 }
+
 .btn{
   appearance:none;
   border:0;
@@ -47,47 +59,65 @@ body{
   color:#1f2937;
   box-shadow:0 4px 12px rgba(0,0,0,.15);
 }
+
 .btn:hover{
   transform:translateY(-1px);
 }
+
 .back{
   background:#f5b400;
   color:#3b2b00;
 }
+
 .back:hover{
   background:#d79d00;
 }
+
 .save{
   background:#2c52a0;
   color:#fff;
 }
+
 .save:hover{
   background:#244996;
 }
+
 .edit{
   background:#16a34a;
   color:#fff;
 }
+
 .edit:hover{
   background:#15803d;
 }
+
 .card{
   background:white;
   padding:20px;
   border-radius:20px;
   box-shadow:0 10px 30px rgba(0,0,0,.2);
-  overflow:auto;
+  overflow:hidden;
 }
+
 h1{
   margin:0 0 14px 0;
   font-size:28px;
 }
+
+.table-wrap{
+  width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+
 table{
   width:100%;
+  min-width:900px;
   border-collapse:collapse;
   table-layout:fixed;
   margin-bottom:18px;
 }
+
 th,td{
   border:1px solid black;
   padding:6px;
@@ -95,29 +125,39 @@ th,td{
   text-align:center;
   vertical-align:middle;
 }
+
 th{
   background:#efede4;
 }
+
 .area{
   text-align:left;
   width:38%;
 }
+
 .week-input{
   width:180px;
-  border:none;
+  max-width:100%;
+  border:1px solid #cfd6dd;
   outline:none;
-  background:transparent;
+  background:white;
   font-size:14px;
   font-weight:600;
+  padding:8px 10px;
+  border-radius:10px;
 }
+
 .chk{
   transform:scale(1.2);
 }
+
 .footer{
   margin-top:16px;
   font-size:12px;
   color:#333;
+  line-height:1.5;
 }
+
 .locked-note{
   margin-bottom:12px;
   padding:10px 12px;
@@ -128,16 +168,63 @@ th{
   display:none;
   font-weight:700;
 }
+
+@media (max-width:768px){
+  body{
+    background-attachment:scroll;
+  }
+
+  .page{
+    padding:12px;
+  }
+
+  .toolbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .btn{
+    width:100%;
+  }
+
+  .card{
+    padding:14px;
+    border-radius:16px;
+  }
+
+  h1{
+    font-size:22px;
+    line-height:1.25;
+  }
+
+  th,td{
+    font-size:12px;
+    padding:5px;
+  }
+
+  .week-input{
+    width:100%;
+    font-size:16px;
+  }
+
+  .locked-note{
+    font-size:14px;
+  }
+}
+
 @page{
   size:A4 landscape;
   margin:10mm;
 }
+
 @media print{
   .toolbar{display:none;}
   body{background:white;}
   .wash{display:none;}
   .page{max-width:none;padding:0;}
   .card{box-shadow:none;border-radius:0;padding:0;}
+  .table-wrap{overflow:visible;}
+  table{min-width:0;width:100%;}
   .locked-note{display:none !important;}
 }
 </style>
@@ -172,6 +259,16 @@ th{
   </div>
 </main>
 
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js")
+      .then(() => console.log("Service worker registered"))
+      .catch((err) => console.error("Service worker failed", err));
+  });
+}
+</script>
+
 <script src="firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -181,6 +278,61 @@ th{
 <script src="archive_shared.js"></script>
 
 <script>
+if (!firebase.apps.length) {
+  firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
+}
+
+const auth = firebase.auth();
+const IDLE_LIMIT_MS = 30 * 60 * 1000;
+let idleTimer;
+
+function markActivity() {
+  localStorage.setItem("mdk_last_activity", String(Date.now()));
+}
+
+async function forceLogout() {
+  try {
+    await auth.signOut();
+  } catch (e) {
+    console.error(e);
+  }
+  localStorage.removeItem("mdk_logged_in");
+  localStorage.removeItem("mdk_last_activity");
+  location.replace("login.html?msg=expired");
+}
+
+function resetIdleTimer() {
+  clearTimeout(idleTimer);
+  markActivity();
+  idleTimer = setTimeout(forceLogout, IDLE_LIMIT_MS);
+}
+
+function checkSessionAge() {
+  const last = Number(localStorage.getItem("mdk_last_activity") || "0");
+  if (!last) {
+    location.replace("login.html");
+    return;
+  }
+  if (Date.now() - last > IDLE_LIMIT_MS) {
+    forceLogout();
+  }
+}
+
+auth.onAuthStateChanged(function(user){
+  if(!user){
+    location.replace("login.html");
+    return;
+  }
+  checkSessionAge();
+  resetIdleTimer();
+});
+
+document.addEventListener("click", resetIdleTimer);
+document.addEventListener("keydown", resetIdleTimer);
+document.addEventListener("touchstart", resetIdleTimer);
+document.addEventListener("mousemove", resetIdleTimer);
+document.addEventListener("scroll", resetIdleTimer);
+
 const params = new URLSearchParams(window.location.search);
 const SITE = params.get("site") || "Kitchen";
 const LOAD_ID = params.get("load") || "";
@@ -208,7 +360,7 @@ function goBackSmart() {
   const fromArchive = sessionStorage.getItem("mdk_from_archive");
   if (fromArchive === "1") {
     sessionStorage.removeItem("mdk_from_archive");
-    window.location.href = "archive.html";
+    window.location.href = "audit_archive.html";
     return;
   }
   window.location.href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
@@ -219,6 +371,9 @@ function buildBlocks(){
   wrap.innerHTML = "";
 
   for(let block = 0; block < 4; block++){
+    const tableWrap = document.createElement("div");
+    tableWrap.className = "table-wrap";
+
     const table = document.createElement("table");
 
     let html = `
@@ -252,7 +407,8 @@ function buildBlocks(){
 
     html += `</tbody>`;
     table.innerHTML = html;
-    wrap.appendChild(table);
+    tableWrap.appendChild(table);
+    wrap.appendChild(tableWrap);
   }
 }
 
