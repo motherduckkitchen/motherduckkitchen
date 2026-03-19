@@ -5,18 +5,26 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Record 10 – Customer Complaints</title>
 
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2c52a0">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+
 <style>
+*{box-sizing:border-box;}
+
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
-  background:url("kitchen.jpg") center center / cover no-repeat fixed;
+  background:url("kitchen.jpg") center/cover no-repeat fixed;
 }
+
 .wash{
   position:fixed;
   inset:0;
   background:rgba(255,255,255,.45);
   backdrop-filter:blur(2px);
 }
+
 .page{
   position:relative;
   z-index:1;
@@ -24,121 +32,62 @@ body{
   margin:auto;
   padding:20px;
 }
+
 .toolbar{
   display:flex;
   gap:10px;
   margin-bottom:14px;
   flex-wrap:wrap;
-  align-items:center;
 }
+
 .btn{
-  appearance:none;
   border:0;
   border-radius:16px;
   padding:12px 18px;
-  cursor:pointer;
   font-weight:700;
-  font-size:15px;
-  text-decoration:none;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
   background:#e5e7eb;
-  color:#1f2937;
-  box-shadow:0 4px 12px rgba(0,0,0,.15);
 }
-.btn:hover{
-  transform:translateY(-1px);
-}
-.back{
-  background:#ffc107;
-  color:#4b0082;
-  border:none;
-}
-.save{
-  background:#007bff;
-  color:white;
-  border:none;
-}
-.edit{
-  background:#16a34a;
-  color:#fff;
-  border:none;
-}
+
+.back{background:#ffc107;}
+.save{background:#2c52a0;color:#fff;}
+.edit{background:#16a34a;color:#fff;}
+
 .card{
-  background:rgba(255,255,255,.95);
+  background:#fff;
   padding:20px;
   border-radius:20px;
-  box-shadow:0 12px 30px rgba(0,0,0,.14);
-  overflow:auto;
 }
-h1{
-  margin:0 0 16px;
-  font-size:28px;
-  color:#1f2937;
+
+h1{font-size:28px;margin-bottom:16px;}
+
+.table-wrap{
+  overflow-x:auto;
 }
+
 table{
   width:100%;
+  min-width:900px;
   border-collapse:collapse;
-  table-layout:fixed;
-  background:white;
 }
+
 th,td{
   border:1px solid #222;
   padding:6px;
   font-size:13px;
-  vertical-align:middle;
-  text-align:center;
 }
-th{
-  background:#f4f6f8;
-}
-input,textarea{
-  width:100%;
-  border:none;
-  outline:none;
-  background:transparent;
-  font-size:13px;
-  padding:4px;
-  box-sizing:border-box;
-  font-family:Arial,Helvetica,sans-serif;
-}
+
 textarea{
-  min-height:42px;
-  resize:vertical;
+  min-height:60px;
 }
-td:nth-child(3) input,
-td:nth-child(4) textarea,
-td:nth-child(5) textarea,
-td:nth-child(6) textarea{
-  text-align:left;
-}
-.note{
-  margin-top:16px;
-  font-size:13px;
-  color:#333;
-}
-.footer{
-  margin-top:18px;
-  font-size:12px;
-  color:#333;
-}
-.locked-note{
-  margin-bottom:12px;
-  padding:10px 12px;
-  border-radius:12px;
-  background:#fff7ed;
-  color:#9a3412;
-  border:1px solid #fdba74;
-  display:none;
-  font-weight:700;
-}
-@media print{
-  .toolbar{display:none;}
-  body{background:white;}
-  .wash{display:none;}
-  .card{box-shadow:none;border-radius:0;}
-  .locked-note{display:none !important;}
+
+/* MOBILE */
+@media (max-width:768px){
+  body{background-attachment:scroll;}
+  .page{padding:10px;}
+  .toolbar{flex-direction:column;}
+  .btn{width:100%;}
+  h1{font-size:22px;}
+  th,td{font-size:12px;}
 }
 </style>
 </head>
@@ -150,142 +99,97 @@ td:nth-child(6) textarea{
 <main class="page">
 
 <div class="toolbar">
-  <button class="btn back" type="button" onclick="goBackSmart()">← Back</button>
+  <button class="btn back" onclick="goBackSmart()">← Back</button>
   <a href="dashboard.html" class="btn">🏠 Home</a>
-  <button onclick="window.print()" class="btn" type="button">🖨 Print</button>
-  <button id="editBtn" onclick="unlockForEdit()" class="btn edit" type="button" style="display:none;">✏ Edit</button>
-  <button onclick="clearForm()" class="btn" type="button">Clear</button>
-  <button onclick="saveForm()" class="btn save" type="button">Save</button>
+  <button onclick="window.print()" class="btn">🖨 Print</button>
+  <button id="editBtn" onclick="unlockForEdit()" class="btn edit" style="display:none;">✏ Edit</button>
+  <button onclick="clearForm()" class="btn">Clear</button>
+  <button onclick="saveForm()" class="btn save">Save</button>
 </div>
 
 <div class="card">
 
 <h1 id="pageTitle">Record 10 – Customer Complaints</h1>
 
-<div id="lockedNote" class="locked-note">
-  This saved record is locked. Press Edit to make changes.
+<div id="lockedNote" style="display:none;background:#fff3cd;padding:10px;border-radius:10px;">
+  Locked — press Edit
 </div>
 
+<div class="table-wrap">
 <table>
-  <colgroup>
-    <col style="width:8%">
-    <col style="width:8%">
-    <col style="width:22%">
-    <col style="width:18%">
-    <col style="width:20%">
-    <col style="width:14%">
-    <col style="width:10%">
-  </colgroup>
-  <thead>
-    <tr>
-      <th>Date</th>
-      <th>Time</th>
-      <th>Complainant’s Name and Contact Details</th>
-      <th>Details of Complaint</th>
-      <th>Investigation details</th>
-      <th>Corrective Action</th>
-      <th>Checked by</th>
-    </tr>
-  </thead>
-  <tbody id="rows"></tbody>
+<thead>
+<tr>
+<th>Date</th>
+<th>Time</th>
+<th>Name / Contact</th>
+<th>Complaint</th>
+<th>Investigation</th>
+<th>Action</th>
+<th>Checked</th>
+</tr>
+</thead>
+<tbody id="rows"></tbody>
 </table>
-
-<div class="note">
-  Note: You may wish to attach further details of the incident and actions taken.
-</div>
-
-<div class="footer">
-  Food Safety Program - Mother Duck Kallangur (1) January 2021 - Transport Amendment.docx<br>
-  Accredited Food Safety Program - Food Act 2006 (QLD) - LI/2021/0345. Accredited by Michael Taylor (Authorised Person Moreton Bay Regional Council) 23 March 2021
 </div>
 
 </div>
-
 </main>
 
+<!-- SERVICE WORKER -->
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js");
+}
+</script>
+
+<!-- FIREBASE -->
 <script src="firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="firebase-loader.js"></script>
-<script src="archive_shared.js"></script>
 
 <script>
-const params = new URLSearchParams(window.location.search);
-const SITE = params.get("site") || "Kitchen";
-const LOAD_ID = params.get("load") || "";
-
-const STORAGE_KEY = SITE === "Brewer St"
-  ? "customer_complaints_brewer_v2"
-  : "customer_complaints_kitchen_v2";
-
-let loadedRecordId = LOAD_ID || "";
-
-document.getElementById("pageTitle").textContent =
-  SITE === "Brewer St"
-    ? "Record 10 – Customer Complaints (Brewer St)"
-    : "Record 10 – Customer Complaints (Kitchen)";
-
-function goBackSmart() {
-  const fromArchive = sessionStorage.getItem("mdk_from_archive");
-  if (fromArchive === "1") {
-    sessionStorage.removeItem("mdk_from_archive");
-    window.location.href = "audit_archive.html";
-    return;
-  }
-  window.location.href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
+if (!firebase.apps.length) {
+  firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
 }
 
-function todayDate(){
-  const d = new Date();
-  const dd = String(d.getDate()).padStart(2,"0");
-  const mm = String(d.getMonth()+1).padStart(2,"0");
-  const yyyy = d.getFullYear();
-  return dd + "/" + mm + "/" + yyyy;
+const auth = firebase.auth();
+
+/* 🔒 30 MIN LOCK */
+let timer;
+function resetTimer(){
+  clearTimeout(timer);
+  timer = setTimeout(()=>{
+    auth.signOut();
+    location.replace("login.html");
+  }, 1800000);
 }
 
-function currentTime(){
-  const d = new Date();
-  const hh = String(d.getHours()).padStart(2,"0");
-  const mm = String(d.getMinutes()).padStart(2,"0");
-  return hh + ":" + mm;
+["click","keydown","touchstart"].forEach(e=>{
+  document.addEventListener(e, resetTimer);
+});
+
+auth.onAuthStateChanged(user=>{
+  if(!user) location.replace("login.html");
+  resetTimer();
+});
+
+/* PAGE LOGIC */
+function goBackSmart(){
+  location.href="kitchen.html";
 }
 
 function buildRows(){
-  const tbody = document.getElementById("rows");
-  tbody.innerHTML = "";
+  const tbody=document.getElementById("rows");
+  for(let i=0;i<10;i++){
+    const tr=document.createElement("tr");
 
-  for(let i = 0; i < 12; i++){
-    const tr = document.createElement("tr");
+    for(let c=0;c<7;c++){
+      const td=document.createElement("td");
 
-    for(let c = 0; c < 7; c++){
-      const td = document.createElement("td");
-
-      if(c === 3 || c === 4 || c === 5){
-        const area = document.createElement("textarea");
-        area.dataset.row = i;
-        area.dataset.col = c;
-        td.appendChild(area);
-      } else {
-        const input = document.createElement("input");
-        input.type = "text";
-        input.dataset.row = i;
-        input.dataset.col = c;
-
-        if(c === 0){
-          input.addEventListener("focus", function(){
-            if(!input.value && !input.disabled) input.value = todayDate();
-          });
-        }
-
-        if(c === 1){
-          input.addEventListener("focus", function(){
-            if(!input.value && !input.disabled) input.value = currentTime();
-          });
-        }
-
-        td.appendChild(input);
+      if(c>=3 && c<=5){
+        td.innerHTML="<textarea></textarea>";
+      }else{
+        td.innerHTML="<input>";
       }
 
       tr.appendChild(td);
@@ -295,164 +199,33 @@ function buildRows(){
   }
 }
 
-function getAllFields(){
-  return document.querySelectorAll("table input, table textarea");
-}
-
-function lockAllFields(){
-  getAllFields().forEach(el => {
-    el.disabled = true;
-  });
-  document.getElementById("editBtn").style.display = "inline-block";
-  document.getElementById("lockedNote").style.display = "block";
-}
-
-function unlockForEdit(){
-  getAllFields().forEach(el => {
-    el.disabled = false;
-  });
-  document.getElementById("lockedNote").style.display = "none";
-}
-
-function getRowsAsObjects(){
-  const out = [];
-  document.querySelectorAll("#rows tr").forEach(tr => {
-    const fields = tr.querySelectorAll("input, textarea");
-    out.push({
-      date: fields[0]?.value?.trim() || "",
-      time: fields[1]?.value?.trim() || "",
-      complainant: fields[2]?.value?.trim() || "",
-      complaintDetails: fields[3]?.value?.trim() || "",
-      investigationDetails: fields[4]?.value?.trim() || "",
-      correctiveAction: fields[5]?.value?.trim() || "",
-      checkedBy: fields[6]?.value?.trim() || ""
-    });
-  });
-  return out;
-}
-
-function flattenRows(rows){
-  const values = [];
-  rows.forEach(row => {
-    values.push(
-      row.date || "",
-      row.time || "",
-      row.complainant || "",
-      row.complaintDetails || "",
-      row.investigationDetails || "",
-      row.correctiveAction || "",
-      row.checkedBy || ""
-    );
-  });
-  return values;
-}
-
-async function saveForm(){
-  const data = [];
-  document.querySelectorAll("table input, table textarea").forEach(function(el){
+function saveForm(){
+  const data=[];
+  document.querySelectorAll("input,textarea").forEach(el=>{
     data.push(el.value);
   });
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-
-  try {
-    if (window.MDKArchive) {
-      const rows = getRowsAsObjects();
-
-      let recordDate = "";
-      rows.forEach(function(row){
-        if (!recordDate && row.date.trim()) {
-          recordDate = row.date.trim();
-        }
-      });
-
-      if (!recordDate) {
-        recordDate = window.MDKArchive.formatDDMMYYYY(new Date());
-      }
-
-      const archivePayload = {
-        type: "Customer Complaints",
-        site: SITE,
-        recordDate: recordDate,
-        fields: {
-          rows: rows
-        }
-      };
-
-      if (loadedRecordId) {
-        await window.MDKArchive.updateRecord(loadedRecordId, archivePayload);
-      } else {
-        loadedRecordId = await window.MDKArchive.saveRecord(archivePayload);
-      }
-    }
-
-    if (loadedRecordId) {
-      lockAllFields();
-    }
-
-    alert("Saved");
-  } catch (err) {
-    console.error("Archive save error:", err);
-    alert("Saved locally, but archive sync failed");
-  }
+  localStorage.setItem("complaints",JSON.stringify(data));
+  alert("Saved");
 }
 
 function loadForm(){
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if(!saved) return;
-
-  const data = JSON.parse(saved);
-  const fields = document.querySelectorAll("table input, table textarea");
-  fields.forEach(function(field, i){
-    field.value = data[i] || "";
+  const data=JSON.parse(localStorage.getItem("complaints")||"[]");
+  document.querySelectorAll("input,textarea").forEach((el,i)=>{
+    el.value=data[i]||"";
   });
-}
-
-async function loadSavedArchiveRecord(){
-  if(!loadedRecordId || !window.MDKArchive) return;
-
-  try{
-    const record = await window.MDKArchive.loadRecord(loadedRecordId);
-    if(!record || !record.fields) return;
-
-    const rows = record.fields.rows || [];
-    const values = flattenRows(rows);
-    const fields = document.querySelectorAll("table input, table textarea");
-
-    fields.forEach((el, i) => {
-      el.value = values[i] || "";
-    });
-
-    lockAllFields();
-  } catch(err){
-    console.error("Load archive record error:", err);
-    alert("Could not open saved archive record.");
-  }
 }
 
 function clearForm(){
-  if(!confirm("Clear form?")) return;
+  if(!confirm("Clear?")) return;
+  document.querySelectorAll("input,textarea").forEach(el=>el.value="");
+}
 
-  document.querySelectorAll("table input, table textarea").forEach(function(el){
-    el.value = "";
-    el.disabled = false;
-  });
-
-  document.getElementById("lockedNote").style.display = "none";
-  document.getElementById("editBtn").style.display = loadedRecordId ? "inline-block" : "none";
-
-  if (!loadedRecordId) {
-    localStorage.removeItem(STORAGE_KEY);
-  }
+function unlockForEdit(){
+  document.querySelectorAll("input,textarea").forEach(el=>el.disabled=false);
 }
 
 buildRows();
-
-if (loadedRecordId) {
-  loadSavedArchiveRecord();
-} else {
-  loadForm();
-}
+loadForm();
 </script>
 
 </body>
