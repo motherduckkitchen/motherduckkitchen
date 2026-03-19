@@ -1,61 +1,209 @@
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mother Duck Kitchen - Sign in</title>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCJYbLlMxEo9hyS6it0RiAtrxPxSHi8TrY",
-    authDomain: "mdk-fresh-live.firebaseapp.com",
-    projectId: "mdk-fresh-live",
-    storageBucket: "mdk-fresh-live.firebasestorage.app",
-    messagingSenderId: "283345305823",
-    appId: "1:283345305823:web:16e857b6d23815e65a96a"
-  };
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#2c52a0">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
-  const msg = document.getElementById("msg");
-  const emailEl = document.getElementById("email");
-  const passEl = document.getElementById("password");
-  const btn = document.getElementById("loginBtn");
+  <style>
+    *{
+      box-sizing:border-box;
+    }
 
-  function show(text, ok=false){
-    msg.textContent = text;
-    msg.className = "msg " + (ok ? "ok" : "err");
-  }
+    html,body{
+      height:100%;
+      margin:0;
+      font:14px/1.4 system-ui,Arial;
+    }
 
-  let auth;
-  try {
-    firebase.initializeApp(firebaseConfig);
-    auth = firebase.auth();
-    show("Firebase loaded.", true);
-  } catch (e) {
-    console.error(e);
-    show("Init failed: " + (e.message || e));
-  }
+    body{
+      background:url("kitchen.jpg") center/cover no-repeat fixed;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      padding:16px;
+    }
 
-  async function doLogin() {
-    try {
-      show("");
-      const email = emailEl.value.trim();
-      const password = passEl.value;
+    body::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:rgba(173,216,230,.55);
+      backdrop-filter:blur(2px);
+    }
 
-      if (!email || !password) {
-        show("Enter email and password.");
-        return;
+    .card{
+      position:relative;
+      z-index:1;
+      width:100%;
+      max-width:380px;
+      background:#fff;
+      border-radius:16px;
+      padding:26px;
+      box-shadow:0 8px 28px rgba(0,0,0,.15);
+      text-align:center;
+    }
+
+    .logo{
+      max-width:120px;
+      width:100%;
+      display:block;
+      margin:0 auto 14px;
+      height:auto;
+    }
+
+    h1{
+      margin:0 0 16px;
+      font-size:20px;
+    }
+
+    input{
+      width:100%;
+      padding:12px;
+      margin:8px 0;
+      border:1px solid #cfd6dd;
+      border-radius:10px;
+      box-sizing:border-box;
+      font-size:16px;
+    }
+
+    button{
+      width:100%;
+      padding:12px;
+      margin-top:10px;
+      border:0;
+      border-radius:10px;
+      font-weight:700;
+      background:#0d6efd;
+      color:#fff;
+      cursor:pointer;
+      font-size:16px;
+    }
+
+    .msg{
+      min-height:20px;
+      margin-top:10px;
+      word-break:break-word;
+    }
+
+    .ok{ color:#0f766e; }
+    .err{ color:#e11d48; }
+
+    @media (max-width: 768px){
+      body{
+        background-attachment:scroll;
+        padding:12px;
       }
 
-      btn.disabled = true;
-      btn.textContent = "Signing in...";
+      .card{
+        max-width:100%;
+        padding:18px;
+        border-radius:14px;
+      }
 
-      await auth.signInWithEmailAndPassword(email, password);
-      show("Login success.", true);
-      location.replace("dashboard.html");
+      h1{
+        font-size:22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img src="logo.png" alt="Mother Duck Kitchen" class="logo">
+    <h1>Sign in</h1>
+    <input type="email" id="email" placeholder="Email" autocomplete="username">
+    <input type="password" id="password" placeholder="Password" autocomplete="current-password">
+    <button id="loginBtn" type="button">Log in</button>
+    <div id="msg" class="msg"></div>
+  </div>
 
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js")
+          .then(() => console.log("Service worker registered"))
+          .catch((err) => console.error("Service worker failed", err));
+      });
+    }
+  </script>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCJYbLlMxEo9hyS6it0RiAtrxPxSHi8TrY",
+      authDomain: "mdk-fresh-live.firebaseapp.com",
+      projectId: "mdk-fresh-live",
+      storageBucket: "mdk-fresh-live.firebasestorage.app",
+      messagingSenderId: "283345305823",
+      appId: "1:283345305823:web:16e857b6d23815e65a96a"
+    };
+
+    const msg = document.getElementById("msg");
+    const emailEl = document.getElementById("email");
+    const passEl = document.getElementById("password");
+    const btn = document.getElementById("loginBtn");
+
+    const IDLE_LIMIT_MS = 30 * 60 * 1000;
+
+    function show(text, ok=false){
+      msg.textContent = text;
+      msg.className = "msg " + (ok ? "ok" : "err");
+    }
+
+    function markActivity() {
+      localStorage.setItem("mdk_last_activity", String(Date.now()));
+    }
+
+    let auth;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      auth = firebase.auth();
+      show("Firebase loaded.", true);
     } catch (e) {
       console.error(e);
-      show("Login failed: " + (e.message || e));
-      btn.disabled = false;
-      btn.textContent = "Log in";
+      show("Init failed: " + (e.message || e));
     }
-  }
 
-  btn.addEventListener("click", doLogin);
-</script>
+    async function doLogin() {
+      try {
+        show("");
+        const email = emailEl.value.trim();
+        const password = passEl.value;
+
+        if (!email || !password) {
+          show("Enter email and password.");
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = "Signing in...";
+
+        await auth.signInWithEmailAndPassword(email, password);
+
+        markActivity();
+        localStorage.setItem("mdk_logged_in", "1");
+
+        show("Login success.", true);
+        location.replace("dashboard.html");
+
+      } catch (e) {
+        console.error(e);
+        show("Login failed: " + (e.message || e));
+        btn.disabled = false;
+        btn.textContent = "Log in";
+      }
+    }
+
+    btn.addEventListener("click", doLogin);
+    emailEl.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+    passEl.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+  </script>
+</body>
+</html>
