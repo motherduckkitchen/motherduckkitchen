@@ -5,19 +5,27 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Record 2 – Approved Food Supplier Agreement Form</title>
 
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2c52a0">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+
 <style>
+*{box-sizing:border-box;}
+
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
   background:url("kitchen.jpg") center/cover no-repeat fixed;
   min-height:100vh;
 }
+
 .wash{
   position:fixed;
   inset:0;
   background:rgba(255,255,255,.42);
   backdrop-filter:blur(4px);
 }
+
 .page{
   position:relative;
   z-index:1;
@@ -25,6 +33,7 @@ body{
   margin:0 auto;
   padding:24px;
 }
+
 .toolbar{
   display:flex;
   gap:10px;
@@ -32,6 +41,7 @@ body{
   flex-wrap:wrap;
   align-items:center;
 }
+
 .btn{
   appearance:none;
   border:0;
@@ -48,42 +58,27 @@ body{
   color:#222;
   box-shadow:0 4px 12px rgba(0,0,0,.15);
 }
-.btn:hover{
-  transform:translateY(-1px);
-}
-.back{
-  background:#ffc107;
-  color:#4b0082;
-}
-.back:hover{
-  background:#e0a800;
-}
-.save{
-  background:#1a73e8;
-  color:#fff;
-}
-.save:hover{
-  background:#1765cc;
-}
-.edit{
-  background:#16a34a;
-  color:#fff;
-}
-.edit:hover{
-  background:#15803d;
-}
+
+.btn:hover{transform:translateY(-1px);}
+
+.back{background:#ffc107;color:#4b0082;}
+.save{background:#1a73e8;color:#fff;}
+.edit{background:#16a34a;color:#fff;}
+
 .card{
   background:#fff;
   border-radius:20px;
   box-shadow:0 12px 30px rgba(0,0,0,.18);
   padding:34px 40px;
 }
+
 h1{
   margin:0 0 24px;
   font-size:26px;
   line-height:1.25;
   color:#111827;
 }
+
 .line-row{
   display:flex;
   align-items:flex-end;
@@ -91,11 +86,12 @@ h1{
   margin-bottom:12px;
   flex-wrap:wrap;
 }
+
 .label{
   min-width:130px;
   font-size:14px;
-  color:#222;
 }
+
 .line-input{
   flex:1;
   min-width:240px;
@@ -106,37 +102,38 @@ h1{
   font-size:15px;
   padding:4px 2px 6px;
 }
+
 .inline-group{
   display:flex;
   gap:20px;
   flex-wrap:wrap;
   margin:10px 0 20px;
 }
+
 .check-item{
   display:flex;
   align-items:center;
   gap:8px;
   font-size:14px;
 }
+
 h2{
   font-size:18px;
   margin:18px 0 8px;
-  color:#111827;
 }
+
 p{
   font-size:14px;
   line-height:1.6;
   margin:0 0 8px;
-  color:#222;
 }
-.section{
-  margin-bottom:12px;
-}
+
 .two-col{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:22px;
 }
+
 .locked-note{
   margin-bottom:14px;
   padding:10px 12px;
@@ -147,352 +144,184 @@ p{
   display:none;
   font-weight:700;
 }
+
 .footer{
   margin-top:34px;
   font-size:12px;
   line-height:1.45;
-  color:#333;
 }
+
 @media (max-width:760px){
-  .card{
-    padding:24px 20px;
+  body{background-attachment:scroll;}
+
+  .page{padding:12px;}
+
+  .toolbar{
+    flex-direction:column;
+    align-items:stretch;
   }
-  .two-col{
-    grid-template-columns:1fr;
-  }
+
+  .btn{width:100%;}
+
+  .card{padding:24px 20px;}
+
+  .two-col{grid-template-columns:1fr;}
+
+  input{font-size:16px;}
 }
+
 @page{
   size:A4 portrait;
   margin:12mm;
 }
+
 @media print{
   .toolbar{display:none;}
   body{background:#fff;}
   .wash{display:none;}
   .page{max-width:none;padding:0;}
-  .card{
-    box-shadow:none;
-    border-radius:0;
-    padding:0;
-  }
+  .card{box-shadow:none;border-radius:0;padding:0;}
   .locked-note{display:none !important;}
 }
 </style>
 </head>
+
 <body>
 <div class="wash"></div>
 
 <main class="page">
   <div class="toolbar">
-    <button class="btn back" type="button" onclick="goBackSmart()">← Back</button>
+    <button class="btn back" onclick="goBackSmart()">← Back</button>
     <a href="dashboard.html" class="btn">🏠 Home</a>
-    <button class="btn" type="button" onclick="window.print()">🖨 Print</button>
-    <button id="editBtn" class="btn edit" type="button" onclick="unlockForEdit()" style="display:none;">✏ Edit</button>
-    <button class="btn" type="button" onclick="clearForm()">🧹 Clear</button>
-    <button class="btn save" type="button" onclick="saveForm()">💾 Save</button>
+    <button class="btn" onclick="window.print()">🖨 Print</button>
+    <button id="editBtn" class="btn edit" onclick="unlockForEdit()" style="display:none;">Edit</button>
+    <button class="btn" onclick="clearForm()">Clear</button>
+    <button class="btn save" onclick="saveForm()">Save</button>
   </div>
 
   <section class="card">
-    <h1>Record 2 – Approved food supplier agreement form.</h1>
+    <h1>Record 2 – Approved food supplier agreement form</h1>
 
     <div id="lockedNote" class="locked-note">
       This saved record is locked. Press Edit to make changes.
     </div>
 
-    <div class="line-row">
-      <div class="label">Supplier:</div>
-      <input id="supplier" class="line-input" type="text">
+    <div class="line-row"><div class="label">Supplier:</div><input id="supplier" class="line-input"></div>
+    <div class="line-row"><div class="label">Address:</div><input id="address" class="line-input"></div>
+    <div class="line-row"><div class="label">Phone:</div><input id="phone" class="line-input"></div>
+    <div class="line-row"><div class="label">Goods supplied:</div><input id="goodsSupplied" class="line-input"></div>
+
+    <div class="inline-group">
+      <label class="check-item"><input type="checkbox" id="freqDaily"> Daily</label>
+      <label class="check-item"><input type="checkbox" id="freqWeekly"> Weekly</label>
+      <label class="check-item"><input type="checkbox" id="freqFortnightly"> Fortnightly</label>
+      <label class="check-item"><input type="checkbox" id="freqMonthly"> Monthly</label>
+      <label class="check-item"><input type="checkbox" id="freqIrregular"> Irregularly</label>
     </div>
 
-    <div class="line-row">
-      <div class="label">Address:</div>
-      <input id="address" class="line-input" type="text">
+    <h2>Suppliers’ acceptance</h2>
+    <div class="line-row"><div class="label">Name:</div><input id="supplierAcceptName" class="line-input"></div>
+    <div class="line-row"><div class="label">Position:</div><input id="supplierAcceptPosition" class="line-input"></div>
+    <div class="two-col">
+      <div class="line-row"><div class="label">Date:</div><input id="supplierAcceptDate" class="line-input date-auto"></div>
+      <div class="line-row"><div class="label">Signature:</div><input id="supplierAcceptSignature" class="line-input"></div>
     </div>
 
-    <div class="line-row">
-      <div class="label">Phone:</div>
-      <input id="phone" class="line-input" type="text">
-    </div>
-
-    <div class="line-row">
-      <div class="label">Goods supplied:</div>
-      <input id="goodsSupplied" class="line-input" type="text">
-    </div>
-
-    <div class="line-row">
-      <div class="label">Frequency of delivery:</div>
-      <div class="inline-group">
-        <label class="check-item"><input type="checkbox" id="freqDaily"> Daily</label>
-        <label class="check-item"><input type="checkbox" id="freqWeekly"> Weekly</label>
-        <label class="check-item"><input type="checkbox" id="freqFortnightly"> Fortnightly</label>
-        <label class="check-item"><input type="checkbox" id="freqMonthly"> Monthly</label>
-        <label class="check-item"><input type="checkbox" id="freqIrregular"> Irregularly</label>
-      </div>
-    </div>
-
-    <div class="section">
-      <h2>General requirements for the products:</h2>
-      <p>
-        All food products are to be supplied in good, fresh condition, free from any odour,
-        discolouration or signs of spoilage or contamination and under temperature control
-        (ie below 5°C or above 60°C).
-      </p>
-    </div>
-
-    <div class="section">
-      <h2>Package and labelling requirements:</h2>
-      <p>
-        All food products are to be delivered in food grade containers that are free from
-        chemical or physical contaminants. Labelling shall comply with the requirements of the
-        Food Standards Code.
-      </p>
-    </div>
-
-    <div class="section">
-      <h2>Transport requirements:</h2>
-      <p>
-        All food products are to be transported in clean food transport vehicles. The foods are
-        not to be transported in direct contact with meat, animals, plants, pests or chemicals or
-        exposed to sunlight. All potentially hazardous foods (dairy foods, meat, fish and
-        smallgoods) must be transported under refrigeration at or below 5°C for cold food and
-        at or above 60°C for hot food. Frozen food is to be delivered frozen hard (not partially
-        thawed). If food is transported between 5°C and 60°C, it must be demonstrated that the
-        temperature of the food, having regard to the time taken to transport the food, will not
-        adversely affect the microbiological safety of the food.
-      </p>
-    </div>
-
-    <div class="section">
-      <h2>Conditions for supply:</h2>
-      <p>
-        It is required that all foods supplied comply with the Food Standards Code at all times.
-        Failure to do so will result in refusal of the goods.
-      </p>
-    </div>
-
-    <div class="section">
-      <h2>Suppliers’ acceptance:</h2>
-
-      <div class="line-row">
-        <div class="label">Name:</div>
-        <input id="supplierAcceptName" class="line-input" type="text">
-      </div>
-
-      <div class="line-row">
-        <div class="label">Position:</div>
-        <input id="supplierAcceptPosition" class="line-input" type="text">
-      </div>
-
-      <div class="two-col">
-        <div class="line-row">
-          <div class="label">Date:</div>
-          <input id="supplierAcceptDate" class="line-input" type="text">
-        </div>
-        <div class="line-row">
-          <div class="label">Signature:</div>
-          <input id="supplierAcceptSignature" class="line-input" type="text">
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <h2>Business acceptance:</h2>
-
-      <div class="line-row">
-        <div class="label">Name:</div>
-        <input id="businessAcceptName" class="line-input" type="text">
-      </div>
-
-      <div class="line-row">
-        <div class="label">Position:</div>
-        <input id="businessAcceptPosition" class="line-input" type="text">
-      </div>
-
-      <div class="two-col">
-        <div class="line-row">
-          <div class="label">Date:</div>
-          <input id="businessAcceptDate" class="line-input" type="text">
-        </div>
-        <div class="line-row">
-          <div class="label">Signature:</div>
-          <input id="businessAcceptSignature" class="line-input" type="text">
-        </div>
-      </div>
+    <h2>Business acceptance</h2>
+    <div class="line-row"><div class="label">Name:</div><input id="businessAcceptName" class="line-input"></div>
+    <div class="line-row"><div class="label">Position:</div><input id="businessAcceptPosition" class="line-input"></div>
+    <div class="two-col">
+      <div class="line-row"><div class="label">Date:</div><input id="businessAcceptDate" class="line-input date-auto"></div>
+      <div class="line-row"><div class="label">Signature:</div><input id="businessAcceptSignature" class="line-input"></div>
     </div>
 
     <div class="footer">
-      Food Safety Program - Mother Duck Kallangur (1) January 2021 - Transport Amendment.docx<br>
-      Accredited Food Safety Program - Food Act 2006 (QLD) - LI/2021/0345. Accredited by Michael Taylor (Authorised Person Moreton Bay Regional Council) 23 March 2021
+      Food Safety Program - Mother Duck Kallangur
     </div>
   </section>
 </main>
 
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js");
+  });
+}
+</script>
+
 <script src="firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="firebase-loader.js"></script>
 <script src="archive_shared.js"></script>
 
 <script>
-const params = new URLSearchParams(window.location.search);
-const LOAD_ID = params.get("load") || "";
-const STORAGE_KEY = "record2_supplier_agreement_v1";
-let loadedRecordId = LOAD_ID || "";
-
-function goBackSmart() {
-  window.location.href = "dashboard.html";
+if (!firebase.apps.length) {
+  firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
 }
 
-function getAllFields() {
-  return document.querySelectorAll("input");
+const auth = firebase.auth();
+const IDLE_LIMIT_MS = 30 * 60 * 1000;
+let idleTimer;
+
+function markActivity(){
+  localStorage.setItem("mdk_last_activity", Date.now());
 }
 
-function setLockedState(locked) {
-  getAllFields().forEach(el => {
-    el.disabled = locked;
+function forceLogout(){
+  auth.signOut();
+  localStorage.clear();
+  location.replace("login.html?msg=expired");
+}
+
+function resetIdleTimer(){
+  clearTimeout(idleTimer);
+  markActivity();
+  idleTimer = setTimeout(forceLogout, IDLE_LIMIT_MS);
+}
+
+auth.onAuthStateChanged(user=>{
+  if(!user) location.replace("login.html");
+  resetIdleTimer();
+});
+
+["click","keydown","touchstart","mousemove","scroll"]
+.forEach(e=>document.addEventListener(e, resetIdleTimer));
+
+const STORAGE_KEY = "record2_supplier";
+
+function saveForm(){
+  const data = {};
+  document.querySelectorAll("input").forEach(el=>{
+    data[el.id] = el.type==="checkbox" ? el.checked : el.value;
   });
-  document.getElementById("editBtn").style.display = locked ? "inline-block" : "none";
-  document.getElementById("lockedNote").style.display = locked ? "block" : "none";
-}
-
-function unlockForEdit() {
-  setLockedState(false);
-}
-
-function collectFormData() {
-  return {
-    supplier: document.getElementById("supplier").value,
-    address: document.getElementById("address").value,
-    phone: document.getElementById("phone").value,
-    goodsSupplied: document.getElementById("goodsSupplied").value,
-
-    freqDaily: document.getElementById("freqDaily").checked,
-    freqWeekly: document.getElementById("freqWeekly").checked,
-    freqFortnightly: document.getElementById("freqFortnightly").checked,
-    freqMonthly: document.getElementById("freqMonthly").checked,
-    freqIrregular: document.getElementById("freqIrregular").checked,
-
-    supplierAcceptName: document.getElementById("supplierAcceptName").value,
-    supplierAcceptPosition: document.getElementById("supplierAcceptPosition").value,
-    supplierAcceptDate: document.getElementById("supplierAcceptDate").value,
-    supplierAcceptSignature: document.getElementById("supplierAcceptSignature").value,
-
-    businessAcceptName: document.getElementById("businessAcceptName").value,
-    businessAcceptPosition: document.getElementById("businessAcceptPosition").value,
-    businessAcceptDate: document.getElementById("businessAcceptDate").value,
-    businessAcceptSignature: document.getElementById("businessAcceptSignature").value
-  };
-}
-
-function applyFormData(data) {
-  if (!data) return;
-
-  document.getElementById("supplier").value = data.supplier || "";
-  document.getElementById("address").value = data.address || "";
-  document.getElementById("phone").value = data.phone || "";
-  document.getElementById("goodsSupplied").value = data.goodsSupplied || "";
-
-  document.getElementById("freqDaily").checked = !!data.freqDaily;
-  document.getElementById("freqWeekly").checked = !!data.freqWeekly;
-  document.getElementById("freqFortnightly").checked = !!data.freqFortnightly;
-  document.getElementById("freqMonthly").checked = !!data.freqMonthly;
-  document.getElementById("freqIrregular").checked = !!data.freqIrregular;
-
-  document.getElementById("supplierAcceptName").value = data.supplierAcceptName || "";
-  document.getElementById("supplierAcceptPosition").value = data.supplierAcceptPosition || "";
-  document.getElementById("supplierAcceptDate").value = data.supplierAcceptDate || "";
-  document.getElementById("supplierAcceptSignature").value = data.supplierAcceptSignature || "";
-
-  document.getElementById("businessAcceptName").value = data.businessAcceptName || "";
-  document.getElementById("businessAcceptPosition").value = data.businessAcceptPosition || "";
-  document.getElementById("businessAcceptDate").value = data.businessAcceptDate || "";
-  document.getElementById("businessAcceptSignature").value = data.businessAcceptSignature || "";
-}
-
-async function saveForm() {
-  const data = collectFormData();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-
-  try {
-    if (window.MDKArchive) {
-      const recordDate =
-        data.businessAcceptDate ||
-        data.supplierAcceptDate ||
-        window.MDKArchive.formatDDMMYYYY(new Date());
-
-      const archivePayload = {
-        type: "Approved Supplier Agreement Form",
-        site: "Home",
-        recordDate: recordDate,
-        fields: data
-      };
-
-      if (loadedRecordId) {
-        await window.MDKArchive.updateRecord(loadedRecordId, archivePayload);
-      } else {
-        loadedRecordId = await window.MDKArchive.saveRecord(archivePayload);
-      }
-    }
-
-    if (loadedRecordId) {
-      setLockedState(true);
-    }
-
-    alert("Saved");
-  } catch (err) {
-    console.error("Archive save error:", err);
-    alert("Saved locally, but archive sync failed");
-  }
+  alert("Saved");
 }
 
-function loadForm() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (!saved) return;
-  try {
-    applyFormData(JSON.parse(saved));
-  } catch (err) {
-    console.error("Local load error:", err);
-  }
-}
-
-async function loadSavedArchiveRecord() {
-  if (!loadedRecordId || !window.MDKArchive) return;
-
-  try {
-    const record = await window.MDKArchive.loadRecord(loadedRecordId);
-    if (!record || !record.fields) return;
-
-    applyFormData(record.fields);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(record.fields));
-    setLockedState(true);
-  } catch (err) {
-    console.error("Load archive record error:", err);
-    alert("Could not open saved archive record.");
-  }
-}
-
-function clearForm() {
-  if (!confirm("Clear form?")) return;
-
-  document.querySelectorAll("input").forEach(el => {
-    if (el.type === "checkbox") el.checked = false;
-    else el.value = "";
+function loadForm(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw) return;
+  const data = JSON.parse(raw);
+  Object.keys(data).forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.type==="checkbox" ? el.checked=data[id] : el.value=data[id];
   });
-
-  if (loadedRecordId) {
-    setLockedState(false);
-  } else {
-    localStorage.removeItem(STORAGE_KEY);
-  }
 }
 
-if (loadedRecordId) {
-  loadSavedArchiveRecord();
-} else {
-  loadForm();
+function clearForm(){
+  if(!confirm("Clear form?")) return;
+  document.querySelectorAll("input").forEach(el=>{
+    el.type==="checkbox" ? el.checked=false : el.value="";
+  });
+  localStorage.removeItem(STORAGE_KEY);
 }
+
+function goBackSmart(){
+  window.location.href="dashboard.html";
+}
+
+loadForm();
 </script>
 </body>
 </html>
