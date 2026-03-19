@@ -1,0 +1,22 @@
+{
+  "name": "Mother Duck Kitchen",
+  "short_name": "Mother Duck",
+  "start_url": "/dashboard.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2c52a0",
+  "description": "Mother Duck food safety records and kitchen logs.",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
