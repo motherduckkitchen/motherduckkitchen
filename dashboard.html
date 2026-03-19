@@ -5,7 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mother Duck Kitchen - Dashboard</title>
 
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2c52a0">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+
 <style>
+*{
+  box-sizing:border-box;
+}
+
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
@@ -38,8 +46,10 @@ body{
 
 .logo{
   width:90px;
+  max-width:100%;
   display:block;
   margin:0 auto 10px;
+  height:auto;
 }
 
 .site-title{
@@ -48,6 +58,7 @@ body{
   color:#fff;
   text-shadow:0 3px 10px rgba(0,0,0,.30);
   margin-bottom:20px;
+  line-height:1.2;
 }
 
 .card{
@@ -83,6 +94,9 @@ body{
   box-shadow:
     0 2px 8px rgba(0,0,0,.10),
     0 0 14px rgba(255,255,255,.45);
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
 .logout{
@@ -94,6 +108,8 @@ body{
   font-weight:700;
   cursor:pointer;
   box-shadow:0 6px 16px rgba(0,0,0,.18);
+  min-width:120px;
+  font-size:16px;
 }
 
 .logout:hover{
@@ -122,6 +138,7 @@ body{
     0 10px 20px rgba(0,0,0,.18),
     0 0 16px rgba(255,255,255,.24);
   transition:.15s;
+  padding:14px;
 }
 
 .card-link:hover{
@@ -129,9 +146,75 @@ body{
   background:#244996;
 }
 
-@media (max-width:760px){
+@media (max-width: 768px){
+  body{
+    background-attachment:scroll;
+  }
+
+  .page{
+    padding:12px;
+    align-items:flex-start;
+  }
+
+  .wrap{
+    max-width:100%;
+  }
+
+  .logo{
+    width:80px;
+    margin-top:6px;
+  }
+
+  .site-title{
+    font-size:28px;
+    margin-bottom:16px;
+  }
+
+  .card{
+    padding:18px;
+    border-radius:18px;
+  }
+
+  .topbar{
+    flex-direction:column;
+    align-items:stretch;
+    gap:10px;
+  }
+
+  .top-btn,
+  .logout{
+    width:100%;
+    min-width:0;
+  }
+
   .grid{
     grid-template-columns:1fr;
+    gap:12px;
+  }
+
+  .card-link{
+    min-height:64px;
+    font-size:16px;
+    border-radius:16px;
+  }
+}
+
+@media (max-width: 480px){
+  .page{
+    padding:10px;
+  }
+
+  .site-title{
+    font-size:24px;
+  }
+
+  .card{
+    padding:14px;
+  }
+
+  .card-link{
+    font-size:15px;
+    min-height:58px;
   }
 }
 </style>
@@ -156,25 +239,35 @@ body{
       </div>
 
       <div class="grid">
-  <a class="card-link" href="invoices.html">Invoices</a>
-  <a class="card-link" href="nursery_new.html">Nursery</a>
+        <a class="card-link" href="invoices.html">Invoices</a>
+        <a class="card-link" href="nursery_new.html">Nursery</a>
 
-  <a class="card-link" href="record1_suppliers.html">Approved Suppliers</a>
-  <a class="card-link" href="food-safety-bible.pdf" target="_blank">Food Safety Bible</a>
+        <a class="card-link" href="record1_suppliers.html">Approved Suppliers</a>
+        <a class="card-link" href="food-safety-bible.pdf" target="_blank" rel="noopener">Food Safety Bible</a>
 
-  <a class="card-link" href="pest_control.html">Pest Control</a>
-  <a class="card-link" href="food_recall.html">Food Recall</a>
+        <a class="card-link" href="pest_control.html">Pest Control</a>
+        <a class="card-link" href="food_recall.html">Food Recall</a>
 
-  <a class="card-link" href="staff_illness.html">Staff Illness / Accident</a>
-  <a class="card-link" href="record13.html">Food Safety Program Review</a>
+        <a class="card-link" href="staff_illness.html">Staff Illness / Accident</a>
+        <a class="card-link" href="record13.html">Food Safety Program Review</a>
 
-  <a class="card-link" href="audit_archive.html">Audit Archive</a>
-  <a class="card-link" href="record_5b_transport_brewer.html">Brewer Transport Log</a>
-</div>
-      
+        <a class="card-link" href="audit_archive.html">Audit Archive</a>
+        <a class="card-link" href="record_5b_transport_brewer.html">Brewer Transport Log</a>
+      </div>
+
     </section>
   </div>
 </main>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js")
+      .then(() => console.log("Service worker registered"))
+      .catch((err) => console.error("Service worker failed", err));
+  });
+}
+</script>
 
 <script src="firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -186,18 +279,66 @@ if (!firebase.apps.length) {
 }
 
 const auth = firebase.auth();
+const IDLE_LIMIT_MS = 30 * 60 * 1000;
+let idleTimer;
+
+function markActivity() {
+  localStorage.setItem("mdk_last_activity", String(Date.now()));
+}
+
+async function forceLogout() {
+  try {
+    await auth.signOut();
+  } catch (e) {
+    console.error(e);
+  }
+
+  localStorage.removeItem("mdk_logged_in");
+  localStorage.removeItem("mdk_last_activity");
+  location.replace("login.html?msg=expired");
+}
+
+function resetIdleTimer() {
+  clearTimeout(idleTimer);
+  markActivity();
+  idleTimer = setTimeout(forceLogout, IDLE_LIMIT_MS);
+}
+
+function checkSessionAge() {
+  const last = Number(localStorage.getItem("mdk_last_activity") || "0");
+  if (!last) {
+    location.replace("login.html");
+    return;
+  }
+
+  if (Date.now() - last > IDLE_LIMIT_MS) {
+    forceLogout();
+  }
+}
 
 auth.onAuthStateChanged(function(user){
   if(!user){
-    location.replace("index.html");
+    location.replace("login.html");
+    return;
   }
+
+  checkSessionAge();
+  resetIdleTimer();
 });
 
 document.getElementById("logoutBtn").onclick = function(){
   auth.signOut().then(function(){
-    location.replace("index.html");
+    localStorage.removeItem("mdk_logged_in");
+    localStorage.removeItem("mdk_last_activity");
+    location.replace("login.html");
   });
 };
+
+document.addEventListener("click", resetIdleTimer);
+document.addEventListener("keydown", resetIdleTimer);
+document.addEventListener("touchstart", resetIdleTimer);
+document.addEventListener("mousemove", resetIdleTimer);
+document.addEventListener("scroll", resetIdleTimer);
 </script>
 
 </body>
