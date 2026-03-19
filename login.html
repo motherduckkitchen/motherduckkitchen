@@ -124,35 +124,32 @@
 
   <script>
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/sw.js")
-          .then(() => console.log("Service worker registered"))
-          .catch((err) => console.error("Service worker failed", err));
+      window.addEventListener("load", async () => {
+        try {
+          const res = await fetch("/sw.js", { method: "HEAD" });
+          if (res.ok) {
+            navigator.serviceWorker.register("/sw.js")
+              .then(() => console.log("Service worker registered"))
+              .catch((err) => console.error("Service worker failed", err));
+          }
+        } catch (err) {
+          console.warn("sw.js not available");
+        }
       });
     }
   </script>
 
   <script src="firebase-config.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCJYbLlMxEo9hyS6it0RiAtrxPxSHi8TrY",
-      authDomain: "mdk-fresh-live.firebaseapp.com",
-      projectId: "mdk-fresh-live",
-      storageBucket: "mdk-fresh-live.firebasestorage.app",
-      messagingSenderId: "283345305823",
-      appId: "1:283345305823:web:16e857b6d23815e65a96a"
-    };
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
+  <script>
     const msg = document.getElementById("msg");
     const emailEl = document.getElementById("email");
     const passEl = document.getElementById("password");
     const btn = document.getElementById("loginBtn");
 
-    const IDLE_LIMIT_MS = 30 * 60 * 1000;
-
-    function show(text, ok=false){
+    function show(text, ok = false){
       msg.textContent = text;
       msg.className = "msg " + (ok ? "ok" : "err");
     }
@@ -161,9 +158,17 @@
       localStorage.setItem("mdk_last_activity", String(Date.now()));
     }
 
-    let auth;
+    let auth = null;
+
     try {
-      firebase.initializeApp(firebaseConfig);
+      if (!window.MDK_FIREBASE_CONFIG) {
+        throw new Error("firebase-config.js not loaded");
+      }
+
+      if (!firebase.apps.length) {
+        firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
+      }
+
       auth = firebase.auth();
       show("Firebase loaded.", true);
     } catch (e) {
@@ -174,6 +179,12 @@
     async function doLogin() {
       try {
         show("");
+
+        if (!auth) {
+          show("Firebase auth not ready.");
+          return;
+        }
+
         const email = emailEl.value.trim();
         const password = passEl.value;
 
