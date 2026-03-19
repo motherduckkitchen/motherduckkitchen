@@ -5,7 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Record 3b - Bottle Receipt</title>
 
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2c52a0">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+
 <style>
+*{
+  box-sizing:border-box;
+}
+
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
@@ -76,15 +84,22 @@ body{
   padding:20px;
   border-radius:20px;
   box-shadow:0 12px 30px rgba(0,0,0,.14);
-  overflow:auto;
+  overflow:hidden;
 }
 h1{
   margin:0 0 16px;
   font-size:28px;
   color:#1f2937;
 }
+.table-wrap{
+  width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  border-radius:12px;
+}
 table{
   width:100%;
+  min-width:980px;
   border-collapse:collapse;
   table-layout:fixed;
   background:white;
@@ -118,6 +133,7 @@ td:nth-child(7) input{
   margin-top:16px;
   font-size:12px;
   color:#333;
+  line-height:1.5;
 }
 .locked-note{
   margin-bottom:12px;
@@ -129,11 +145,76 @@ td:nth-child(7) input{
   display:none;
   font-weight:700;
 }
+
+@media (max-width: 768px){
+  body{
+    background-attachment:scroll;
+  }
+
+  .page{
+    padding:12px;
+  }
+
+  .toolbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .btn{
+    width:100%;
+  }
+
+  .card{
+    padding:14px;
+    border-radius:16px;
+  }
+
+  h1{
+    font-size:22px;
+    line-height:1.25;
+  }
+
+  th,td{
+    font-size:12px;
+    padding:5px;
+  }
+
+  input,select{
+    font-size:16px;
+    padding:6px 4px;
+  }
+
+  .note{
+    font-size:12px;
+  }
+
+  .locked-note{
+    font-size:14px;
+  }
+}
+
+@media (max-width: 480px){
+  .page{
+    padding:10px;
+  }
+
+  .card{
+    padding:12px;
+  }
+
+  h1{
+    font-size:20px;
+  }
+}
+
 @media print{
   .toolbar{display:none;}
   body{background:white;}
   .wash{display:none;}
-  .card{box-shadow:none;border-radius:0;}
+  .page{max-width:none;padding:0;}
+  .card{box-shadow:none;border-radius:0;padding:0;}
+  .table-wrap{overflow:visible;}
+  table{min-width:0;width:100%;}
   .locked-note{display:none !important;}
 }
 </style>
@@ -159,29 +240,31 @@ td:nth-child(7) input{
       This saved record is locked. Press Edit to make changes.
     </div>
 
-    <table>
-      <colgroup>
-        <col style="width:12%">
-        <col style="width:8%">
-        <col style="width:20%">
-        <col style="width:22%">
-        <col style="width:14%">
-        <col style="width:16%">
-        <col style="width:8%">
-      </colgroup>
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Time</th>
-          <th>Name of Child</th>
-          <th>Visual check (labelling and packaging)</th>
-          <th>Number of bottles delivered</th>
-          <th>Time placed in refrigerator</th>
-          <th>Checked by</th>
-        </tr>
-      </thead>
-      <tbody id="rows"></tbody>
-    </table>
+    <div class="table-wrap">
+      <table>
+        <colgroup>
+          <col style="width:12%">
+          <col style="width:8%">
+          <col style="width:20%">
+          <col style="width:22%">
+          <col style="width:14%">
+          <col style="width:16%">
+          <col style="width:8%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Name of Child</th>
+            <th>Visual check (labelling and packaging)</th>
+            <th>Number of bottles delivered</th>
+            <th>Time placed in refrigerator</th>
+            <th>Checked by</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
 
     <div class="note">
       Food Safety Program - Mother Duck Kallangur (1) January 2021 - Transport Amendment.docx<br>
@@ -189,6 +272,16 @@ td:nth-child(7) input{
     </div>
   </div>
 </main>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js")
+      .then(() => console.log("Service worker registered"))
+      .catch((err) => console.error("Service worker failed", err));
+  });
+}
+</script>
 
 <script src="firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -199,6 +292,61 @@ td:nth-child(7) input{
 <script src="archive_shared.js"></script>
 
 <script>
+if (!firebase.apps.length) {
+  firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
+}
+
+const auth = firebase.auth();
+const IDLE_LIMIT_MS = 30 * 60 * 1000;
+let idleTimer;
+
+function markActivity() {
+  localStorage.setItem("mdk_last_activity", String(Date.now()));
+}
+
+async function forceLogout() {
+  try {
+    await auth.signOut();
+  } catch (e) {
+    console.error(e);
+  }
+  localStorage.removeItem("mdk_logged_in");
+  localStorage.removeItem("mdk_last_activity");
+  location.replace("login.html?msg=expired");
+}
+
+function resetIdleTimer() {
+  clearTimeout(idleTimer);
+  markActivity();
+  idleTimer = setTimeout(forceLogout, IDLE_LIMIT_MS);
+}
+
+function checkSessionAge() {
+  const last = Number(localStorage.getItem("mdk_last_activity") || "0");
+  if (!last) {
+    location.replace("login.html");
+    return;
+  }
+  if (Date.now() - last > IDLE_LIMIT_MS) {
+    forceLogout();
+  }
+}
+
+auth.onAuthStateChanged(function(user){
+  if(!user){
+    location.replace("login.html");
+    return;
+  }
+  checkSessionAge();
+  resetIdleTimer();
+});
+
+document.addEventListener("click", resetIdleTimer);
+document.addEventListener("keydown", resetIdleTimer);
+document.addEventListener("touchstart", resetIdleTimer);
+document.addEventListener("mousemove", resetIdleTimer);
+document.addEventListener("scroll", resetIdleTimer);
+
 const params = new URLSearchParams(window.location.search);
 const LOAD_ID = params.get("load") || "";
 const STORAGE_KEY = "bottle_receipt_v4";
