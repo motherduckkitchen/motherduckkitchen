@@ -3,147 +3,256 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Audit Archive</title>
+<title>Record 5b - Transport Log</title>
+
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2c52a0">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
 
 <style>
+*{
+  box-sizing:border-box;
+}
+
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
-  background:url("kitchen.jpg") center/cover no-repeat fixed;
-  min-height:100vh;
+  background:url("kitchen.jpg") center center / cover no-repeat fixed;
 }
+
 .wash{
   position:fixed;
   inset:0;
-  background:rgba(255,255,255,.42);
-  backdrop-filter:blur(4px);
+  background:rgba(255,255,255,.45);
+  backdrop-filter:blur(2px);
 }
+
 .page{
   position:relative;
   z-index:1;
-  max-width:1200px;
+  max-width:1500px;
   margin:0 auto;
-  padding:24px;
+  padding:20px;
 }
-.card{
-  background:rgba(255,255,255,.90);
-  backdrop-filter:blur(10px);
-  border-radius:26px;
-  padding:24px;
-  box-shadow:0 18px 40px rgba(0,0,0,.18);
-}
-h1{
-  margin:0 0 18px;
-  text-align:center;
-  font-size:34px;
-  color:#1f2937;
-}
-.topbar{
-  display:flex;
-  gap:12px;
-  justify-content:center;
-  flex-wrap:wrap;
-  margin-bottom:20px;
-}
-.btn{
-  padding:12px 18px;
-  border-radius:16px;
-  background:#f8fafc;
-  color:#29405a;
-  border:1px solid #d6dde5;
-  text-decoration:none;
-  font-weight:700;
-  box-shadow:0 2px 8px rgba(0,0,0,.10);
-  cursor:pointer;
-}
-.filters{
-  display:flex;
-  gap:12px;
-  flex-wrap:wrap;
-  justify-content:center;
-  margin-bottom:20px;
-}
-select{
-  padding:12px 14px;
-  border-radius:14px;
-  border:1px solid #cfd6dd;
-  font-size:15px;
-}
-.month-grid{
-  display:grid;
-  grid-template-columns:repeat(3, 1fr);
-  gap:12px;
-  margin-bottom:20px;
-}
-.month-btn{
-  padding:16px;
-  border:none;
-  border-radius:18px;
-  background:#2c52a0;
-  color:white;
-  font-weight:800;
-  cursor:pointer;
-  box-shadow:0 10px 20px rgba(0,0,0,.16), 0 0 16px rgba(255,255,255,.22);
-}
-.month-btn.active{
-  background:#183e88;
-}
-.records{
-  display:grid;
-  gap:12px;
-}
-.record{
-  border:1px solid #d7dde4;
-  border-radius:16px;
-  padding:14px;
-  background:#fff;
-}
-.record strong{
-  display:block;
-  margin-bottom:6px;
-  font-size:22px;
-}
-.meta{
-  font-size:14px;
-  color:#555;
-  margin:2px 0;
-}
-.download{
-  margin-top:8px;
-  display:inline-block;
-  text-decoration:none;
-  font-weight:700;
-  color:#204a9b;
-}
-.actions{
+
+.mdk-toolbar{
   display:flex;
   gap:10px;
+  margin-bottom:14px;
   flex-wrap:wrap;
-  margin-top:12px;
+  align-items:center;
 }
-.action-btn{
-  padding:10px 14px;
+
+.mdk-btn--back,
+.mdk-btn--pill,
+.mdk-btn--primary,
+.mdk-btn--edit{
   border:none;
   border-radius:12px;
+  padding:10px 18px;
   font-weight:700;
   cursor:pointer;
+  text-decoration:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
 }
-.open-btn{
-  background:#204a9b;
+
+.mdk-btn--back{
+  background:#ffc107;
+  color:#4b0082;
+}
+
+.mdk-btn--pill{
+  background:#f8fafc;
+  border:1px solid #cfd6dd;
+  color:#222;
+}
+
+.mdk-btn--primary{
+  background:#007bff;
   color:#fff;
 }
-.delete-btn{
-  background:#b42318;
+
+.mdk-btn--edit{
+  background:#16a34a;
   color:#fff;
 }
-.message{
+
+.sheet-card{
+  background:rgba(255,255,255,.95);
+  border-radius:20px;
+  box-shadow:0 12px 30px rgba(0,0,0,.14);
+  padding:20px;
+  overflow:hidden;
+}
+
+.sheet-title{
+  font-size:28px;
+  font-weight:700;
+  margin:0 0 16px;
+  color:#1f2937;
+  text-align:center;
+}
+
+.meta-line{
+  text-align:center;
+  font-weight:700;
+  margin-bottom:12px;
+  color:#222;
+}
+
+.locked-note{
+  margin-bottom:12px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:#fff7ed;
+  color:#9a3412;
+  border:1px solid #fdba74;
+  display:none;
+  font-weight:700;
+}
+
+.table-wrap{
+  width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  border-radius:12px;
+}
+
+table{
+  width:100%;
+  min-width:1200px;
+  border-collapse:collapse;
+  table-layout:fixed;
+  background:#fff;
+}
+
+th, td{
+  border:1px solid #222;
+  padding:6px;
+  font-size:13px;
+  text-align:center;
+  vertical-align:middle;
+}
+
+th{
+  background:#f4f6f8;
+  font-weight:700;
+}
+
+input{
+  width:100%;
+  min-width:60px;
+  border:none;
+  outline:none;
+  background:transparent;
+  font-size:13px;
+  padding:4px;
+  box-sizing:border-box;
+  text-align:center;
+}
+
+td.left input{
+  text-align:left;
+}
+
+.footer-notes{
+  margin-top:18px;
+  font-size:13px;
+  color:#333;
+  line-height:1.5;
+}
+
+.footer-notes strong{
+  display:block;
   font-size:16px;
-  color:#444;
-  padding:12px 4px;
+  margin-bottom:6px;
 }
-@media (max-width:760px){
-  .month-grid{
-    grid-template-columns:1fr;
+
+@media (max-width:768px){
+  body{
+    background-attachment:scroll;
+  }
+
+  .page{
+    padding:12px;
+  }
+
+  .mdk-toolbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .mdk-btn--back,
+  .mdk-btn--pill,
+  .mdk-btn--primary,
+  .mdk-btn--edit{
+    width:100%;
+  }
+
+  .sheet-card{
+    padding:14px;
+    border-radius:16px;
+  }
+
+  .sheet-title{
+    font-size:22px;
+    line-height:1.25;
+  }
+
+  .meta-line{
+    font-size:14px;
+  }
+
+  th, td{
+    font-size:12px;
+    padding:5px;
+  }
+
+  input{
+    font-size:16px;
+    padding:6px 4px;
+  }
+
+  .footer-notes{
+    font-size:12px;
+  }
+}
+
+@page{
+  size:A4 landscape;
+  margin:10mm;
+}
+
+@media print{
+  body{ background:#fff; }
+  .wash{ display:none; }
+  .mdk-toolbar{ display:none; }
+  .page{ max-width:none; padding:0; }
+  .sheet-card{
+    box-shadow:none;
+    border-radius:0;
+    padding:0;
+  }
+  .table-wrap{
+    overflow:visible;
+  }
+  table{
+    min-width:0;
+    width:100%;
+  }
+  th, td{
+    font-size:11px;
+    padding:4px;
+  }
+  input{
+    font-size:11px;
+    padding:2px;
+  }
+  .locked-note{
+    display:none !important;
   }
 }
 </style>
@@ -152,56 +261,74 @@ select{
 <div class="wash"></div>
 
 <main class="page">
-  <section class="card">
-    <h1>Audit Archive</h1>
+  <div class="mdk-toolbar">
+    <a id="backBtn" href="dashboard.html" class="mdk-btn--back">← Back</a>
+    <a href="dashboard.html" class="mdk-btn--pill">🏠 Home</a>
+    <button class="mdk-btn--pill" onclick="window.print()" type="button">🖨 Print</button>
+    <button id="editBtn" class="mdk-btn--edit" onclick="unlockForEdit()" type="button" style="display:none;">✏ Edit</button>
+    <button class="mdk-btn--pill" onclick="clearForm()" type="button">🧹 Clear</button>
+    <button class="mdk-btn--primary" onclick="saveForm()" type="button">💾 Save</button>
+  </div>
 
-    <div class="topbar">
-      <button class="btn" type="button" onclick="goBackSmart()">← Back</button>
-      <a class="btn" href="dashboard.html">Home</a>
-      <a class="btn" href="kitchen.html">Kitchen</a>
-      <a class="btn" href="brewer_st.html">Brewer St</a>
+  <section class="sheet-card">
+    <h1 id="pageTitle" class="sheet-title">Record 5b – Transport Log</h1>
+    <div class="meta-line">
+      Driver's Name:
+      <input id="driverName" type="text" style="display:inline-block;width:220px;max-width:100%;border:1px solid #bbb;border-radius:8px;padding:6px 8px;background:#fff;text-align:left;">
     </div>
 
-    <div class="filters">
-      <select id="yearSelect"></select>
-
-      <select id="siteSelect">
-        <option value="">All Sites</option>
-        <option value="Kitchen">Kitchen</option>
-        <option value="Brewer St">Brewer St</option>
-        <option value="Nursery">Nursery</option>
-        <option value="Home">Home</option>
-      </select>
-
-      <select id="typeSelect">
-        <option value="">All Record Types</option>
-        <option value="Incoming Goods">Incoming Goods</option>
-        <option value="Approved Suppliers List">Approved Suppliers List</option>
-        <option value="Food Safety Program Review">Food Safety Program Review</option>
-        <option value="Cook Cool Reheat">Cook Cool Reheat</option>
-        <option value="Transfer Log">Transfer Log</option>
-        <option value="Appliance Temps">Appliance Temps</option>
-        <option value="Daily Cleaning">Daily Cleaning</option>
-        <option value="Weekly Cleaning">Weekly Cleaning</option>
-        <option value="Monthly Cleaning">Monthly Cleaning</option>
-        <option value="Equipment Log">Equipment Log</option>
-        <option value="Thermometer Calibration">Thermometer Calibration</option>
-        <option value="Customer Complaints">Customer Complaints</option>
-        <option value="Staff Training">Staff Training</option>
-        <option value="Staff Illness / Accident">Staff Illness / Accident</option>
-        <option value="Bottle Receipt">Bottle Receipt</option>
-        <option value="Nursery Temperature & Puree Reheat Log">Nursery Temperature & Puree Reheat Log</option>
-        <option value="Invoices">Invoices</option>
-        <option value="Pest Control">Pest Control</option>
-        <option value="Food Recall">Food Recall</option>
-        <option value="Heating Log">Heating Log</option>
-      </select>
+    <div id="lockedNote" class="locked-note">
+      This saved record is locked. Press Edit to make changes.
     </div>
 
-    <div class="month-grid" id="monthGrid"></div>
-    <div class="records" id="recordsWrap"></div>
+    <div class="table-wrap">
+      <table>
+        <colgroup>
+          <col style="width:11%">
+          <col style="width:28%">
+          <col style="width:11%">
+          <col style="width:12%">
+          <col style="width:10%">
+          <col style="width:10%">
+          <col style="width:9%">
+          <col style="width:9%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description of Meal</th>
+            <th>Time Meal Dispatched</th>
+            <th>Temperature °C of Meal at Dispatch</th>
+            <th>Time of Meal Delivery</th>
+            <th>Temp at Delivery °C</th>
+            <th>Transit Time</th>
+            <th>Sign Off</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="footer-notes">
+      <strong id="notesTitle">Notes</strong>
+      <span id="notesText">Record meal dispatch and delivery details. Save records regularly and print if needed for hard-copy filing.</span>
+      <br><br>
+      Food Safety Program - Mother Duck Kallangur (1) January 2021 - Transport Amendment.docx
+      <br>
+      Accredited Food Safety Program - Food Act 2006 (QLD) - LI/2021/0345. Accredited by Michael Taylor (Authorised Person Moreton Bay Regional Council) 23 March 2021
+    </div>
   </section>
 </main>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js")
+      .then(() => console.log("Service worker registered"))
+      .catch((err) => console.error("Service worker failed", err));
+  });
+}
+</script>
 
 <script src="firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -212,170 +339,302 @@ select{
 <script src="archive_shared.js"></script>
 
 <script>
-const monthGrid = document.getElementById("monthGrid");
-const recordsWrap = document.getElementById("recordsWrap");
-const yearSelect = document.getElementById("yearSelect");
-const siteSelect = document.getElementById("siteSelect");
-const typeSelect = document.getElementById("typeSelect");
-
-let activeMonth = new Date().getMonth() + 1;
-window.MDKArchiveCache = window.MDKArchiveCache || {};
-
-function goBackSmart() {
-  window.location.href = "dashboard.html";
+if (!firebase.apps.length) {
+  firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
 }
 
-function buildYears() {
-  const currentYear = new Date().getFullYear();
-  yearSelect.innerHTML = "";
-  for (let y = currentYear - 2; y <= currentYear + 1; y++) {
-    const opt = document.createElement("option");
-    opt.value = y;
-    opt.textContent = y;
-    if (y === currentYear) opt.selected = true;
-    yearSelect.appendChild(opt);
+const auth = firebase.auth();
+const IDLE_LIMIT_MS = 30 * 60 * 1000;
+let idleTimer;
+
+function markActivity() {
+  localStorage.setItem("mdk_last_activity", String(Date.now()));
+}
+
+async function forceLogout() {
+  try {
+    await auth.signOut();
+  } catch (e) {
+    console.error(e);
+  }
+  localStorage.removeItem("mdk_logged_in");
+  localStorage.removeItem("mdk_last_activity");
+  location.replace("login.html?msg=expired");
+}
+
+function resetIdleTimer() {
+  clearTimeout(idleTimer);
+  markActivity();
+  idleTimer = setTimeout(forceLogout, IDLE_LIMIT_MS);
+}
+
+function checkSessionAge() {
+  const last = Number(localStorage.getItem("mdk_last_activity") || "0");
+  if (!last) {
+    location.replace("login.html");
+    return;
+  }
+  if (Date.now() - last > IDLE_LIMIT_MS) {
+    forceLogout();
   }
 }
 
-async function buildMonths() {
-  const counts = await window.MDKArchive.listMonthCounts(yearSelect.value);
-  monthGrid.innerHTML = "";
+auth.onAuthStateChanged(function(user){
+  if(!user){
+    location.replace("login.html");
+    return;
+  }
+  checkSessionAge();
+  resetIdleTimer();
+});
 
-  for (let i = 1; i <= 12; i++) {
-    const btn = document.createElement("button");
-    btn.className = "month-btn" + (i === activeMonth ? " active" : "");
-    btn.textContent = `${window.MDKArchive.monthName(i)} (${counts[i] || 0})`;
-    btn.onclick = async function() {
-      activeMonth = i;
-      await buildMonths();
-      await loadRecords();
-    };
-    monthGrid.appendChild(btn);
+document.addEventListener("click", resetIdleTimer);
+document.addEventListener("keydown", resetIdleTimer);
+document.addEventListener("touchstart", resetIdleTimer);
+document.addEventListener("mousemove", resetIdleTimer);
+document.addEventListener("scroll", resetIdleTimer);
+
+const params = new URLSearchParams(location.search);
+const SITE = params.get("site") || "Kitchen";
+const LOAD_ID = params.get("load") || "";
+const STORAGE_KEY = SITE === "Brewer St" ? "transport_log_brewer_v1" : "transport_log_kitchen_v1";
+
+let loadedRecordId = LOAD_ID || "";
+
+const pageTitle = document.getElementById("pageTitle");
+const backBtn = document.getElementById("backBtn");
+const notesText = document.getElementById("notesText");
+
+if (SITE === "Brewer St") {
+  pageTitle.textContent = "Record 5b – Brewer St Transport Log";
+  backBtn.href = "brewer_st.html";
+  notesText.textContent = "Record meal dispatch and delivery details for Brewer St transport. Save records regularly and print if needed for hard-copy filing.";
+} else {
+  pageTitle.textContent = "Record 5b – Kitchen Transport Log";
+  backBtn.href = "kitchen.html";
+  notesText.textContent = "Record meal dispatch and delivery details for Kitchen transport. Save records regularly and print if needed for hard-copy filing.";
+}
+
+function todayDate() {
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+
+function currentTime() {
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
+function buildRow() {
+  const tr = document.createElement("tr");
+  const defs = [
+    { kind: "date", left: false },
+    { kind: "text", left: true },
+    { kind: "time", left: false },
+    { kind: "text", left: false },
+    { kind: "time", left: false },
+    { kind: "text", left: false },
+    { kind: "text", left: false },
+    { kind: "text", left: false }
+  ];
+
+  defs.forEach(def => {
+    const td = document.createElement("td");
+    if (def.left) td.className = "left";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.dataset.kind = def.kind;
+
+    input.addEventListener("focus", function() {
+      if (!input.value && !input.disabled) {
+        if (def.kind === "date") input.value = todayDate();
+        if (def.kind === "time") input.value = currentTime();
+      }
+    });
+
+    td.appendChild(input);
+    tr.appendChild(td);
+  });
+
+  return tr;
+}
+
+function buildTable() {
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+  for (let i = 0; i < 16; i++) {
+    tbody.appendChild(buildRow());
   }
 }
 
-function getOpenPage(record) {
-  const pageMap = {
-    "Cook Cool Reheat": "record_5a_temp_control_log.html",
-    "Bottle Receipt": "bottle_receipt.html",
-    "Daily Cleaning": "cleaning_schedule_new.html",
-    "Weekly Cleaning": "cleaning_weekly_new.html",
-    "Monthly Cleaning": "cleaning_monthly_new.html",
-    "Appliance Temps": "appliance_temps.html",
-    "Heating Log": "record_5_heating_log.html",
-    "Thermometer Calibration": "thermometer_calibration.html",
-    "Pest Control": "pest_control.html",
-    "Customer Complaints": "customer_complaints.html",
-    "Staff Training": "staff_training.html",
-    "Staff Illness / Accident": "staff_illness.html",
-    "Food Recall": "food_recall.html",
-    "Equipment Log": "equipment_log.html",
-    "Food Safety Program Review": "record13.html",
-    "Approved Suppliers List": "record1_suppliers.html",
-    "Nursery Temperature & Puree Reheat Log": "nursery_puree_log_new.html",
-    "Invoices": "invoices.html",
-    "Transfer Log": "transport_log.html"
+function getAllFields() {
+  return document.querySelectorAll("#tbody input, #driverName");
+}
+
+function lockAllFields() {
+  getAllFields().forEach(el => {
+    el.disabled = true;
+  });
+  document.getElementById("editBtn").style.display = "inline-flex";
+  document.getElementById("lockedNote").style.display = "block";
+}
+
+function unlockForEdit() {
+  getAllFields().forEach(el => {
+    el.disabled = false;
+  });
+  document.getElementById("lockedNote").style.display = "none";
+}
+
+function getRowsAsObjects() {
+  const rows = [];
+  document.querySelectorAll("#tbody tr").forEach(tr => {
+    const inputs = tr.querySelectorAll("input");
+    rows.push({
+      date: inputs[0]?.value?.trim() || "",
+      meal: inputs[1]?.value?.trim() || "",
+      dispatchTime: inputs[2]?.value?.trim() || "",
+      dispatchTemp: inputs[3]?.value?.trim() || "",
+      deliveryTime: inputs[4]?.value?.trim() || "",
+      deliveryTemp: inputs[5]?.value?.trim() || "",
+      transitTime: inputs[6]?.value?.trim() || "",
+      signOff: inputs[7]?.value?.trim() || ""
+    });
+  });
+  return rows;
+}
+
+function flattenRows(rows) {
+  const values = [];
+  rows.forEach(row => {
+    values.push(
+      row.date || "",
+      row.meal || "",
+      row.dispatchTime || "",
+      row.dispatchTemp || "",
+      row.deliveryTime || "",
+      row.deliveryTemp || "",
+      row.transitTime || "",
+      row.signOff || ""
+    );
+  });
+  return values;
+}
+
+async function saveForm() {
+  const payload = {
+    driverName: document.getElementById("driverName").value || "",
+    rows: getRowsAsObjects()
   };
-  return pageMap[record.type] || "";
-}
 
-function openSavedRecord(id) {
-  const record = window.MDKArchiveCache[id];
-  if (!record) {
-    alert("Saved record not found.");
-    return;
-  }
-
-  const page = getOpenPage(record);
-  if (!page) {
-    alert("No page linked for this record type yet.");
-    return;
-  }
-
-  const siteParam = record.site ? `&site=${encodeURIComponent(record.site)}` : "";
-  window.location.href = `${page}?load=${encodeURIComponent(id)}${siteParam}`;
-}
-
-async function deleteSavedRecord(id) {
-  try {
-    const ok = await window.MDKArchive.deleteRecord(id);
-    if (ok) {
-      delete window.MDKArchiveCache[id];
-      await buildMonths();
-      await loadRecords();
-    }
-  } catch (err) {
-    console.error(err);
-    alert("Could not delete record.");
-  }
-}
-
-async function loadRecords() {
-  recordsWrap.innerHTML = '<div class="message">Loading...</div>';
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
 
   try {
-    const items = await window.MDKArchive.listRecords({
-      year: yearSelect.value,
-      monthNum: activeMonth,
-      site: siteSelect.value,
-      type: typeSelect.value
-    });
-
-    window.MDKArchiveCache = {};
-    items.forEach(item => {
-      window.MDKArchiveCache[item.id] = item;
-    });
-
-    if (!items.length) {
-      recordsWrap.innerHTML = '<div class="message">No saved records for this month.</div>';
-      return;
-    }
-
-    recordsWrap.innerHTML = "";
-
-    items.forEach(item => {
-      const card = document.createElement("div");
-      card.className = "record";
-
-      card.innerHTML = `
-        <strong>${item.type || ""}</strong>
-        <div class="meta"><b>Site:</b> ${item.site || ""}</div>
-        <div class="meta"><b>Record Date:</b> ${item.recordDate || ""}</div>
-        <div class="meta"><b>Month:</b> ${item.monthName || ""} ${item.year || ""}</div>
-        <div class="meta"><b>Notes:</b> ${item.notes || ""}</div>
-        <div class="meta"><b>Fields saved:</b> ${item.fields ? Object.keys(item.fields).length : 0}</div>
-        <div class="actions">
-          <button class="action-btn open-btn" onclick="openSavedRecord('${item.id}')">Open</button>
-          <button class="action-btn delete-btn" onclick="deleteSavedRecord('${item.id}')">Delete</button>
-        </div>
-      `;
-
-      if (item.fileInfo && item.fileInfo.downloadURL) {
-        const link = document.createElement("a");
-        link.className = "download";
-        link.href = item.fileInfo.downloadURL;
-        link.target = "_blank";
-        link.textContent = `Open file: ${item.fileInfo.name || "attachment"}`;
-        card.appendChild(link);
+    if (window.MDKArchive) {
+      let recordDate = "";
+      for (const row of payload.rows) {
+        if (row.date) {
+          recordDate = row.date;
+          break;
+        }
       }
 
-      recordsWrap.appendChild(card);
-    });
+      if (!recordDate) {
+        recordDate = window.MDKArchive.formatDDMMYYYY(new Date());
+      }
+
+      const archivePayload = {
+        type: "Transfer Log",
+        site: SITE,
+        recordDate,
+        fields: payload
+      };
+
+      if (loadedRecordId) {
+        await window.MDKArchive.updateRecord(loadedRecordId, archivePayload);
+      } else {
+        loadedRecordId = await window.MDKArchive.saveRecord(archivePayload);
+      }
+    }
+
+    if (loadedRecordId) {
+      lockAllFields();
+    }
+
+    alert("Saved");
   } catch (err) {
     console.error(err);
-    recordsWrap.innerHTML = '<div class="message">Archive query error.</div>';
+    alert("Saved locally, but archive sync failed");
   }
 }
 
-yearSelect.addEventListener("change", async function() {
-  await buildMonths();
-  await loadRecords();
-});
-siteSelect.addEventListener("change", loadRecords);
-typeSelect.addEventListener("change", loadRecords);
+function loadForm() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) return;
 
-buildYears();
-buildMonths().then(loadRecords);
+  const data = JSON.parse(saved);
+  document.getElementById("driverName").value = data.driverName || "";
+
+  const values = flattenRows(data.rows || []);
+  const inputs = document.querySelectorAll("#tbody input");
+  inputs.forEach((input, i) => {
+    input.value = values[i] || "";
+  });
+}
+
+async function loadSavedArchiveRecord() {
+  if (!loadedRecordId || !window.MDKArchive) return;
+
+  try {
+    const record = await window.MDKArchive.loadRecord(loadedRecordId);
+    if (!record || !record.fields) return;
+
+    document.getElementById("driverName").value = record.fields.driverName || "";
+
+    const values = flattenRows(record.fields.rows || []);
+    const inputs = document.querySelectorAll("#tbody input");
+    inputs.forEach((input, i) => {
+      input.value = values[i] || "";
+    });
+
+    lockAllFields();
+  } catch (err) {
+    console.error(err);
+    alert("Could not open saved archive record.");
+  }
+}
+
+function clearForm() {
+  if (!confirm("Clear this form?")) return;
+
+  document.getElementById("driverName").value = "";
+  document.querySelectorAll("#tbody input").forEach(i => {
+    i.value = "";
+    i.disabled = false;
+  });
+
+  document.getElementById("driverName").disabled = false;
+  document.getElementById("lockedNote").style.display = "none";
+  document.getElementById("editBtn").style.display = loadedRecordId ? "inline-flex" : "none";
+
+  if (!loadedRecordId) {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+}
+
+buildTable();
+
+if (loadedRecordId) {
+  loadSavedArchiveRecord();
+} else {
+  loadForm();
+}
 </script>
 </body>
 </html>
