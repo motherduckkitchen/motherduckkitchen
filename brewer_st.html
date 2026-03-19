@@ -5,7 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mother Duck Kitchen - Brewer St</title>
 
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2c52a0">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+
 <style>
+*{
+  box-sizing:border-box;
+}
+
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
@@ -38,14 +46,17 @@ body{
 }
 .logo{
   width:100px;
+  max-width:100%;
   display:block;
   margin:0 auto 8px;
+  height:auto;
 }
 .site-title{
   font-size:40px;
   font-weight:800;
   color:#fff;
   text-shadow:0 3px 10px rgba(0,0,0,.30);
+  line-height:1.15;
 }
 .subtitle{
   color:#fff;
@@ -83,6 +94,9 @@ body{
   box-shadow:
     0 2px 8px rgba(0,0,0,.10),
     0 0 14px rgba(255,255,255,.45);
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 .menu-grid{
   display:grid;
@@ -114,9 +128,83 @@ body{
     0 16px 28px rgba(0,0,0,.22),
     0 0 22px rgba(255,255,255,.34);
 }
+
 @media (max-width:760px){
+  body{
+    background-attachment:scroll;
+  }
+
+  .page{
+    padding:12px;
+    align-items:flex-start;
+  }
+
+  .wrap{
+    max-width:100%;
+  }
+
+  .logo{
+    width:84px;
+    margin-top:6px;
+  }
+
+  .site-title{
+    font-size:30px;
+  }
+
+  .subtitle{
+    font-size:18px;
+    margin-bottom:14px;
+  }
+
+  .card{
+    padding:18px 16px 16px;
+    border-radius:18px;
+  }
+
+  .toolbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .top-btn{
+    width:100%;
+    min-width:0;
+  }
+
   .menu-grid{
     grid-template-columns:1fr;
+    gap:12px;
+  }
+
+  .btn{
+    min-height:64px;
+    font-size:16px;
+    border-radius:16px;
+    padding:14px;
+  }
+}
+
+@media (max-width:480px){
+  .page{
+    padding:10px;
+  }
+
+  .site-title{
+    font-size:26px;
+  }
+
+  .subtitle{
+    font-size:16px;
+  }
+
+  .card{
+    padding:14px 12px;
+  }
+
+  .btn{
+    font-size:15px;
+    min-height:58px;
   }
 }
 </style>
@@ -155,6 +243,77 @@ body{
     </section>
   </div>
 </main>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js")
+      .then(() => console.log("Service worker registered"))
+      .catch((err) => console.error("Service worker failed", err));
+  });
+}
+</script>
+
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<script>
+if (!firebase.apps.length) {
+  firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
+}
+
+const auth = firebase.auth();
+const IDLE_LIMIT_MS = 30 * 60 * 1000;
+let idleTimer;
+
+function markActivity() {
+  localStorage.setItem("mdk_last_activity", String(Date.now()));
+}
+
+async function forceLogout() {
+  try {
+    await auth.signOut();
+  } catch (e) {
+    console.error(e);
+  }
+  localStorage.removeItem("mdk_logged_in");
+  localStorage.removeItem("mdk_last_activity");
+  location.replace("login.html?msg=expired");
+}
+
+function resetIdleTimer() {
+  clearTimeout(idleTimer);
+  markActivity();
+  idleTimer = setTimeout(forceLogout, IDLE_LIMIT_MS);
+}
+
+function checkSessionAge() {
+  const last = Number(localStorage.getItem("mdk_last_activity") || "0");
+  if (!last) {
+    location.replace("login.html");
+    return;
+  }
+  if (Date.now() - last > IDLE_LIMIT_MS) {
+    forceLogout();
+  }
+}
+
+auth.onAuthStateChanged(function(user){
+  if(!user){
+    location.replace("login.html");
+    return;
+  }
+  checkSessionAge();
+  resetIdleTimer();
+});
+
+document.addEventListener("click", resetIdleTimer);
+document.addEventListener("keydown", resetIdleTimer);
+document.addEventListener("touchstart", resetIdleTimer);
+document.addEventListener("mousemove", resetIdleTimer);
+document.addEventListener("scroll", resetIdleTimer);
+</script>
 
 </body>
 </html>
