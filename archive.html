@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Audit Archive</title>
 
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2c52a0">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+
 <style>
 *{
   box-sizing:border-box;
@@ -315,6 +319,16 @@ select{
   </section>
 </main>
 
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js")
+      .then(() => console.log("Service worker registered"))
+      .catch((err) => console.error("Service worker failed", err));
+  });
+}
+</script>
+
 <script src="firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -324,6 +338,61 @@ select{
 <script src="archive_shared.js"></script>
 
 <script>
+if (!firebase.apps.length) {
+  firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
+}
+
+const auth = firebase.auth();
+const IDLE_LIMIT_MS = 30 * 60 * 1000;
+let idleTimer;
+
+function markActivity() {
+  localStorage.setItem("mdk_last_activity", String(Date.now()));
+}
+
+async function forceLogout() {
+  try {
+    await auth.signOut();
+  } catch (e) {
+    console.error(e);
+  }
+  localStorage.removeItem("mdk_logged_in");
+  localStorage.removeItem("mdk_last_activity");
+  location.replace("login.html?msg=expired");
+}
+
+function resetIdleTimer() {
+  clearTimeout(idleTimer);
+  markActivity();
+  idleTimer = setTimeout(forceLogout, IDLE_LIMIT_MS);
+}
+
+function checkSessionAge() {
+  const last = Number(localStorage.getItem("mdk_last_activity") || "0");
+  if (!last) {
+    location.replace("login.html");
+    return;
+  }
+  if (Date.now() - last > IDLE_LIMIT_MS) {
+    forceLogout();
+  }
+}
+
+auth.onAuthStateChanged(function(user){
+  if(!user){
+    location.replace("login.html");
+    return;
+  }
+  checkSessionAge();
+  resetIdleTimer();
+});
+
+document.addEventListener("click", resetIdleTimer);
+document.addEventListener("keydown", resetIdleTimer);
+document.addEventListener("touchstart", resetIdleTimer);
+document.addEventListener("mousemove", resetIdleTimer);
+document.addEventListener("scroll", resetIdleTimer);
+
 const monthGrid = document.getElementById("monthGrid");
 const recordsWrap = document.getElementById("recordsWrap");
 const yearSelect = document.getElementById("yearSelect");
@@ -386,9 +455,7 @@ function getOpenPage(record) {
     "Approved Suppliers List": "record1_suppliers.html",
     "Nursery Temperature & Puree Reheat Log": "nursery_puree_log_new.html",
     "Invoices": "invoices.html",
-    "Transfer Log": record.site === "Brewer St"
-      ? "record_5b_transport_brewer.html"
-      : "transport_log.html"
+    "Transfer Log": "transport_log.html"
   };
   return pageMap[record.type] || "";
 }
@@ -471,6 +538,7 @@ async function loadRecords() {
         link.className = "download";
         link.href = item.fileInfo.downloadURL;
         link.target = "_blank";
+        link.rel = "noopener";
         link.textContent = `Open file: ${item.fileInfo.name || "attachment"}`;
         card.appendChild(link);
       }
