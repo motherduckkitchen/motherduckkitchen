@@ -10,16 +10,12 @@
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
   <style>
-    *{
-      box-sizing:border-box;
-    }
-
+    *{ box-sizing:border-box; }
     html,body{
       height:100%;
       margin:0;
       font:14px/1.4 system-ui,Arial;
     }
-
     body{
       background:url("kitchen.jpg") center/cover no-repeat fixed;
       display:flex;
@@ -28,7 +24,6 @@
       position:relative;
       padding:16px;
     }
-
     body::before{
       content:"";
       position:absolute;
@@ -36,7 +31,6 @@
       background:rgba(173,216,230,.55);
       backdrop-filter:blur(2px);
     }
-
     .card{
       position:relative;
       z-index:1;
@@ -48,7 +42,6 @@
       box-shadow:0 8px 28px rgba(0,0,0,.15);
       text-align:center;
     }
-
     .logo{
       max-width:120px;
       width:100%;
@@ -56,22 +49,18 @@
       margin:0 auto 14px;
       height:auto;
     }
-
     h1{
       margin:0 0 16px;
       font-size:20px;
     }
-
     input{
       width:100%;
       padding:12px;
       margin:8px 0;
       border:1px solid #cfd6dd;
       border-radius:10px;
-      box-sizing:border-box;
       font-size:16px;
     }
-
     button{
       width:100%;
       padding:12px;
@@ -84,31 +73,25 @@
       cursor:pointer;
       font-size:16px;
     }
-
     .msg{
       min-height:20px;
       margin-top:10px;
       word-break:break-word;
     }
-
     .ok{ color:#0f766e; }
     .err{ color:#e11d48; }
 
-    @media (max-width: 768px){
+    @media (max-width:768px){
       body{
         background-attachment:scroll;
         padding:12px;
       }
-
       .card{
         max-width:100%;
         padding:18px;
         border-radius:14px;
       }
-
-      h1{
-        font-size:22px;
-      }
+      h1{ font-size:22px; }
     }
   </style>
 </head>
@@ -137,19 +120,17 @@
         }
       });
     }
-  </script>
 
-  <script src="firebase-config.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-
-  <script>
     const msg = document.getElementById("msg");
     const emailEl = document.getElementById("email");
     const passEl = document.getElementById("password");
     const btn = document.getElementById("loginBtn");
 
-    function show(text, ok = false){
+    const LOGIN_EMAIL = "adamnorris80@gmail.com";
+    const LOGIN_PASSWORD = "MotherDuck2025!";
+    const IDLE_LIMIT_MS = 30 * 60 * 1000;
+
+    function show(text, ok=false){
       msg.textContent = text;
       msg.className = "msg " + (ok ? "ok" : "err");
     }
@@ -158,63 +139,59 @@
       localStorage.setItem("mdk_last_activity", String(Date.now()));
     }
 
-    let auth = null;
+    function setLoginSession() {
+      localStorage.setItem("mdk_logged_in", "1");
+      localStorage.setItem("mdk_user_email", LOGIN_EMAIL);
+      markActivity();
+    }
 
-    try {
-      if (!window.MDK_FIREBASE_CONFIG) {
-        throw new Error("firebase-config.js not loaded");
+    function checkAlreadyLoggedIn() {
+      const loggedIn = localStorage.getItem("mdk_logged_in") === "1";
+      const last = Number(localStorage.getItem("mdk_last_activity") || "0");
+
+      if (!loggedIn || !last) return;
+
+      if (Date.now() - last > IDLE_LIMIT_MS) {
+        localStorage.removeItem("mdk_logged_in");
+        localStorage.removeItem("mdk_user_email");
+        localStorage.removeItem("mdk_last_activity");
+        return;
       }
 
-      if (!firebase.apps.length) {
-        firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
-      }
-
-      auth = firebase.auth();
-      show("Firebase loaded.", true);
-    } catch (e) {
-      console.error(e);
-      show("Init failed: " + (e.message || e));
+      location.replace("dashboard.html");
     }
 
     async function doLogin() {
-      try {
-        show("");
+      show("");
 
-        if (!auth) {
-          show("Firebase auth not ready.");
-          return;
-        }
+      const email = emailEl.value.trim();
+      const password = passEl.value;
 
-        const email = emailEl.value.trim();
-        const password = passEl.value;
+      if (!email || !password) {
+        show("Enter email and password.");
+        return;
+      }
 
-        if (!email || !password) {
-          show("Enter email and password.");
-          return;
-        }
+      btn.disabled = true;
+      btn.textContent = "Signing in...";
 
-        btn.disabled = true;
-        btn.textContent = "Signing in...";
-
-        await auth.signInWithEmailAndPassword(email, password);
-
-        markActivity();
-        localStorage.setItem("mdk_logged_in", "1");
-
+      if (email.toLowerCase() === LOGIN_EMAIL.toLowerCase() && password === LOGIN_PASSWORD) {
+        setLoginSession();
         show("Login success.", true);
         location.replace("dashboard.html");
-
-      } catch (e) {
-        console.error(e);
-        show("Login failed: " + (e.message || e));
-        btn.disabled = false;
-        btn.textContent = "Log in";
+        return;
       }
+
+      show("Login failed: wrong email or password.");
+      btn.disabled = false;
+      btn.textContent = "Log in";
     }
 
     btn.addEventListener("click", doLogin);
     emailEl.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
     passEl.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+
+    checkAlreadyLoggedIn();
   </script>
 </body>
 </html>
