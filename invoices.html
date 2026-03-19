@@ -4,6 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Mother Duck Kitchen - Invoices</title>
+
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#2c52a0">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+
   <style>
     :root{
       --blue:#2c52a0;
@@ -17,6 +22,10 @@
       --muted:#5b6573;
       --danger:#b42318;
       --danger-dark:#971c13;
+    }
+
+    *{
+      box-sizing:border-box;
     }
 
     body{
@@ -227,6 +236,7 @@
       font-size:14px;
       margin:4px 0;
       line-height:1.4;
+      word-break:break-word;
     }
 
     .invoice-actions{
@@ -243,6 +253,15 @@
       font-weight:700;
       cursor:pointer;
       font-size:13px;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .view-btn{
+      background:var(--blue);
+      color:#fff;
     }
 
     .delete-btn{
@@ -278,6 +297,49 @@
         min-height:auto;
       }
     }
+
+    @media (max-width: 768px){
+      body{
+        background-attachment:scroll;
+      }
+
+      .page{
+        padding:12px;
+      }
+
+      .site-title{
+        font-size:28px;
+      }
+
+      .subtitle{
+        font-size:16px;
+      }
+
+      .toolbar{
+        flex-direction:column;
+      }
+
+      .nav-btn{
+        width:100%;
+      }
+
+      .pane{
+        padding:16px;
+        border-radius:18px;
+      }
+
+      h2{
+        font-size:20px;
+      }
+
+      input, textarea{
+        font-size:16px;
+      }
+
+      .save-btn{
+        font-size:17px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -311,12 +373,12 @@
           <label for="note">Note</label>
           <textarea id="note" placeholder="Supplier, note, or extra details"></textarea>
 
-          <label for="photo">Photo upload</label>
+          <label for="photo">Photo or PDF upload</label>
           <input id="photo" type="file" accept="image/*,application/pdf">
 
-          <button class="save-btn" onclick="saveInvoice()">Save Invoice</button>
+          <button class="save-btn" onclick="saveInvoice()" type="button">Save Invoice</button>
 
-          <div class="helper">You can save an item, note, photo, or all three.</div>
+          <div class="helper">You can save an item, note, file, or all three.</div>
         </div>
 
         <div class="pane">
@@ -328,6 +390,16 @@
     </section>
   </main>
 
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js")
+          .then(() => console.log("Service worker registered"))
+          .catch((err) => console.error("Service worker failed", err));
+      });
+    }
+  </script>
+
   <script src="firebase-config.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -337,12 +409,67 @@
   <script src="archive_shared.js"></script>
 
   <script>
+    if (!firebase.apps.length) {
+      firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
+    }
+
+    const auth = firebase.auth();
+    const IDLE_LIMIT_MS = 30 * 60 * 1000;
+    let idleTimer;
+
+    function markActivity() {
+      localStorage.setItem("mdk_last_activity", String(Date.now()));
+    }
+
+    async function forceLogout() {
+      try {
+        await auth.signOut();
+      } catch (e) {
+        console.error(e);
+      }
+      localStorage.removeItem("mdk_logged_in");
+      localStorage.removeItem("mdk_last_activity");
+      location.replace("login.html?msg=expired");
+    }
+
+    function resetIdleTimer() {
+      clearTimeout(idleTimer);
+      markActivity();
+      idleTimer = setTimeout(forceLogout, IDLE_LIMIT_MS);
+    }
+
+    function checkSessionAge() {
+      const last = Number(localStorage.getItem("mdk_last_activity") || "0");
+      if (!last) {
+        location.replace("login.html");
+        return;
+      }
+      if (Date.now() - last > IDLE_LIMIT_MS) {
+        forceLogout();
+      }
+    }
+
+    auth.onAuthStateChanged(function(user){
+      if(!user){
+        location.replace("login.html");
+        return;
+      }
+      checkSessionAge();
+      resetIdleTimer();
+    });
+
+    document.addEventListener("click", resetIdleTimer);
+    document.addEventListener("keydown", resetIdleTimer);
+    document.addEventListener("touchstart", resetIdleTimer);
+    document.addEventListener("mousemove", resetIdleTimer);
+    document.addEventListener("scroll", resetIdleTimer);
+
     const params = new URLSearchParams(window.location.search);
     const SITE = params.get("site") || "Kitchen";
 
     const STORAGE_KEY = SITE === "Brewer St"
-      ? "mdk_invoices_brewer_v2"
-      : "mdk_invoices_kitchen_v2";
+      ? "mdk_invoices_brewer_v3"
+      : "mdk_invoices_kitchen_v3";
 
     document.getElementById("pageSubtitle").textContent = SITE + " Invoices";
     document.getElementById("addTitle").textContent = "Add Invoice - " + SITE;
@@ -380,6 +507,30 @@
       return `${dd}/${mm}/${yyyy}`;
     }
 
+    function saveFileLocally(file) {
+      return new Promise((resolve) => {
+        if (!file) {
+          resolve({ fileName: "", fileDataUrl: "" });
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          resolve({
+            fileName: file.name,
+            fileDataUrl: e.target.result || ""
+          });
+        };
+        reader.onerror = function() {
+          resolve({
+            fileName: file.name,
+            fileDataUrl: ""
+          });
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
     function loadInvoices() {
       const wrap = document.getElementById("invoiceList");
       wrap.innerHTML = "";
@@ -396,16 +547,24 @@
         const card = document.createElement("div");
         card.className = "invoice-card";
 
+        let actionsHtml = `
+          <button class="mini-btn delete-btn" type="button" onclick="deleteLocalInvoice(${realIndex})">Delete</button>
+        `;
+
+        if (inv.fileDataUrl) {
+          actionsHtml =
+            `<a class="mini-btn view-btn" href="${inv.fileDataUrl}" target="_blank" rel="noopener">View File</a>` +
+            actionsHtml;
+        }
+
         card.innerHTML = `
           <strong>${inv.item || "No item entered"}</strong>
           <div class="meta"><b>Site:</b> ${SITE}</div>
           <div class="meta"><b>Temp °C:</b> ${inv.temp || ""}</div>
           <div class="meta"><b>Note:</b> ${inv.note || ""}</div>
           <div class="meta"><b>Saved:</b> ${inv.savedAt || ""}</div>
-          <div class="meta"><b>Photo:</b> ${inv.photoName || "No photo uploaded"}</div>
-          <div class="invoice-actions">
-            <button class="mini-btn delete-btn" onclick="deleteLocalInvoice(${realIndex})">Delete</button>
-          </div>
+          <div class="meta"><b>File:</b> ${inv.fileName || "No file uploaded"}</div>
+          <div class="invoice-actions">${actionsHtml}</div>
         `;
 
         wrap.appendChild(card);
@@ -413,7 +572,7 @@
     }
 
     function deleteLocalInvoice(index) {
-      if (!confirm("Delete this local invoice card?")) return;
+      if (!confirm("Delete this saved invoice?")) return;
 
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
       saved.splice(index, 1);
@@ -434,13 +593,15 @@
 
       const savedAt = nowStamp();
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      const localFile = await saveFileLocally(photo);
 
       saved.push({
         item,
         temp,
         note,
         savedAt,
-        photoName: photo ? photo.name : ""
+        fileName: localFile.fileName || "",
+        fileDataUrl: localFile.fileDataUrl || ""
       });
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
@@ -457,7 +618,7 @@
               item: item,
               temp: temp,
               savedAt: savedAt,
-              photoName: photo ? photo.name : ""
+              fileName: localFile.fileName || ""
             }
           });
         }
@@ -471,6 +632,10 @@
         alert("Invoice saved");
       } catch (err) {
         console.error("Archive save error:", err);
+        document.getElementById("item").value = "";
+        document.getElementById("temp").value = "";
+        document.getElementById("note").value = "";
+        document.getElementById("photo").value = "";
         loadInvoices();
         alert("Saved locally, but archive sync failed");
       }
