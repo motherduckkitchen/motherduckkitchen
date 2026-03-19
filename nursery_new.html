@@ -5,83 +5,260 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mother Duck Kitchen - Nursery</title>
 
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2c52a0">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+
 <style>
+*{
+  box-sizing:border-box;
+}
+
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
   background:url("kitchen.jpg") center/cover no-repeat fixed;
-  height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  min-height:100vh;
 }
+
 .wash{
   position:fixed;
   inset:0;
-  background:rgba(255,255,255,.45);
-  backdrop-filter:blur(3px);
+  background:rgba(255,255,255,.42);
+  backdrop-filter:blur(4px);
 }
+
 .page{
   position:relative;
   z-index:1;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+
+.wrap{
+  width:100%;
+  max-width:900px;
   text-align:center;
 }
-.card{
-  width:600px;
-  max-width:90%;
-  background:rgba(255,255,255,.85);
-  backdrop-filter:blur(10px);
-  padding:30px;
-  border-radius:20px;
-  box-shadow:0 10px 30px rgba(0,0,0,.25);
+
+.logo{
+  width:90px;
+  display:block;
+  margin:0 auto 10px;
 }
-h1{
-  margin-top:0;
+
+.site-title{
   font-size:34px;
+  font-weight:800;
+  color:#fff;
+  text-shadow:0 3px 10px rgba(0,0,0,.30);
 }
+
+.subtitle{
+  color:#fff;
+  margin-bottom:18px;
+  font-size:20px;
+  text-shadow:0 2px 8px rgba(0,0,0,.35);
+}
+
+.card{
+  background:rgba(255,255,255,.88);
+  backdrop-filter:blur(10px);
+  border-radius:26px;
+  padding:26px;
+  box-shadow:0 18px 40px rgba(0,0,0,.18);
+}
+
+.toolbar{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin-bottom:20px;
+  flex-wrap:wrap;
+}
+
+.top-btn{
+  padding:12px 18px;
+  border-radius:16px;
+  background:#f8fafc;
+  color:#29405a;
+  border:1px solid #d6dde5;
+  text-decoration:none;
+  font-weight:700;
+  box-shadow:0 2px 8px rgba(0,0,0,.10);
+}
+
 .menu-grid{
   display:grid;
-  grid-template-columns:1fr;
-  gap:20px;
-  margin-top:20px;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
 }
+
 .btn{
   padding:18px;
-  background:#204a9b;
+  background:#2c52a0;
   color:white;
-  border-radius:14px;
-  font-weight:bold;
+  border-radius:18px;
+  font-weight:800;
   text-decoration:none;
-  display:block;
-  font-size:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:17px;
+  min-height:80px;
+  box-shadow:0 10px 20px rgba(0,0,0,.18);
+  transition:.15s;
 }
+
 .btn:hover{
-  background:#183c80;
+  transform:translateY(-2px);
+  background:#244996;
 }
-.back{
-  background:#ddd;
-  color:#333;
+
+@media (max-width:760px){
+
+  body{
+    background-attachment:scroll;
+  }
+
+  .page{
+    padding:12px;
+    align-items:flex-start;
+  }
+
+  .site-title{
+    font-size:26px;
+  }
+
+  .subtitle{
+    font-size:18px;
+  }
+
+  .card{
+    padding:18px;
+  }
+
+  .toolbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .top-btn{
+    width:100%;
+  }
+
+  .menu-grid{
+    grid-template-columns:1fr;
+  }
+
+  .btn{
+    min-height:64px;
+    font-size:16px;
+  }
 }
 </style>
 </head>
-<body>
 
+<body>
 <div class="wash"></div>
 
 <main class="page">
-  <section class="card">
-    <h1>Nursery Records</h1>
+  <div class="wrap">
 
-    <div class="menu-grid">
-  <a class="btn" href="bottle_receipt.html">Bottle Receipt</a>
-  <a class="btn" href="nursery_puree_log_new.html">Nursery Temperature &amp; Puree Reheat Log</a>
-</div>
-    
-    <div style="margin-top:20px">
-      <a class="btn back" href="dashboard.html">Back</a>
-    </div>
-  </section>
+    <img class="logo" src="logo.png" alt="Mother Duck Logo">
+    <div class="site-title">Mother Duck Kitchen</div>
+    <div class="subtitle">Nursery</div>
+
+    <section class="card">
+
+      <div class="toolbar">
+        <a class="top-btn" href="dashboard.html">Home</a>
+        <a class="top-btn" href="kitchen.html">Kitchen</a>
+        <a class="top-btn" href="brewer_st.html">Brewer St</a>
+      </div>
+
+      <div class="menu-grid">
+        <a class="btn" href="bottle_receipt.html">Bottle Receipt</a>
+        <a class="btn" href="nursery_puree_log_new.html">Nursery Temperature & Puree Reheat Log</a>
+      </div>
+
+    </section>
+  </div>
 </main>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js")
+      .then(() => console.log("Service worker registered"))
+      .catch((err) => console.error("Service worker failed", err));
+  });
+}
+</script>
+
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<script>
+if (!firebase.apps.length) {
+  firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
+}
+
+const auth = firebase.auth();
+const IDLE_LIMIT_MS = 30 * 60 * 1000;
+let idleTimer;
+
+function markActivity() {
+  localStorage.setItem("mdk_last_activity", String(Date.now()));
+}
+
+async function forceLogout() {
+  try {
+    await auth.signOut();
+  } catch (e) {
+    console.error(e);
+  }
+  localStorage.removeItem("mdk_logged_in");
+  localStorage.removeItem("mdk_last_activity");
+  location.replace("login.html?msg=expired");
+}
+
+function resetIdleTimer() {
+  clearTimeout(idleTimer);
+  markActivity();
+  idleTimer = setTimeout(forceLogout, IDLE_LIMIT_MS);
+}
+
+function checkSessionAge() {
+  const last = Number(localStorage.getItem("mdk_last_activity") || "0");
+  if (!last) {
+    location.replace("login.html");
+    return;
+  }
+  if (Date.now() - last > IDLE_LIMIT_MS) {
+    forceLogout();
+  }
+}
+
+auth.onAuthStateChanged(function(user){
+  if(!user){
+    location.replace("login.html");
+    return;
+  }
+  checkSessionAge();
+  resetIdleTimer();
+});
+
+document.addEventListener("click", resetIdleTimer);
+document.addEventListener("keydown", resetIdleTimer);
+document.addEventListener("touchstart", resetIdleTimer);
+document.addEventListener("mousemove", resetIdleTimer);
+document.addEventListener("scroll", resetIdleTimer);
+</script>
 
 </body>
 </html>
