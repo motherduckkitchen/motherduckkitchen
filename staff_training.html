@@ -3,20 +3,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Record 12 – Staff Instruction / Training</title>
+<title>Record 11 – Staff Illness / Accident</title>
+
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2c52a0">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
 
 <style>
+*{
+  box-sizing:border-box;
+}
+
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
   background:url("kitchen.jpg") center center / cover no-repeat fixed;
+  min-height:100vh;
 }
+
 .wash{
   position:fixed;
   inset:0;
   background:rgba(255,255,255,.45);
   backdrop-filter:blur(2px);
 }
+
 .page{
   position:relative;
   z-index:1;
@@ -24,6 +35,7 @@ body{
   margin:auto;
   padding:20px;
 }
+
 .toolbar{
   display:flex;
   gap:10px;
@@ -31,6 +43,7 @@ body{
   flex-wrap:wrap;
   align-items:center;
 }
+
 .btn{
   padding:10px 16px;
   border-radius:12px;
@@ -42,51 +55,70 @@ body{
   text-decoration:none;
   color:#222;
   box-shadow:0 2px 8px rgba(0,0,0,.12);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
 }
+
 .back{
   background:#ffc107;
   color:#4b0082;
   border:none;
 }
+
 .save{
   background:#007bff;
   color:white;
   border:none;
 }
+
 .edit{
   background:#16a34a;
   color:white;
   border:none;
 }
+
 .card{
   background:rgba(255,255,255,.95);
   padding:20px;
   border-radius:20px;
   box-shadow:0 12px 30px rgba(0,0,0,.14);
-  overflow:auto;
+  overflow:hidden;
 }
+
 h1{
   margin:0 0 16px;
   font-size:28px;
   color:#1f2937;
 }
+
+.table-wrap{
+  width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+
 table{
   width:100%;
+  min-width:980px;
   border-collapse:collapse;
   table-layout:fixed;
   background:white;
 }
+
 th,td{
   border:1px solid #222;
   padding:6px;
   font-size:13px;
   vertical-align:middle;
 }
+
 th{
   background:#f4f6f8;
   text-align:center;
 }
-input,textarea{
+
+input,select,textarea{
   width:100%;
   border:none;
   outline:none;
@@ -96,23 +128,47 @@ input,textarea{
   box-sizing:border-box;
   font-family:Arial,Helvetica,sans-serif;
 }
+
 textarea{
-  min-height:46px;
+  min-height:120px;
+  margin-top:10px;
+  border:1px solid #999;
+  border-radius:8px;
+  background:white;
+  padding:10px;
   resize:vertical;
 }
+
 .note{
   margin-top:16px;
   font-size:13px;
   color:#333;
-  line-height:1.6;
+  line-height:1.5;
 }
-.note ul{
-  margin:8px 0 0 22px;
-  padding:0;
+
+.warn{
+  background:#ffe2e2 !important;
+  color:#9b1c1c;
+  font-weight:700;
 }
-.note li{
-  margin:4px 0;
+
+.ok{
+  background:#eef8ee !important;
+  color:#1f6b2d;
+  font-weight:700;
 }
+
+.alert-box{
+  display:none;
+  margin-top:16px;
+  padding:14px 16px;
+  border-radius:12px;
+  background:#ffe2e2;
+  color:#9b1c1c;
+  font-weight:700;
+  border:1px solid #efb0b0;
+}
+
 .locked-note{
   margin-bottom:12px;
   padding:10px 12px;
@@ -123,6 +179,44 @@ textarea{
   display:none;
   font-weight:700;
 }
+
+@media (max-width:768px){
+  body{
+    background-attachment:scroll;
+  }
+
+  .page{
+    padding:12px;
+  }
+
+  .toolbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .btn{
+    width:100%;
+  }
+
+  .card{
+    padding:14px;
+    border-radius:16px;
+  }
+
+  h1{
+    font-size:22px;
+    line-height:1.25;
+  }
+
+  input,select,textarea{
+    font-size:16px;
+  }
+
+  .note{
+    font-size:12px;
+  }
+}
+
 @media print{
   .toolbar{display:none;}
   body{background:white;}
@@ -140,61 +234,72 @@ textarea{
 <main class="page">
 
 <div class="toolbar">
-  <button class="btn back" onclick="goBackSmart()">← Back</button>
+  <button class="btn back" onclick="goBackSmart()" type="button">← Back</button>
   <a href="dashboard.html" class="btn">🏠 Home</a>
-  <button onclick="window.print()" class="btn">🖨 Print</button>
-  <button id="editBtn" onclick="unlockForEdit()" class="btn edit" style="display:none;">Edit</button>
-  <button onclick="clearForm()" class="btn">Clear</button>
-  <button onclick="saveForm()" class="btn save">Save</button>
+  <button onclick="window.print()" class="btn" type="button">🖨 Print</button>
+  <button id="editBtn" onclick="unlockForEdit()" class="btn edit" style="display:none;" type="button">Edit</button>
+  <button onclick="clearForm()" class="btn" type="button">Clear</button>
+  <button onclick="saveForm()" class="btn save" type="button">Save</button>
 </div>
 
 <div class="card">
 
-<h1>Record 12 – Staff Instruction / Training</h1>
+<h1>Record 11 – Staff Illness / Accident</h1>
 
 <div id="lockedNote" class="locked-note">
   This saved record is locked. Press Edit to make changes.
 </div>
 
-<table>
-  <colgroup>
-    <col style="width:22%">
-    <col style="width:12%">
-    <col style="width:46%">
-    <col style="width:20%">
-  </colgroup>
-  <thead>
-    <tr>
-      <th>Staff members name</th>
-      <th>Date</th>
-      <th>Description / details of instruction / training undertaken</th>
-      <th>Checked by</th>
-    </tr>
-  </thead>
-  <tbody id="rows"></tbody>
-</table>
+<div class="table-wrap">
+  <table>
+    <colgroup>
+      <col style="width:18%">
+      <col style="width:12%">
+      <col style="width:20%">
+      <col style="width:16%">
+      <col style="width:20%">
+      <col style="width:14%">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Staff members name</th>
+        <th>Date</th>
+        <th>Type of illness</th>
+        <th>Other illness</th>
+        <th>Exclusion</th>
+        <th>Checked by</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+</div>
+
+<div id="illnessAlert" class="alert-box">
+  ⚠ Staff must be excluded from food handling for 48 hours after symptoms stop.
+</div>
 
 <div class="note">
-  <strong>Food handling - skills and knowledge</strong><br><br>
+  Staff should not return to handling food until they have received clearance from a medical practitioner.
+</div>
 
-  Food Safety Standard 3.2.2 requires that a food business must ensure that persons undertaking or supervising food handling operations have appropriate skills and knowledge in food safety and food hygiene matters for their level of food handling.<br><br>
-
-  This standard does not require mandatory training to demonstrate appropriate skills and knowledge, but recognises that skills and knowledge can be obtained in different ways.<br><br>
-
-  <strong>Examples for obtaining the skills and knowledge required include:</strong>
-  <ul>
-    <li>In-house training by business employees or the proprietor;</li>
-    <li>Distribution of relevant documentation to employees;</li>
-    <li>Having operating procedures in place that clarify the responsibilities of food handlers and supervisors;</li>
-    <li>Attendance at food safety courses run by local government or other bodies such as industry associations;</li>
-    <li>Hiring a consultant to present a course to business employees; and</li>
-    <li>Formal training courses.</li>
-  </ul>
+<div class="note">
+  <strong>Notes / Illness Details:</strong>
+  <textarea id="notesBox" placeholder="Add notes about illness, exclusion period, doctor clearance, or other details..."></textarea>
 </div>
 
 </div>
 
 </main>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js")
+      .then(() => console.log("Service worker registered"))
+      .catch((err) => console.error("Service worker failed", err));
+  });
+}
+</script>
 
 <script src="firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -205,11 +310,91 @@ textarea{
 <script src="archive_shared.js"></script>
 
 <script>
+if (!firebase.apps.length) {
+  firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
+}
+
+const auth = firebase.auth();
+const IDLE_LIMIT_MS = 30 * 60 * 1000;
+let idleTimer;
+
+function markActivity() {
+  localStorage.setItem("mdk_last_activity", String(Date.now()));
+}
+
+async function forceLogout() {
+  try {
+    await auth.signOut();
+  } catch (e) {
+    console.error(e);
+  }
+  localStorage.removeItem("mdk_logged_in");
+  localStorage.removeItem("mdk_last_activity");
+  location.replace("login.html?msg=expired");
+}
+
+function resetIdleTimer() {
+  clearTimeout(idleTimer);
+  markActivity();
+  idleTimer = setTimeout(forceLogout, IDLE_LIMIT_MS);
+}
+
+function checkSessionAge() {
+  const last = Number(localStorage.getItem("mdk_last_activity") || "0");
+  if (!last) {
+    location.replace("login.html");
+    return;
+  }
+  if (Date.now() - last > IDLE_LIMIT_MS) {
+    forceLogout();
+  }
+}
+
+auth.onAuthStateChanged(function(user){
+  if(!user){
+    location.replace("login.html");
+    return;
+  }
+  checkSessionAge();
+  resetIdleTimer();
+});
+
+document.addEventListener("click", resetIdleTimer);
+document.addEventListener("keydown", resetIdleTimer);
+document.addEventListener("touchstart", resetIdleTimer);
+document.addEventListener("mousemove", resetIdleTimer);
+document.addEventListener("scroll", resetIdleTimer);
+
 const params = new URLSearchParams(window.location.search);
 const LOAD_ID = params.get("load") || "";
-const STORAGE_KEY = "staff_training_v2";
+const STORAGE_KEY = "staff_illness_v4";
 
 let loadedRecordId = LOAD_ID || "";
+
+const illnessOptions = [
+  "",
+  "Vomiting",
+  "Diarrhoea",
+  "Vomiting and diarrhoea",
+  "Gastroenteritis",
+  "Fever with sore throat",
+  "Food-borne illness symptoms",
+  "Infected skin sore / wound",
+  "Jaundice",
+  "Other"
+];
+
+const exclusionRules = {
+  "Vomiting": "Exclude 48 hrs after symptoms stop",
+  "Diarrhoea": "Exclude 48 hrs after symptoms stop",
+  "Vomiting and diarrhoea": "Exclude 48 hrs after symptoms stop",
+  "Gastroenteritis": "Exclude 48 hrs after symptoms stop",
+  "Fever with sore throat": "Exclude until medically cleared",
+  "Food-borne illness symptoms": "Exclude and seek medical advice",
+  "Infected skin sore / wound": "Cover wound; exclude if cannot protect",
+  "Jaundice": "Exclude and seek urgent medical advice",
+  "Other": "Assess case / add note"
+};
 
 function goBackSmart() {
   const fromArchive = sessionStorage.getItem("mdk_from_archive");
@@ -233,7 +418,7 @@ function buildRows(){
   const tbody = document.getElementById("rows");
   tbody.innerHTML = "";
 
-  for(let i = 0; i < 8; i++){
+  for(let i = 0; i < 12; i++){
     const tr = document.createElement("tr");
 
     const nameTd = document.createElement("td");
@@ -251,10 +436,33 @@ function buildRows(){
     dateTd.appendChild(dateInput);
     tr.appendChild(dateTd);
 
-    const descTd = document.createElement("td");
-    const descInput = document.createElement("textarea");
-    descTd.appendChild(descInput);
-    tr.appendChild(descTd);
+    const illnessTd = document.createElement("td");
+    const illnessSelect = document.createElement("select");
+    illnessSelect.dataset.row = i;
+    illnessOptions.forEach(function(opt){
+      const o = document.createElement("option");
+      o.value = opt;
+      o.textContent = opt || "Select illness";
+      illnessSelect.appendChild(o);
+    });
+    illnessTd.appendChild(illnessSelect);
+    tr.appendChild(illnessTd);
+
+    const otherTd = document.createElement("td");
+    const otherInput = document.createElement("input");
+    otherInput.type = "text";
+    otherInput.placeholder = "Only if Other";
+    otherInput.dataset.otherRow = i;
+    otherTd.appendChild(otherInput);
+    tr.appendChild(otherTd);
+
+    const exclTd = document.createElement("td");
+    const exclInput = document.createElement("input");
+    exclInput.type = "text";
+    exclInput.readOnly = true;
+    exclInput.dataset.exclRow = i;
+    exclTd.appendChild(exclInput);
+    tr.appendChild(exclTd);
 
     const checkedTd = document.createElement("td");
     const checkedInput = document.createElement("input");
@@ -263,11 +471,16 @@ function buildRows(){
     tr.appendChild(checkedTd);
 
     tbody.appendChild(tr);
+
+    illnessSelect.addEventListener("change", function(){
+      updateExclusion(i);
+      updateAlertBanner();
+    });
   }
 }
 
 function getAllFields(){
-  return document.querySelectorAll("table input, table textarea");
+  return document.querySelectorAll("table input, table select, #notesBox");
 }
 
 function lockAllFields(){
@@ -282,48 +495,110 @@ function unlockForEdit(){
   getAllFields().forEach(el => {
     el.disabled = false;
   });
+
+  document.querySelectorAll('input[data-excl-row]').forEach(el => {
+    el.readOnly = true;
+  });
+
   document.getElementById("lockedNote").style.display = "none";
+
+  for(let i = 0; i < 12; i++){
+    updateExclusion(i);
+  }
+  updateAlertBanner();
+}
+
+function updateExclusion(row){
+  const select = document.querySelector(`select[data-row="${row}"]`);
+  const excl = document.querySelector(`input[data-excl-row="${row}"]`);
+  const other = document.querySelector(`input[data-other-row="${row}"]`);
+
+  const value = select.value;
+  excl.value = exclusionRules[value] || "";
+  excl.classList.remove("warn","ok");
+
+  if(value === "Vomiting" || value === "Diarrhoea" || value === "Vomiting and diarrhoea" || value === "Gastroenteritis"){
+    excl.classList.add("warn");
+  } else if(value){
+    excl.classList.add("ok");
+  }
+
+  if(select.disabled){
+    other.disabled = true;
+    return;
+  }
+
+  if(value === "Other"){
+    other.disabled = false;
+    other.style.background = "transparent";
+  } else {
+    other.disabled = true;
+    other.value = "";
+    other.style.background = "#f3f4f6";
+  }
+}
+
+function updateAlertBanner(){
+  const values = Array.from(document.querySelectorAll('select[data-row]')).map(s => s.value);
+  const show = values.includes("Vomiting") ||
+               values.includes("Diarrhoea") ||
+               values.includes("Vomiting and diarrhoea") ||
+               values.includes("Gastroenteritis");
+
+  document.getElementById("illnessAlert").style.display = show ? "block" : "none";
 }
 
 function getRowsAsObjects(){
   const out = [];
   document.querySelectorAll("#rows tr").forEach(tr => {
-    const fields = tr.querySelectorAll("input, textarea");
+    const fields = tr.querySelectorAll("input, select");
     out.push({
       staffName: fields[0]?.value?.trim() || "",
       date: fields[1]?.value?.trim() || "",
-      details: fields[2]?.value?.trim() || "",
-      checkedBy: fields[3]?.value?.trim() || ""
+      illnessType: fields[2]?.value?.trim() || "",
+      otherIllness: fields[3]?.value?.trim() || "",
+      exclusion: fields[4]?.value?.trim() || "",
+      checkedBy: fields[5]?.value?.trim() || ""
     });
   });
   return out;
 }
 
 function flattenRows(rows){
-  const values = [];
+  const out = [];
   rows.forEach(row => {
-    values.push(
+    out.push(
       row.staffName || "",
       row.date || "",
-      row.details || "",
+      row.illnessType || "",
+      row.otherIllness || "",
+      row.exclusion || "",
       row.checkedBy || ""
     );
   });
-  return values;
+  return out;
 }
 
 function applyFlatValues(values){
-  const fields = document.querySelectorAll("table input, table textarea");
+  const fields = document.querySelectorAll("table input, table select");
   fields.forEach(function(field, i){
     field.value = values[i] || "";
   });
+
+  for(let i = 0; i < 12; i++){
+    updateExclusion(i);
+  }
+  updateAlertBanner();
 }
 
 async function saveForm(){
   const rows = getRowsAsObjects();
-  const values = flattenRows(rows);
+  const data = {
+    rows: rows,
+    notes: document.getElementById("notesBox").value
+  };
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 
   try {
     if (window.MDKArchive) {
@@ -339,9 +614,10 @@ async function saveForm(){
       }
 
       const archivePayload = {
-        type: "Staff Training",
+        type: "Staff Illness / Accident",
         site: "Home",
         recordDate: recordDate,
+        notes: data.notes,
         fields: {
           rows: rows
         }
@@ -368,8 +644,11 @@ async function saveForm(){
 function loadForm(){
   const saved = localStorage.getItem(STORAGE_KEY);
   if(!saved) return;
-  const values = JSON.parse(saved);
+
+  const data = JSON.parse(saved);
+  const values = flattenRows(data.rows || []);
   applyFlatValues(values);
+  document.getElementById("notesBox").value = data.notes || "";
 }
 
 async function loadSavedArchiveRecord(){
@@ -382,7 +661,11 @@ async function loadSavedArchiveRecord(){
     const rows = record.fields.rows || [];
     const values = flattenRows(rows);
     applyFlatValues(values);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+    document.getElementById("notesBox").value = record.notes || "";
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      rows: rows,
+      notes: record.notes || ""
+    }));
     lockAllFields();
   } catch(err){
     console.error("Load archive record error:", err);
@@ -393,20 +676,34 @@ async function loadSavedArchiveRecord(){
 function clearForm(){
   if(!confirm("Clear form?")) return;
 
-  document.querySelectorAll("table input, table textarea").forEach(function(el){
+  document.querySelectorAll("table input, table select").forEach(function(el){
     el.value = "";
     el.disabled = false;
   });
 
+  document.querySelectorAll('input[data-excl-row]').forEach(el => {
+    el.readOnly = true;
+  });
+
+  document.getElementById("notesBox").value = "";
+  document.getElementById("notesBox").disabled = false;
   document.getElementById("lockedNote").style.display = "none";
   document.getElementById("editBtn").style.display = loadedRecordId ? "inline-block" : "none";
 
   if (!loadedRecordId) {
     localStorage.removeItem(STORAGE_KEY);
   }
+
+  for(let i = 0; i < 12; i++){
+    updateExclusion(i);
+  }
+  updateAlertBanner();
 }
 
 buildRows();
+for(let i = 0; i < 12; i++){
+  updateExclusion(i);
+}
 
 if (loadedRecordId) {
   loadSavedArchiveRecord();
