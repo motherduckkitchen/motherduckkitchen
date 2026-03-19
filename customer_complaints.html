@@ -10,7 +10,9 @@
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
 <style>
-*{box-sizing:border-box;}
+*{
+  box-sizing:border-box;
+}
 
 body{
   margin:0;
@@ -38,56 +40,165 @@ body{
   gap:10px;
   margin-bottom:14px;
   flex-wrap:wrap;
+  align-items:center;
 }
 
 .btn{
+  appearance:none;
   border:0;
   border-radius:16px;
   padding:12px 18px;
+  cursor:pointer;
   font-weight:700;
+  font-size:15px;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
   background:#e5e7eb;
+  color:#1f2937;
+  box-shadow:0 4px 12px rgba(0,0,0,.15);
 }
 
-.back{background:#ffc107;}
-.save{background:#2c52a0;color:#fff;}
-.edit{background:#16a34a;color:#fff;}
+.btn:hover{
+  transform:translateY(-1px);
+}
+
+.back{
+  background:#ffc107;
+  color:#4b0082;
+}
+
+.back:hover{
+  background:#e0a800;
+}
+
+.save{
+  background:#2c52a0;
+  color:#fff;
+}
+
+.save:hover{
+  background:#244996;
+}
+
+.edit{
+  background:#16a34a;
+  color:#fff;
+}
+
+.edit:hover{
+  background:#15803d;
+}
 
 .card{
   background:#fff;
   padding:20px;
   border-radius:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,.2);
 }
 
-h1{font-size:28px;margin-bottom:16px;}
+h1{
+  font-size:28px;
+  margin:0 0 16px;
+  color:#1f2937;
+}
 
 .table-wrap{
   overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
 }
 
 table{
   width:100%;
   min-width:900px;
   border-collapse:collapse;
+  table-layout:fixed;
 }
 
 th,td{
   border:1px solid #222;
   padding:6px;
   font-size:13px;
+  vertical-align:middle;
+}
+
+th{
+  background:#f4f6f8;
+  text-align:center;
+}
+
+input,textarea{
+  width:100%;
+  border:none;
+  outline:none;
+  background:transparent;
+  font-size:13px;
+  padding:4px;
+  box-sizing:border-box;
+  font-family:Arial,Helvetica,sans-serif;
 }
 
 textarea{
   min-height:60px;
+  resize:vertical;
 }
 
-/* MOBILE */
+.locked-note{
+  display:none;
+  margin-bottom:12px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:#fff7ed;
+  color:#9a3412;
+  border:1px solid #fdba74;
+  font-weight:700;
+}
+
 @media (max-width:768px){
-  body{background-attachment:scroll;}
-  .page{padding:10px;}
-  .toolbar{flex-direction:column;}
-  .btn{width:100%;}
-  h1{font-size:22px;}
-  th,td{font-size:12px;}
+  body{
+    background-attachment:scroll;
+  }
+
+  .page{
+    padding:10px;
+  }
+
+  .toolbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .btn{
+    width:100%;
+  }
+
+  .card{
+    padding:14px;
+    border-radius:16px;
+  }
+
+  h1{
+    font-size:22px;
+  }
+
+  th,td{
+    font-size:12px;
+    padding:5px;
+  }
+
+  input,textarea{
+    font-size:16px;
+  }
+}
+
+@media print{
+  .toolbar{display:none;}
+  body{background:white;}
+  .wash{display:none;}
+  .page{max-width:none;padding:0;}
+  .card{box-shadow:none;border-radius:0;padding:0;}
+  .locked-note{display:none !important;}
 }
 </style>
 </head>
@@ -97,99 +208,182 @@ textarea{
 <div class="wash"></div>
 
 <main class="page">
+  <div class="toolbar">
+    <button class="btn back" type="button" onclick="goBackSmart()">← Back</button>
+    <a href="dashboard.html" class="btn">🏠 Home</a>
+    <button onclick="window.print()" class="btn" type="button">🖨 Print</button>
+    <button id="editBtn" onclick="unlockForEdit()" class="btn edit" type="button" style="display:none;">✏ Edit</button>
+    <button onclick="clearForm()" class="btn" type="button">🧹 Clear</button>
+    <button onclick="saveForm()" class="btn save" type="button">💾 Save</button>
+  </div>
 
-<div class="toolbar">
-  <button class="btn back" onclick="goBackSmart()">← Back</button>
-  <a href="dashboard.html" class="btn">🏠 Home</a>
-  <button onclick="window.print()" class="btn">🖨 Print</button>
-  <button id="editBtn" onclick="unlockForEdit()" class="btn edit" style="display:none;">✏ Edit</button>
-  <button onclick="clearForm()" class="btn">Clear</button>
-  <button onclick="saveForm()" class="btn save">Save</button>
-</div>
+  <div class="card">
+    <h1 id="pageTitle">Record 10 – Customer Complaints</h1>
 
-<div class="card">
+    <div id="lockedNote" class="locked-note">
+      This saved record is locked. Press Edit to make changes.
+    </div>
 
-<h1 id="pageTitle">Record 10 – Customer Complaints</h1>
-
-<div id="lockedNote" style="display:none;background:#fff3cd;padding:10px;border-radius:10px;">
-  Locked — press Edit
-</div>
-
-<div class="table-wrap">
-<table>
-<thead>
-<tr>
-<th>Date</th>
-<th>Time</th>
-<th>Name / Contact</th>
-<th>Complaint</th>
-<th>Investigation</th>
-<th>Action</th>
-<th>Checked</th>
-</tr>
-</thead>
-<tbody id="rows"></tbody>
-</table>
-</div>
-
-</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Name / Contact</th>
+            <th>Complaint</th>
+            <th>Investigation</th>
+            <th>Action</th>
+            <th>Checked</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
 </main>
 
-<!-- SERVICE WORKER -->
 <script>
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw.js");
+  window.addEventListener("load", async () => {
+    try {
+      const res = await fetch("/sw.js", { method: "HEAD" });
+      if (res.ok) {
+        navigator.serviceWorker.register("/sw.js")
+          .then(() => console.log("Service worker registered"))
+          .catch((err) => console.error("Service worker failed", err));
+      }
+    } catch (err) {
+      console.warn("sw.js not available");
+    }
+  });
 }
 </script>
 
-<!-- FIREBASE -->
 <script src="firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="firebase-loader.js"></script>
+<script src="archive_shared.js"></script>
 
 <script>
-if (!firebase.apps.length) {
-  firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
+const IDLE_LIMIT_MS = 30 * 60 * 1000;
+let idleTimer;
+
+function markActivity() {
+  localStorage.setItem("mdk_last_activity", String(Date.now()));
 }
 
-const auth = firebase.auth();
+function forceLogout() {
+  localStorage.removeItem("mdk_logged_in");
+  localStorage.removeItem("mdk_user_email");
+  localStorage.removeItem("mdk_last_activity");
+  location.replace("login.html?msg=expired");
+}
 
-/* 🔒 30 MIN LOCK */
-let timer;
-function resetTimer(){
-  clearTimeout(timer);
-  timer = setTimeout(()=>{
-    auth.signOut();
+function resetIdleTimer() {
+  clearTimeout(idleTimer);
+  markActivity();
+  idleTimer = setTimeout(forceLogout, IDLE_LIMIT_MS);
+}
+
+function checkSessionAge() {
+  const loggedIn = localStorage.getItem("mdk_logged_in") === "1";
+  const last = Number(localStorage.getItem("mdk_last_activity") || "0");
+
+  if (!loggedIn || !last) {
     location.replace("login.html");
-  }, 1800000);
+    return false;
+  }
+
+  if (Date.now() - last > IDLE_LIMIT_MS) {
+    forceLogout();
+    return false;
+  }
+
+  resetIdleTimer();
+  return true;
 }
 
-["click","keydown","touchstart"].forEach(e=>{
-  document.addEventListener(e, resetTimer);
-});
+checkSessionAge();
 
-auth.onAuthStateChanged(user=>{
-  if(!user) location.replace("login.html");
-  resetTimer();
-});
+document.addEventListener("click", resetIdleTimer);
+document.addEventListener("keydown", resetIdleTimer);
+document.addEventListener("touchstart", resetIdleTimer);
+document.addEventListener("mousemove", resetIdleTimer);
+document.addEventListener("scroll", resetIdleTimer);
 
-/* PAGE LOGIC */
+const params = new URLSearchParams(window.location.search);
+const SITE = params.get("site") || "Kitchen";
+const LOAD_ID = params.get("load") || "";
+
+const STORAGE_KEY = SITE === "Brewer St"
+  ? "customer_complaints_brewer_v2"
+  : "customer_complaints_kitchen_v2";
+
+let loadedRecordId = LOAD_ID || "";
+
+document.getElementById("pageTitle").textContent =
+  SITE === "Brewer St"
+    ? "Record 10 – Customer Complaints (Brewer St)"
+    : "Record 10 – Customer Complaints (Kitchen)";
+
 function goBackSmart(){
-  location.href="kitchen.html";
+  const fromArchive = sessionStorage.getItem("mdk_from_archive");
+  if (fromArchive === "1") {
+    sessionStorage.removeItem("mdk_from_archive");
+    window.location.href = "audit_archive.html";
+    return;
+  }
+  window.location.href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
+}
+
+function todayDate(){
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2,"0");
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const yyyy = d.getFullYear();
+  return dd + "/" + mm + "/" + yyyy;
+}
+
+function currentTime(){
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2,"0");
+  const mm = String(d.getMinutes()).padStart(2,"0");
+  return hh + ":" + mm;
 }
 
 function buildRows(){
-  const tbody=document.getElementById("rows");
-  for(let i=0;i<10;i++){
-    const tr=document.createElement("tr");
+  const tbody = document.getElementById("rows");
+  tbody.innerHTML = "";
 
-    for(let c=0;c<7;c++){
-      const td=document.createElement("td");
+  for(let i = 0; i < 10; i++){
+    const tr = document.createElement("tr");
 
-      if(c>=3 && c<=5){
-        td.innerHTML="<textarea></textarea>";
-      }else{
-        td.innerHTML="<input>";
+    for(let c = 0; c < 7; c++){
+      const td = document.createElement("td");
+
+      if(c >= 3 && c <= 5){
+        const textarea = document.createElement("textarea");
+        td.appendChild(textarea);
+      } else {
+        const input = document.createElement("input");
+        input.type = "text";
+
+        if(c === 0){
+          input.addEventListener("focus", function(){
+            if(!input.value && !input.disabled) input.value = todayDate();
+          });
+        }
+
+        if(c === 1){
+          input.addEventListener("focus", function(){
+            if(!input.value && !input.disabled) input.value = currentTime();
+          });
+        }
+
+        td.appendChild(input);
       }
 
       tr.appendChild(td);
@@ -199,33 +393,161 @@ function buildRows(){
   }
 }
 
-function saveForm(){
-  const data=[];
-  document.querySelectorAll("input,textarea").forEach(el=>{
-    data.push(el.value);
+function getAllFields(){
+  return document.querySelectorAll("#rows input, #rows textarea");
+}
+
+function setLockedState(locked){
+  getAllFields().forEach(el => {
+    el.disabled = locked;
   });
-  localStorage.setItem("complaints",JSON.stringify(data));
-  alert("Saved");
+  document.getElementById("editBtn").style.display = locked ? "inline-block" : "none";
+  document.getElementById("lockedNote").style.display = locked ? "block" : "none";
+}
+
+function unlockForEdit(){
+  setLockedState(false);
+}
+
+function getRowsAsObjects(){
+  const out = [];
+  document.querySelectorAll("#rows tr").forEach(tr => {
+    const fields = tr.querySelectorAll("input, textarea");
+    out.push({
+      date: fields[0]?.value?.trim() || "",
+      time: fields[1]?.value?.trim() || "",
+      nameContact: fields[2]?.value?.trim() || "",
+      complaint: fields[3]?.value?.trim() || "",
+      investigation: fields[4]?.value?.trim() || "",
+      action: fields[5]?.value?.trim() || "",
+      checked: fields[6]?.value?.trim() || ""
+    });
+  });
+  return out;
+}
+
+function flattenRows(rows){
+  const values = [];
+  rows.forEach(row => {
+    values.push(
+      row.date || "",
+      row.time || "",
+      row.nameContact || "",
+      row.complaint || "",
+      row.investigation || "",
+      row.action || "",
+      row.checked || ""
+    );
+  });
+  return values;
+}
+
+function applyFlatValues(values){
+  const fields = document.querySelectorAll("#rows input, #rows textarea");
+  fields.forEach((field, i) => {
+    field.value = values[i] || "";
+  });
+}
+
+async function saveForm(){
+  const rows = getRowsAsObjects();
+  const flat = flattenRows(rows);
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(flat));
+
+  try {
+    if (window.MDKArchive) {
+      let recordDate = "";
+      for (const row of rows) {
+        if (row.date) {
+          recordDate = row.date;
+          break;
+        }
+      }
+
+      if (!recordDate) {
+        recordDate = window.MDKArchive.formatDDMMYYYY(new Date());
+      }
+
+      const archivePayload = {
+        type: "Customer Complaints",
+        site: SITE,
+        recordDate: recordDate,
+        fields: {
+          rows: rows
+        }
+      };
+
+      if (loadedRecordId) {
+        await window.MDKArchive.updateRecord(loadedRecordId, archivePayload);
+      } else {
+        loadedRecordId = await window.MDKArchive.saveRecord(archivePayload);
+      }
+    }
+
+    if (loadedRecordId) {
+      setLockedState(true);
+    }
+
+    alert("Saved");
+  } catch (err) {
+    console.error("Archive save error:", err);
+    alert("Saved locally, but archive sync failed");
+  }
 }
 
 function loadForm(){
-  const data=JSON.parse(localStorage.getItem("complaints")||"[]");
-  document.querySelectorAll("input,textarea").forEach((el,i)=>{
-    el.value=data[i]||"";
-  });
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(!saved) return;
+
+  try{
+    const values = JSON.parse(saved);
+    applyFlatValues(values);
+  } catch(err){
+    console.error("Local load error:", err);
+  }
+}
+
+async function loadSavedArchiveRecord(){
+  if(!loadedRecordId || !window.MDKArchive) return;
+
+  try{
+    const record = await window.MDKArchive.loadRecord(loadedRecordId);
+    if(!record || !record.fields) return;
+
+    const rows = Array.isArray(record.fields.rows) ? record.fields.rows : [];
+    const values = flattenRows(rows);
+
+    applyFlatValues(values);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+    setLockedState(true);
+  } catch(err){
+    console.error("Load archive record error:", err);
+    alert("Could not open saved archive record.");
+  }
 }
 
 function clearForm(){
   if(!confirm("Clear?")) return;
-  document.querySelectorAll("input,textarea").forEach(el=>el.value="");
-}
 
-function unlockForEdit(){
-  document.querySelectorAll("input,textarea").forEach(el=>el.disabled=false);
+  document.querySelectorAll("#rows input, #rows textarea").forEach(el => {
+    el.value = "";
+  });
+
+  if (loadedRecordId) {
+    setLockedState(false);
+  } else {
+    localStorage.removeItem(STORAGE_KEY);
+  }
 }
 
 buildRows();
-loadForm();
+
+if (loadedRecordId) {
+  loadSavedArchiveRecord();
+} else {
+  loadForm();
+}
 </script>
 
 </body>
