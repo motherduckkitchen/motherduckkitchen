@@ -253,6 +253,19 @@ document.addEventListener("touchstart", resetIdleTimer);
 document.addEventListener("mousemove", resetIdleTimer);
 document.addEventListener("scroll", resetIdleTimer);
 </script>
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").then(reg => {
+    reg.update();
+
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      window.location.reload();
+    });
+  });
+}
+</script>
 
 </body>
 </html>
