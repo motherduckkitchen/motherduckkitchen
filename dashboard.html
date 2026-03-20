@@ -252,7 +252,7 @@ body{
         <a class="card-link" href="record13.html">Food Safety Program Review</a>
 
         <a class="card-link" href="audit_archive.html">Audit Archive</a>
-        <a class="card-link" href="record_5b_transport_brewer.html">Brewer Transport Log</a>
+        <a class="card-link" href="transport_log.html?site=Brewer%20St">Brewer Transport Log</a>
       </div>
 
     </section>
@@ -276,7 +276,16 @@ if ("serviceWorker" in navigator) {
 }
 </script>
 
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
 <script>
+if (!firebase.apps.length) {
+  firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
+}
+
+const auth = firebase.auth();
 const IDLE_LIMIT_MS = 30 * 60 * 1000;
 let idleTimer;
 
@@ -284,7 +293,13 @@ function markActivity() {
   localStorage.setItem("mdk_last_activity", String(Date.now()));
 }
 
-function forceLogout() {
+async function forceLogout() {
+  try {
+    await auth.signOut();
+  } catch (e) {
+    console.error(e);
+  }
+
   localStorage.removeItem("mdk_logged_in");
   localStorage.removeItem("mdk_user_email");
   localStorage.removeItem("mdk_last_activity");
@@ -298,30 +313,35 @@ function resetIdleTimer() {
 }
 
 function checkSessionAge() {
-  const loggedIn = localStorage.getItem("mdk_logged_in") === "1";
   const last = Number(localStorage.getItem("mdk_last_activity") || "0");
 
-  if (!loggedIn || !last) {
-    location.replace("login.html");
-    return false;
+  if (!last) {
+    forceLogout();
+    return;
   }
 
   if (Date.now() - last > IDLE_LIMIT_MS) {
     forceLogout();
-    return false;
+    return;
   }
 
   resetIdleTimer();
-  return true;
 }
 
-checkSessionAge();
+auth.onAuthStateChanged(function(user){
+  if (!user) {
+    location.replace("login.html");
+    return;
+  }
 
-document.getElementById("logoutBtn").onclick = function(){
-  localStorage.removeItem("mdk_logged_in");
-  localStorage.removeItem("mdk_user_email");
-  localStorage.removeItem("mdk_last_activity");
-  location.replace("login.html");
+  localStorage.setItem("mdk_logged_in", "1");
+  localStorage.setItem("mdk_user_email", user.email || "");
+  markActivity();
+  checkSessionAge();
+});
+
+document.getElementById("logoutBtn").onclick = async function(){
+  await forceLogout();
 };
 
 document.addEventListener("click", resetIdleTimer);
