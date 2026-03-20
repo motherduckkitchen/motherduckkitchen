@@ -1,248 +1,588 @@
-(function () {
-  if (!window.MDK_FIREBASE_CONFIG) {
-    console.error("Firebase config missing");
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Audit Archive</title>
+
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#2c52a0">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:url("kitchen.jpg") center/cover no-repeat fixed;
+  min-height:100vh;
+}
+
+.wash{
+  position:fixed;
+  inset:0;
+  background:rgba(255,255,255,.42);
+  backdrop-filter:blur(4px);
+}
+
+.page{
+  position:relative;
+  z-index:1;
+  max-width:1200px;
+  margin:0 auto;
+  padding:24px;
+}
+
+.card{
+  background:rgba(255,255,255,.90);
+  backdrop-filter:blur(10px);
+  border-radius:26px;
+  padding:24px;
+  box-shadow:0 18px 40px rgba(0,0,0,.18);
+}
+
+h1{
+  margin:0 0 18px;
+  text-align:center;
+  font-size:34px;
+  color:#1f2937;
+}
+
+.topbar{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-bottom:20px;
+}
+
+.btn{
+  padding:12px 18px;
+  border-radius:16px;
+  background:#f8fafc;
+  color:#29405a;
+  border:1px solid #d6dde5;
+  text-decoration:none;
+  font-weight:700;
+  box-shadow:0 2px 8px rgba(0,0,0,.10);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.filters{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  justify-content:center;
+  margin-bottom:20px;
+}
+
+select{
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid #cfd6dd;
+  font-size:16px;
+  min-height:48px;
+}
+
+.month-grid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:12px;
+  margin-bottom:20px;
+}
+
+.month-btn{
+  padding:16px;
+  border:none;
+  border-radius:18px;
+  background:#2c52a0;
+  color:white;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 10px 20px rgba(0,0,0,.16), 0 0 16px rgba(255,255,255,.22);
+}
+
+.month-btn.active{
+  background:#183e88;
+}
+
+.records{
+  display:grid;
+  gap:12px;
+}
+
+.record{
+  border:1px solid #d7dde4;
+  border-radius:16px;
+  padding:14px;
+  background:#fff;
+}
+
+.record strong{
+  display:block;
+  margin-bottom:6px;
+  font-size:22px;
+  line-height:1.25;
+}
+
+.meta{
+  font-size:14px;
+  color:#555;
+  margin:4px 0;
+  word-break:break-word;
+}
+
+.download{
+  margin-top:8px;
+  display:inline-block;
+  text-decoration:none;
+  font-weight:700;
+  color:#204a9b;
+  word-break:break-word;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+
+.action-btn{
+  padding:10px 14px;
+  border:none;
+  border-radius:12px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.open-btn{
+  background:#204a9b;
+  color:#fff;
+}
+
+.delete-btn{
+  background:#b42318;
+  color:#fff;
+}
+
+.message{
+  font-size:16px;
+  color:#444;
+  padding:12px 4px;
+  text-align:center;
+}
+
+@media (max-width: 900px){
+  .month-grid{
+    grid-template-columns:repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 760px){
+  body{
+    background-attachment:scroll;
+  }
+
+  .page{
+    padding:12px;
+  }
+
+  .card{
+    padding:16px;
+    border-radius:18px;
+  }
+
+  h1{
+    font-size:26px;
+    margin-bottom:16px;
+  }
+
+  .topbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .btn{
+    width:100%;
+  }
+
+  .filters{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .filters select{
+    width:100%;
+  }
+
+  .month-grid{
+    grid-template-columns:repeat(2, 1fr);
+    gap:10px;
+  }
+
+  .month-btn{
+    padding:14px 10px;
+    font-size:14px;
+  }
+
+  .record{
+    padding:12px;
+  }
+
+  .record strong{
+    font-size:18px;
+  }
+
+  .actions{
+    flex-direction:column;
+  }
+
+  .action-btn{
+    width:100%;
+  }
+}
+
+@media (max-width: 480px){
+  .page{
+    padding:10px;
+  }
+
+  .card{
+    padding:12px;
+    border-radius:16px;
+  }
+
+  h1{
+    font-size:22px;
+  }
+
+  .month-grid{
+    grid-template-columns:1fr;
+  }
+
+  .month-btn{
+    font-size:15px;
+  }
+
+  .record strong{
+    font-size:17px;
+  }
+
+  .meta{
+    font-size:13px;
+  }
+
+  .download{
+    font-size:14px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="wash"></div>
+
+<main class="page">
+  <section class="card">
+    <h1>Audit Archive</h1>
+
+    <div class="topbar">
+      <button class="btn" type="button" onclick="goBackSmart()">← Back</button>
+      <a class="btn" href="dashboard.html">Home</a>
+      <a class="btn" href="kitchen.html">Kitchen</a>
+      <a class="btn" href="brewer_st.html">Brewer St</a>
+    </div>
+
+    <div class="filters">
+      <select id="yearSelect"></select>
+
+      <select id="siteSelect">
+        <option value="">All Sites</option>
+        <option value="Kitchen">Kitchen</option>
+        <option value="Brewer St">Brewer St</option>
+        <option value="Nursery">Nursery</option>
+        <option value="Home">Home</option>
+      </select>
+
+      <select id="typeSelect">
+        <option value="">All Record Types</option>
+        <option value="Incoming Goods">Incoming Goods</option>
+        <option value="Approved Suppliers List">Approved Suppliers List</option>
+        <option value="Approved Food Supplier Agreement Form">Approved Food Supplier Agreement Form</option>
+        <option value="Food Safety Program Review">Food Safety Program Review</option>
+        <option value="Cook Cool Reheat">Cook Cool Reheat</option>
+        <option value="Transfer Log">Transfer Log</option>
+        <option value="Appliance Temps">Appliance Temps</option>
+        <option value="Daily Cleaning">Daily Cleaning</option>
+        <option value="Weekly Cleaning">Weekly Cleaning</option>
+        <option value="Monthly Cleaning">Monthly Cleaning</option>
+        <option value="Equipment Log">Equipment Log</option>
+        <option value="Thermometer Calibration">Thermometer Calibration</option>
+        <option value="Customer Complaints">Customer Complaints</option>
+        <option value="Staff Training">Staff Training</option>
+        <option value="Staff Illness / Accident">Staff Illness / Accident</option>
+        <option value="Bottle Receipt">Bottle Receipt</option>
+        <option value="Nursery Temperature & Puree Reheat Log">Nursery Temperature & Puree Reheat Log</option>
+        <option value="Invoices">Invoices</option>
+        <option value="Pest Control">Pest Control</option>
+        <option value="Food Recall">Food Recall</option>
+        <option value="Heating Log">Heating Log</option>
+      </select>
+    </div>
+
+    <div class="month-grid" id="monthGrid"></div>
+    <div class="records" id="recordsWrap"></div>
+  </section>
+</main>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", async () => {
+    try {
+      const res = await fetch("/sw.js", { method: "HEAD" });
+      if (res.ok) {
+        navigator.serviceWorker.register("/sw.js")
+          .then(() => console.log("Service worker registered"))
+          .catch((err) => console.error("Service worker failed", err));
+      }
+    } catch (err) {
+      console.warn("sw.js not available");
+    }
+  });
+}
+</script>
+
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="firebase-loader.js"></script>
+<script src="archive_shared.js"></script>
+
+<script>
+const IDLE_LIMIT_MS = 30 * 60 * 1000;
+let idleTimer;
+
+function markActivity() {
+  localStorage.setItem("mdk_last_activity", String(Date.now()));
+}
+
+function forceLogout() {
+  localStorage.removeItem("mdk_logged_in");
+  localStorage.removeItem("mdk_user_email");
+  localStorage.removeItem("mdk_last_activity");
+  location.replace("login.html?msg=expired");
+}
+
+function resetIdleTimer() {
+  clearTimeout(idleTimer);
+  markActivity();
+  idleTimer = setTimeout(forceLogout, IDLE_LIMIT_MS);
+}
+
+function checkSessionAge() {
+  const loggedIn = localStorage.getItem("mdk_logged_in") === "1";
+  const last = Number(localStorage.getItem("mdk_last_activity") || "0");
+
+  if (!loggedIn || !last) {
+    location.replace("login.html");
+    return false;
+  }
+
+  if (Date.now() - last > IDLE_LIMIT_MS) {
+    forceLogout();
+    return false;
+  }
+
+  resetIdleTimer();
+  return true;
+}
+
+checkSessionAge();
+
+document.addEventListener("click", resetIdleTimer);
+document.addEventListener("keydown", resetIdleTimer);
+document.addEventListener("touchstart", resetIdleTimer);
+document.addEventListener("mousemove", resetIdleTimer);
+document.addEventListener("scroll", resetIdleTimer);
+
+const monthGrid = document.getElementById("monthGrid");
+const recordsWrap = document.getElementById("recordsWrap");
+const yearSelect = document.getElementById("yearSelect");
+const siteSelect = document.getElementById("siteSelect");
+const typeSelect = document.getElementById("typeSelect");
+
+let activeMonth = new Date().getMonth() + 1;
+window.MDKArchiveCache = window.MDKArchiveCache || {};
+
+function goBackSmart() {
+  window.location.href = "dashboard.html";
+}
+
+function buildYears() {
+  const currentYear = new Date().getFullYear();
+  yearSelect.innerHTML = "";
+
+  for (let y = currentYear - 2; y <= currentYear + 1; y++) {
+    const opt = document.createElement("option");
+    opt.value = y;
+    opt.textContent = y;
+    if (y === currentYear) opt.selected = true;
+    yearSelect.appendChild(opt);
+  }
+}
+
+async function buildMonths() {
+  const counts = await window.MDKArchive.listMonthCounts(yearSelect.value);
+  monthGrid.innerHTML = "";
+
+  for (let i = 1; i <= 12; i++) {
+    const btn = document.createElement("button");
+    btn.className = "month-btn" + (i === activeMonth ? " active" : "");
+    btn.textContent = `${window.MDKArchive.monthName(i)} (${counts[i] || 0})`;
+    btn.onclick = async function() {
+      activeMonth = i;
+      await buildMonths();
+      await loadRecords();
+    };
+    monthGrid.appendChild(btn);
+  }
+}
+
+function getOpenPage(record) {
+  const pageMap = {
+    "Cook Cool Reheat": "record_5a_temp_control_log.html",
+    "Bottle Receipt": "bottle_receipt.html",
+    "Daily Cleaning": "cleaning_schedule_new.html",
+    "Weekly Cleaning": "cleaning_weekly_new.html",
+    "Monthly Cleaning": "cleaning_monthly_new.html",
+    "Appliance Temps": "appliance_temps.html",
+    "Heating Log": "record_5_heating_log.html",
+    "Thermometer Calibration": "thermometer_calibration.html",
+    "Pest Control": "pest_control.html",
+    "Customer Complaints": "customer_complaints.html",
+    "Staff Training": "staff_training.html",
+    "Staff Illness / Accident": "staff_illness.html",
+    "Food Recall": "food_recall.html",
+    "Equipment Log": "equipment_log.html",
+    "Food Safety Program Review": "record13.html",
+    "Approved Suppliers List": "record1_suppliers.html",
+    "Approved Food Supplier Agreement Form": "record2_supplier_agreement.html",
+    "Nursery Temperature & Puree Reheat Log": "nursery_puree_log_new.html",
+    "Invoices": "invoices.html",
+    "Transfer Log": "transport_log.html",
+    "Incoming Goods": "record3a_incoming_goods.html"
+  };
+  return pageMap[record.type] || "";
+}
+
+function openSavedRecord(id) {
+  const record = window.MDKArchiveCache[id];
+  if (!record) {
+    alert("Saved record not found.");
     return;
   }
 
-  if (!firebase.apps.length) {
-    firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
+  const page = getOpenPage(record);
+  if (!page) {
+    alert("No page linked for this record type yet.");
+    return;
   }
 
-  const db = window.MDK_DB || firebase.firestore();
-  const storage = window.MDK_STORAGE || (firebase.storage ? firebase.storage() : null);
+  sessionStorage.setItem("mdk_from_archive", "1");
 
-  function pad(n) {
-    return String(n).padStart(2, "0");
-  }
+  const siteParam = record.site ? `&site=${encodeURIComponent(record.site)}` : "";
+  window.location.href = `${page}?load=${encodeURIComponent(id)}${siteParam}`;
+}
 
-  function formatDDMMYYYY(date) {
-    return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
-  }
-
-  function parseDDMMYYYY(text) {
-    if (!text || typeof text !== "string") return null;
-
-    const parts = text.split("/").map(s => s.trim());
-    if (parts.length !== 3) return null;
-
-    const d = parseInt(parts[0], 10);
-    const m = parseInt(parts[1], 10);
-    const y = parseInt(parts[2], 10);
-
-    if (!d || !m || !y) return null;
-
-    const dt = new Date(y, m - 1, d);
-
-    if (
-      dt.getFullYear() !== y ||
-      dt.getMonth() !== m - 1 ||
-      dt.getDate() !== d
-    ) {
-      return null;
+async function deleteSavedRecord(id) {
+  try {
+    const ok = await window.MDKArchive.deleteRecord(id);
+    if (ok) {
+      delete window.MDKArchiveCache[id];
+      await buildMonths();
+      await loadRecords();
     }
-
-    return dt;
+  } catch (err) {
+    console.error(err);
+    alert("Could not delete record.");
   }
+}
 
-  function monthName(monthNum) {
-    const names = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
-    ];
-    return names[monthNum - 1] || "";
-  }
+async function loadRecords() {
+  recordsWrap.innerHTML = '<div class="message">Loading...</div>';
 
-  async function uploadFile(file, folder) {
-    if (!file || !storage) return null;
-
-    const safeName = `${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
-    const fullPath = `${folder}/${safeName}`;
-    const ref = storage.ref().child(fullPath);
-
-    await ref.put(file, {
-      contentType: file.type || "application/octet-stream"
+  try {
+    const items = await window.MDKArchive.listRecords({
+      year: yearSelect.value,
+      monthNum: activeMonth,
+      site: siteSelect.value,
+      type: typeSelect.value
     });
 
-    const downloadURL = await ref.getDownloadURL();
-
-    return {
-      name: file.name,
-      path: fullPath,
-      downloadURL: downloadURL,
-      contentType: file.type || ""
-    };
-  }
-
-  async function saveRecord(opts) {
-    const type = opts.type || "Unknown Record";
-    const site = opts.site || "Unknown";
-    const fields = opts.fields || {};
-    const notes = opts.notes || "";
-    const file = opts.file || null;
-
-    let recordDateObj = parseDDMMYYYY(opts.recordDate || "");
-    if (!recordDateObj) recordDateObj = new Date();
-
-    const monthNum = recordDateObj.getMonth() + 1;
-    const year = recordDateObj.getFullYear();
-
-    let fileInfo = null;
-    if (file) {
-      fileInfo = await uploadFile(file, `records/${year}/${pad(monthNum)}_${monthName(monthNum)}`);
-    }
-
-    const payload = {
-      type: type,
-      site: site,
-      recordDate: formatDDMMYYYY(recordDateObj),
-      monthNum: monthNum,
-      monthName: monthName(monthNum),
-      year: year,
-      notes: notes,
-      fields: fields,
-      fileInfo: fileInfo,
-      savedAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-
-    const docRef = await db.collection("auditRecords").add(payload);
-    return docRef.id;
-  }
-
-  async function updateRecord(id, opts) {
-    if (!id) throw new Error("Missing record id");
-
-    const type = opts.type || "Unknown Record";
-    const site = opts.site || "Unknown";
-    const fields = opts.fields || {};
-    const notes = opts.notes || "";
-    const file = opts.file || null;
-
-    let recordDateObj = parseDDMMYYYY(opts.recordDate || "");
-    if (!recordDateObj) recordDateObj = new Date();
-
-    const monthNum = recordDateObj.getMonth() + 1;
-    const year = recordDateObj.getFullYear();
-
-    let fileInfo = opts.fileInfo || null;
-    if (file) {
-      fileInfo = await uploadFile(file, `records/${year}/${pad(monthNum)}_${monthName(monthNum)}`);
-    }
-
-    const payload = {
-      type: type,
-      site: site,
-      recordDate: formatDDMMYYYY(recordDateObj),
-      monthNum: monthNum,
-      monthName: monthName(monthNum),
-      year: year,
-      notes: notes,
-      fields: fields,
-      fileInfo: fileInfo || null,
-      savedAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-
-    await db.collection("auditRecords").doc(id).update(payload);
-    return id;
-  }
-
-  async function loadRecord(id) {
-    if (!id) throw new Error("Missing record id");
-
-    const doc = await db.collection("auditRecords").doc(id).get();
-    if (!doc.exists) return null;
-
-    return {
-      id: doc.id,
-      ...doc.data()
-    };
-  }
-
-  async function deleteRecord(id) {
-    if (!id) throw new Error("Missing record id");
-
-    if (!confirm("Delete this saved archive record?")) return false;
-
-    await db.collection("auditRecords").doc(id).delete();
-    return true;
-  }
-
-  async function listRecords(filters) {
-    const year = parseInt(filters.year, 10);
-    const monthNum = parseInt(filters.monthNum, 10);
-
-    let query = db.collection("auditRecords")
-      .where("year", "==", year)
-      .where("monthNum", "==", monthNum);
-
-    if (filters.site && filters.site !== "All Sites") {
-      query = query.where("site", "==", filters.site);
-    }
-
-    if (filters.type && filters.type !== "All Record Types") {
-      query = query.where("type", "==", filters.type);
-    }
-
-    const snap = await query.get();
-
-    const rows = snap.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    rows.sort((a, b) => {
-      const aTime = a.savedAt && a.savedAt.toMillis ? a.savedAt.toMillis() : 0;
-      const bTime = b.savedAt && b.savedAt.toMillis ? b.savedAt.toMillis() : 0;
-      return bTime - aTime;
+    window.MDKArchiveCache = {};
+    items.forEach(item => {
+      window.MDKArchiveCache[item.id] = item;
     });
 
-    return rows;
-  }
+    if (!items.length) {
+      recordsWrap.innerHTML = '<div class="message">No saved records for this month.</div>';
+      return;
+    }
 
-  async function listMonthCounts(year) {
-    const snap = await db.collection("auditRecords")
-      .where("year", "==", parseInt(year, 10))
-      .get();
+    recordsWrap.innerHTML = "";
 
-    const counts = {};
-    for (let i = 1; i <= 12; i++) counts[i] = 0;
+    items.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "record";
 
-    snap.forEach(doc => {
-      const data = doc.data();
-      if (data.monthNum) {
-        counts[data.monthNum] = (counts[data.monthNum] || 0) + 1;
+      card.innerHTML = `
+        <strong>${item.type || ""}</strong>
+        <div class="meta"><b>Site:</b> ${item.site || ""}</div>
+        <div class="meta"><b>Record Date:</b> ${item.recordDate || ""}</div>
+        <div class="meta"><b>Month:</b> ${item.monthName || ""} ${item.year || ""}</div>
+        <div class="meta"><b>Notes:</b> ${item.notes || ""}</div>
+        <div class="meta"><b>Fields saved:</b> ${item.fields ? Object.keys(item.fields).length : 0}</div>
+        <div class="actions">
+          <button class="action-btn open-btn" onclick="openSavedRecord('${item.id}')">Open</button>
+          <button class="action-btn delete-btn" onclick="deleteSavedRecord('${item.id}')">Delete</button>
+        </div>
+      `;
+
+      if (item.fileInfo && item.fileInfo.downloadURL) {
+        const link = document.createElement("a");
+        link.className = "download";
+        link.href = item.fileInfo.downloadURL;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.textContent = `Open file: ${item.fileInfo.name || "attachment"}`;
+        card.appendChild(link);
       }
+
+      recordsWrap.appendChild(card);
     });
-
-    return counts;
+  } catch (err) {
+    console.error(err);
+    recordsWrap.innerHTML = '<div class="message">Archive query error.</div>';
   }
+}
 
-  async function getAllRecords() {
-    const snap = await db.collection("auditRecords").get();
+yearSelect.addEventListener("change", async function() {
+  await buildMonths();
+  await loadRecords();
+});
 
-    const rows = snap.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+siteSelect.addEventListener("change", loadRecords);
+typeSelect.addEventListener("change", loadRecords);
 
-    rows.sort((a, b) => {
-      const aTime = a.savedAt && a.savedAt.toMillis ? a.savedAt.toMillis() : 0;
-      const bTime = b.savedAt && b.savedAt.toMillis ? b.savedAt.toMillis() : 0;
-      return bTime - aTime;
-    });
-
-    return rows;
-  }
-
-  window.MDKArchive = {
-    saveRecord,
-    updateRecord,
-    loadRecord,
-    deleteRecord,
-    listRecords,
-    listMonthCounts,
-    getAllRecords,
-    formatDDMMYYYY,
-    parseDDMMYYYY,
-    monthName
-  };
-})();
+buildYears();
+buildMonths().then(loadRecords);
+</script>
+</body>
+</html>
