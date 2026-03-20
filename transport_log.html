@@ -323,8 +323,8 @@ td.left input{
     </div>
 
     <div class="footer-notes">
-      <strong id="notesTitle">Notes</strong>
-      <span id="notesText">Record meal dispatch and delivery details. Save records regularly and print if needed for hard-copy filing.</span>
+      <strong>Notes</strong>
+      <span id="notesText">Record meal dispatch from Kitchen and delivery to Brewer St. Save records regularly and print if needed for hard-copy filing.</span>
       <br><br>
       Food Safety Program - Mother Duck Kallangur (1) January 2021 - Transport Amendment.docx
       <br>
@@ -335,29 +335,28 @@ td.left input{
 
 <script>
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", async () => {
-    try {
-      const res = await fetch("/sw.js", { method: "HEAD" });
-      if (res.ok) {
-        navigator.serviceWorker.register("/sw.js")
-          .then(() => console.log("Service worker registered"))
-          .catch((err) => console.error("Service worker failed", err));
-      }
-    } catch (err) {
-      console.warn("sw.js not available");
-    }
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js")
+      .then(() => console.log("Service worker registered"))
+      .catch((err) => console.error("Service worker failed", err));
   });
 }
 </script>
 
 <script src="firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="firebase-loader.js"></script>
 <script src="archive_shared.js"></script>
 
 <script>
+if (!firebase.apps.length) {
+  firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
+}
+
+const auth = firebase.auth();
 const IDLE_LIMIT_MS = 30 * 60 * 1000;
 let idleTimer;
 
@@ -365,9 +364,13 @@ function markActivity() {
   localStorage.setItem("mdk_last_activity", String(Date.now()));
 }
 
-function forceLogout() {
+async function forceLogout() {
+  try {
+    await auth.signOut();
+  } catch (e) {
+    console.error(e);
+  }
   localStorage.removeItem("mdk_logged_in");
-  localStorage.removeItem("mdk_user_email");
   localStorage.removeItem("mdk_last_activity");
   location.replace("login.html?msg=expired");
 }
@@ -379,24 +382,24 @@ function resetIdleTimer() {
 }
 
 function checkSessionAge() {
-  const loggedIn = localStorage.getItem("mdk_logged_in") === "1";
   const last = Number(localStorage.getItem("mdk_last_activity") || "0");
-
-  if (!loggedIn || !last) {
+  if (!last) {
     location.replace("login.html");
-    return false;
+    return;
   }
-
   if (Date.now() - last > IDLE_LIMIT_MS) {
     forceLogout();
-    return false;
   }
-
-  resetIdleTimer();
-  return true;
 }
 
-checkSessionAge();
+auth.onAuthStateChanged(function(user){
+  if(!user){
+    location.replace("login.html");
+    return;
+  }
+  checkSessionAge();
+  resetIdleTimer();
+});
 
 document.addEventListener("click", resetIdleTimer);
 document.addEventListener("keydown", resetIdleTimer);
@@ -404,23 +407,13 @@ document.addEventListener("touchstart", resetIdleTimer);
 document.addEventListener("mousemove", resetIdleTimer);
 document.addEventListener("scroll", resetIdleTimer);
 
-const params = new URLSearchParams(location.search);
-const SITE = params.get("site") || "Kitchen";
-const LOAD_ID = params.get("load") || "";
-const STORAGE_KEY = SITE === "Brewer St" ? "transport_log_brewer_v1" : "transport_log_kitchen_v1";
+const LOAD_ID = new URLSearchParams(location.search).get("load") || "";
+const SITE = "Transport";
+const STORAGE_KEY = "transport_log_shared_v1";
 
 let loadedRecordId = LOAD_ID || "";
 
-const pageTitle = document.getElementById("pageTitle");
-const notesText = document.getElementById("notesText");
-
-if (SITE === "Brewer St") {
-  pageTitle.textContent = "Record 5b – Brewer St Transport Log";
-  notesText.textContent = "Record meal dispatch and delivery details for Brewer St transport. Save records regularly and print if needed for hard-copy filing.";
-} else {
-  pageTitle.textContent = "Record 5b – Kitchen Transport Log";
-  notesText.textContent = "Record meal dispatch and delivery details for Kitchen transport. Save records regularly and print if needed for hard-copy filing.";
-}
+document.getElementById("pageTitle").textContent = "Record 5b – Transport Log";
 
 function goBackSmart() {
   const fromArchive = sessionStorage.getItem("mdk_from_archive");
@@ -429,7 +422,7 @@ function goBackSmart() {
     window.location.href = "audit_archive.html";
     return;
   }
-  window.location.href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
+  window.location.href = "dashboard.html";
 }
 
 function todayDate() {
