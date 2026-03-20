@@ -1,4 +1,3 @@
-cat > ~/motherduckkitchen/firebase-config.js <<'EOF'
 window.MDK_FIREBASE_CONFIG = {
   apiKey: "AIzaSyCJYbLlMxEo9hyS6it0RiAtrxPxSHi8TrY",
   authDomain: "mdk-fresh-live.firebaseapp.com",
@@ -7,4 +6,3 @@ window.MDK_FIREBASE_CONFIG = {
   messagingSenderId: "283345305823",
   appId: "1:283345305823:web:16e857b6d23815e65a96a"
 };
-EOF
