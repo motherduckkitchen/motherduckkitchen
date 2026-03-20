@@ -122,12 +122,6 @@ h2{
   margin:18px 0 8px;
 }
 
-p{
-  font-size:14px;
-  line-height:1.6;
-  margin:0 0 8px;
-}
-
 .two-col{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -153,20 +147,14 @@ p{
 
 @media (max-width:760px){
   body{background-attachment:scroll;}
-
   .page{padding:12px;}
-
   .toolbar{
     flex-direction:column;
     align-items:stretch;
   }
-
   .btn{width:100%;}
-
   .card{padding:24px 20px;}
-
   .two-col{grid-template-columns:1fr;}
-
   input{font-size:16px;}
 }
 
@@ -191,16 +179,16 @@ p{
 
 <main class="page">
   <div class="toolbar">
-    <button class="btn back" onclick="goBackSmart()">← Back</button>
+    <button class="btn back" type="button" onclick="goBackSmart()">← Back</button>
     <a href="dashboard.html" class="btn">🏠 Home</a>
-    <button class="btn" onclick="window.print()">🖨 Print</button>
-    <button id="editBtn" class="btn edit" onclick="unlockForEdit()" style="display:none;">Edit</button>
-    <button class="btn" onclick="clearForm()">Clear</button>
-    <button class="btn save" onclick="saveForm()">Save</button>
+    <button class="btn" onclick="window.print()" type="button">🖨 Print</button>
+    <button id="editBtn" class="btn edit" onclick="unlockForEdit()" type="button" style="display:none;">Edit</button>
+    <button class="btn" onclick="clearForm()" type="button">Clear</button>
+    <button class="btn save" onclick="saveForm()" type="button">Save</button>
   </div>
 
   <section class="card">
-    <h1>Record 2 – Approved food supplier agreement form</h1>
+    <h1 id="pageTitle">Record 2 – Approved food supplier agreement form</h1>
 
     <div id="lockedNote" class="locked-note">
       This saved record is locked. Press Edit to make changes.
@@ -243,33 +231,40 @@ p{
 
 <script>
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js");
+  window.addEventListener("load", async () => {
+    try {
+      const res = await fetch("/sw.js", { method: "HEAD" });
+      if (res.ok) {
+        navigator.serviceWorker.register("/sw.js")
+          .then(() => console.log("Service worker registered"))
+          .catch((err) => console.error("Service worker failed", err));
+      }
+    } catch (err) {
+      console.warn("sw.js not available");
+    }
   });
 }
 </script>
 
 <script src="firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="firebase-loader.js"></script>
 <script src="archive_shared.js"></script>
 
 <script>
-if (!firebase.apps.length) {
-  firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
-}
-
-const auth = firebase.auth();
 const IDLE_LIMIT_MS = 30 * 60 * 1000;
 let idleTimer;
 
 function markActivity(){
-  localStorage.setItem("mdk_last_activity", Date.now());
+  localStorage.setItem("mdk_last_activity", String(Date.now()));
 }
 
 function forceLogout(){
-  auth.signOut();
-  localStorage.clear();
+  localStorage.removeItem("mdk_logged_in");
+  localStorage.removeItem("mdk_user_email");
+  localStorage.removeItem("mdk_last_activity");
   location.replace("login.html?msg=expired");
 }
 
@@ -279,49 +274,184 @@ function resetIdleTimer(){
   idleTimer = setTimeout(forceLogout, IDLE_LIMIT_MS);
 }
 
-auth.onAuthStateChanged(user=>{
-  if(!user) location.replace("login.html");
+function checkSessionAge() {
+  const loggedIn = localStorage.getItem("mdk_logged_in") === "1";
+  const last = Number(localStorage.getItem("mdk_last_activity") || "0");
+
+  if (!loggedIn || !last) {
+    location.replace("login.html");
+    return false;
+  }
+
+  if (Date.now() - last > IDLE_LIMIT_MS) {
+    forceLogout();
+    return false;
+  }
+
   resetIdleTimer();
-});
+  return true;
+}
+
+checkSessionAge();
 
 ["click","keydown","touchstart","mousemove","scroll"]
-.forEach(e=>document.addEventListener(e, resetIdleTimer));
+.forEach(e => document.addEventListener(e, resetIdleTimer));
 
-const STORAGE_KEY = "record2_supplier";
+const params = new URLSearchParams(window.location.search);
+const SITE = params.get("site") || "Kitchen";
+const LOAD_ID = params.get("load") || "";
 
-function saveForm(){
-  const data = {};
-  document.querySelectorAll("input").forEach(el=>{
-    data[el.id] = el.type==="checkbox" ? el.checked : el.value;
+const STORAGE_KEY = SITE === "Brewer St"
+  ? "record2_supplier_brewer_v2"
+  : "record2_supplier_kitchen_v2";
+
+let loadedRecordId = LOAD_ID || "";
+
+const pageTitle = document.getElementById("pageTitle");
+pageTitle.textContent = SITE === "Brewer St"
+  ? "Record 2 – Approved food supplier agreement form (Brewer St)"
+  : "Record 2 – Approved food supplier agreement form (Kitchen)";
+
+function todayDate() {
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2,"0");
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+
+function fillDates(){
+  document.querySelectorAll(".date-auto").forEach(el=>{
+    el.addEventListener("focus", function(){
+      if(!el.value && !el.disabled) el.value = todayDate();
+    });
   });
+}
+
+function getAllFields(){
+  return document.querySelectorAll("input");
+}
+
+function setLockedState(locked){
+  getAllFields().forEach(el => {
+    el.disabled = locked;
+  });
+  document.getElementById("editBtn").style.display = locked ? "inline-block" : "none";
+  document.getElementById("lockedNote").style.display = locked ? "block" : "none";
+}
+
+function unlockForEdit(){
+  setLockedState(false);
+}
+
+function getFormValues(){
+  const data = {};
+  document.querySelectorAll("input").forEach(el => {
+    data[el.id] = el.type === "checkbox" ? el.checked : el.value;
+  });
+  return data;
+}
+
+function applyFormValues(data){
+  Object.keys(data || {}).forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(el.type === "checkbox") el.checked = !!data[id];
+    else el.value = data[id] || "";
+  });
+}
+
+async function saveForm(){
+  const data = getFormValues();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  alert("Saved");
+
+  try {
+    if (window.MDKArchive) {
+      let recordDate = data.supplierAcceptDate || data.businessAcceptDate || "";
+      if (!recordDate) {
+        recordDate = window.MDKArchive.formatDDMMYYYY(new Date());
+      }
+
+      const archivePayload = {
+        type: "Approved Supplier Agreement",
+        site: SITE,
+        recordDate: recordDate,
+        fields: data
+      };
+
+      if (loadedRecordId) {
+        await window.MDKArchive.updateRecord(loadedRecordId, archivePayload);
+      } else {
+        loadedRecordId = await window.MDKArchive.saveRecord(archivePayload);
+      }
+    }
+
+    if (loadedRecordId) {
+      setLockedState(true);
+    }
+
+    alert("Saved");
+  } catch (err) {
+    console.error("Archive save error:", err);
+    alert("Saved locally, but archive sync failed");
+  }
 }
 
 function loadForm(){
   const raw = localStorage.getItem(STORAGE_KEY);
   if(!raw) return;
-  const data = JSON.parse(raw);
-  Object.keys(data).forEach(id=>{
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.type==="checkbox" ? el.checked=data[id] : el.value=data[id];
-  });
+  applyFormValues(JSON.parse(raw));
+}
+
+async function loadSavedArchiveRecord(){
+  if(!loadedRecordId || !window.MDKArchive) return;
+
+  try{
+    const record = await window.MDKArchive.loadRecord(loadedRecordId);
+    if(!record || !record.fields) return;
+
+    applyFormValues(record.fields);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(record.fields));
+    setLockedState(true);
+  } catch(err){
+    console.error("Load archive record error:", err);
+    alert("Could not open saved archive record.");
+  }
 }
 
 function clearForm(){
   if(!confirm("Clear form?")) return;
+
   document.querySelectorAll("input").forEach(el=>{
-    el.type==="checkbox" ? el.checked=false : el.value="";
+    if(el.type === "checkbox") el.checked = false;
+    else el.value = "";
   });
-  localStorage.removeItem(STORAGE_KEY);
+
+  if (loadedRecordId) {
+    setLockedState(false);
+  } else {
+    localStorage.removeItem(STORAGE_KEY);
+  }
 }
 
 function goBackSmart(){
-  window.location.href="dashboard.html";
+  const fromArchive = sessionStorage.getItem("mdk_from_archive");
+  if (fromArchive === "1") {
+    sessionStorage.removeItem("mdk_from_archive");
+    window.location.href = "audit_archive.html";
+    return;
+  }
+
+  window.location.href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
 }
 
-loadForm();
+fillDates();
+
+if (loadedRecordId) {
+  loadSavedArchiveRecord();
+} else {
+  loadForm();
+}
 </script>
 </body>
 </html>
