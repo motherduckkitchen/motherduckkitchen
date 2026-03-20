@@ -10,9 +10,7 @@
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
 <style>
-*{
-  box-sizing:border-box;
-}
+*{ box-sizing:border-box; }
 
 body{
   margin:0;
@@ -46,10 +44,8 @@ body{
 
 .logo{
   width:90px;
-  max-width:100%;
   display:block;
   margin:0 auto 10px;
-  height:auto;
 }
 
 .site-title{
@@ -58,58 +54,45 @@ body{
   color:#fff;
   text-shadow:0 3px 10px rgba(0,0,0,.30);
   margin-bottom:20px;
-  line-height:1.2;
 }
 
 .card{
   max-width:960px;
   margin:0 auto;
   background:rgba(255,255,255,.88);
-  backdrop-filter:blur(10px);
   border-radius:28px;
   padding:34px;
-  box-shadow:
-    0 18px 45px rgba(0,0,0,.18),
-    inset 0 1px 0 rgba(255,255,255,.5);
+  box-shadow:0 18px 45px rgba(0,0,0,.18);
 }
 
 .topbar{
   display:flex;
   justify-content:center;
-  align-items:center;
-  gap:14px;
+  gap:12px;
   margin-bottom:24px;
   flex-wrap:wrap;
 }
 
 .top-btn{
   min-width:120px;
-  padding:12px 20px;
-  border-radius:18px;
+  padding:12px 18px;
+  border-radius:16px;
   background:#f8fafc;
   color:#29405a;
   border:1px solid #d6dde5;
   text-decoration:none;
   font-weight:700;
-  box-shadow:
-    0 2px 8px rgba(0,0,0,.10),
-    0 0 14px rgba(255,255,255,.45);
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  cursor:pointer;
+}
+
+.top-btn:hover{
+  background:#e5eaf0;
 }
 
 .logout{
   background:#2c52a0;
   color:#fff;
   border:0;
-  border-radius:12px;
-  padding:12px 18px;
-  font-weight:700;
-  cursor:pointer;
-  box-shadow:0 6px 16px rgba(0,0,0,.18);
-  min-width:120px;
-  font-size:16px;
 }
 
 .logout:hover{
@@ -132,90 +115,16 @@ body{
   text-decoration:none;
   border-radius:20px;
   font-weight:800;
-  font-size:17px;
-  text-align:center;
-  box-shadow:
-    0 10px 20px rgba(0,0,0,.18),
-    0 0 16px rgba(255,255,255,.24);
-  transition:.15s;
-  padding:14px;
 }
 
 .card-link:hover{
-  transform:translateY(-2px);
   background:#244996;
 }
 
-@media (max-width: 768px){
-  body{
-    background-attachment:scroll;
-  }
-
-  .page{
-    padding:12px;
-    align-items:flex-start;
-  }
-
-  .wrap{
-    max-width:100%;
-  }
-
-  .logo{
-    width:80px;
-    margin-top:6px;
-  }
-
-  .site-title{
-    font-size:28px;
-    margin-bottom:16px;
-  }
-
-  .card{
-    padding:18px;
-    border-radius:18px;
-  }
-
-  .topbar{
-    flex-direction:column;
-    align-items:stretch;
-    gap:10px;
-  }
-
-  .top-btn,
-  .logout{
-    width:100%;
-    min-width:0;
-  }
-
-  .grid{
-    grid-template-columns:1fr;
-    gap:12px;
-  }
-
-  .card-link{
-    min-height:64px;
-    font-size:16px;
-    border-radius:16px;
-  }
-}
-
-@media (max-width: 480px){
-  .page{
-    padding:10px;
-  }
-
-  .site-title{
-    font-size:24px;
-  }
-
-  .card{
-    padding:14px;
-  }
-
-  .card-link{
-    font-size:15px;
-    min-height:58px;
-  }
+@media (max-width:768px){
+  .grid{ grid-template-columns:1fr; }
+  .topbar{ flex-direction:column; }
+  .top-btn{ width:100%; }
 }
 </style>
 </head>
@@ -225,143 +134,73 @@ body{
 <div class="wash"></div>
 
 <main class="page">
-  <div class="wrap">
+<div class="wrap">
 
-    <img class="logo" src="logo.png" alt="Mother Duck Logo">
-    <div class="site-title">Mother Duck Kitchen Dashboard</div>
+<img class="logo" src="logo.png">
+<div class="site-title">Mother Duck Kitchen Dashboard</div>
 
-    <section class="card">
+<section class="card">
 
-      <div class="topbar">
-        <a class="top-btn" href="kitchen.html">Kitchen</a>
-        <a class="top-btn" href="brewer_st.html">Brewer St</a>
-        <button class="logout" id="logoutBtn" type="button">Log out</button>
-        <button class="mdk-btn mdk-btn--pill" type="button" onclick="window.location.href = window.location.pathname + '?v=' + Date.now()">
-  🔄 Refresh
-</button>
-      </div>
+<div class="topbar">
+  <a class="top-btn" href="kitchen.html">Kitchen</a>
+  <a class="top-btn" href="brewer_st.html">Brewer St</a>
 
-      <div class="grid">
-        <a class="card-link" href="invoices.html">Invoices</a>
-        <a class="card-link" href="nursery_new.html">Nursery</a>
+  <button class="top-btn" onclick="location.href=location.pathname+'?v='+Date.now()">
+    🔄 Refresh
+  </button>
 
-        <a class="card-link" href="record1_suppliers.html">Approved Suppliers</a>
-        <a class="card-link" href="food-safety-bible.pdf" target="_blank" rel="noopener">Food Safety Bible</a>
+  <button class="top-btn logout" id="logoutBtn">Log out</button>
+</div>
 
-        <a class="card-link" href="pest_control.html">Pest Control</a>
-        <a class="card-link" href="food_recall.html">Food Recall</a>
+<div class="grid">
+  <a class="card-link" href="invoices.html">Invoices</a>
+  <a class="card-link" href="nursery_new.html">Nursery</a>
+  <a class="card-link" href="record1_suppliers.html">Approved Suppliers</a>
+  <a class="card-link" href="food-safety-bible.pdf">Food Safety Bible</a>
+  <a class="card-link" href="pest_control.html">Pest Control</a>
+  <a class="card-link" href="food_recall.html">Food Recall</a>
+  <a class="card-link" href="staff_illness.html">Staff Illness</a>
+  <a class="card-link" href="record13.html">Program Review</a>
+  <a class="card-link" href="audit_archive.html">Archive</a>
+  <a class="card-link" href="transport_log.html">Transport Log</a>
+</div>
 
-        <a class="card-link" href="staff_illness.html">Staff Illness / Accident</a>
-        <a class="card-link" href="record13.html">Food Safety Program Review</a>
-
-        <a class="card-link" href="audit_archive.html">Audit Archive</a>
-       <a class="card-link" href="transport_log.html">Transport Log</a>
-      </div>
-
-    </section>
-  </div>
+</section>
+</div>
 </main>
 
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", async () => {
-    try {
-      const res = await fetch("/sw.js", { method: "HEAD" });
-      if (res.ok) {
-        navigator.serviceWorker.register("/sw.js")
-          .then(() => console.log("Service worker registered"))
-          .catch((err) => console.error("Service worker failed", err));
-      }
-    } catch (err) {
-      console.warn("sw.js not available");
-    }
-  });
-}
-</script>
-
+<!-- Firebase -->
 <script src="firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
 <script>
-if (!firebase.apps.length) {
-  firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
-}
-
+firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
 const auth = firebase.auth();
-const IDLE_LIMIT_MS = 30 * 60 * 1000;
-let idleTimer;
 
-function markActivity() {
-  localStorage.setItem("mdk_last_activity", String(Date.now()));
-}
-
-async function forceLogout() {
-  try {
-    await auth.signOut();
-  } catch (e) {
-    console.error(e);
-  }
-
-  localStorage.removeItem("mdk_logged_in");
-  localStorage.removeItem("mdk_user_email");
-  localStorage.removeItem("mdk_last_activity");
-  location.replace("login.html?msg=expired");
-}
-
-function resetIdleTimer() {
-  clearTimeout(idleTimer);
-  markActivity();
-  idleTimer = setTimeout(forceLogout, IDLE_LIMIT_MS);
-}
-
-function checkSessionAge() {
-  const last = Number(localStorage.getItem("mdk_last_activity") || "0");
-
-  if (!last) {
-    forceLogout();
-    return;
-  }
-
-  if (Date.now() - last > IDLE_LIMIT_MS) {
-    forceLogout();
-    return;
-  }
-
-  resetIdleTimer();
-}
-
-auth.onAuthStateChanged(function(user){
-  if (!user) {
+auth.onAuthStateChanged(user=>{
+  if(!user){
     location.replace("login.html");
-    return;
+  }else{
+    localStorage.setItem("mdk_logged_in","1");
+    localStorage.setItem("mdk_last_activity",Date.now());
   }
-
-  localStorage.setItem("mdk_logged_in", "1");
-  localStorage.setItem("mdk_user_email", user.email || "");
-  markActivity();
-  checkSessionAge();
 });
 
-document.getElementById("logoutBtn").onclick = async function(){
-  await forceLogout();
+document.getElementById("logoutBtn").onclick=async()=>{
+  await auth.signOut();
+  localStorage.clear();
+  location.replace("login.html");
 };
-
-document.addEventListener("click", resetIdleTimer);
-document.addEventListener("keydown", resetIdleTimer);
-document.addEventListener("touchstart", resetIdleTimer);
-document.addEventListener("mousemove", resetIdleTimer);
-document.addEventListener("scroll", resetIdleTimer);
-</script>
 </script>
 
+<!-- Auto update -->
 <script>
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw.js").then(reg => {
+  navigator.serviceWorker.register("/sw.js").then(reg=>{
     reg.update();
-
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      window.location.reload();
+    navigator.serviceWorker.addEventListener("controllerchange",()=>{
+      location.reload();
     });
   });
 }
