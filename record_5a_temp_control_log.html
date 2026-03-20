@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Record 5a - Temperature Control Log - Cook/Cool/Reheat & Serve</title>
 
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#2c52a0">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+
   <style>
     :root{
       --blue:#2c52a0;
@@ -329,15 +333,77 @@
     </div>
   </div>
 
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", async () => {
+        try {
+          const res = await fetch("/sw.js", { method: "HEAD" });
+          if (res.ok) {
+            navigator.serviceWorker.register("/sw.js")
+              .then(() => console.log("Service worker registered"))
+              .catch((err) => console.error("Service worker failed", err));
+          }
+        } catch (err) {
+          console.warn("sw.js not available");
+        }
+      });
+    }
+  </script>
+
   <script src="firebase-config.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
   <script src="firebase-loader.js"></script>
   <script src="archive_shared.js"></script>
 
   <script>
+    const IDLE_LIMIT_MS = 30 * 60 * 1000;
+    let idleTimer;
+
+    function markActivity() {
+      localStorage.setItem("mdk_last_activity", String(Date.now()));
+    }
+
+    function forceLogout() {
+      localStorage.removeItem("mdk_logged_in");
+      localStorage.removeItem("mdk_user_email");
+      localStorage.removeItem("mdk_last_activity");
+      location.replace("login.html?msg=expired");
+    }
+
+    function resetIdleTimer() {
+      clearTimeout(idleTimer);
+      markActivity();
+      idleTimer = setTimeout(forceLogout, IDLE_LIMIT_MS);
+    }
+
+    function checkSessionAge() {
+      const loggedIn = localStorage.getItem("mdk_logged_in") === "1";
+      const last = Number(localStorage.getItem("mdk_last_activity") || "0");
+
+      if (!loggedIn || !last) {
+        location.replace("login.html");
+        return false;
+      }
+
+      if (Date.now() - last > IDLE_LIMIT_MS) {
+        forceLogout();
+        return false;
+      }
+
+      resetIdleTimer();
+      return true;
+    }
+
+    checkSessionAge();
+
+    document.addEventListener("click", resetIdleTimer);
+    document.addEventListener("keydown", resetIdleTimer);
+    document.addEventListener("touchstart", resetIdleTimer);
+    document.addEventListener("mousemove", resetIdleTimer);
+    document.addEventListener("scroll", resetIdleTimer);
+
     const params = new URLSearchParams(window.location.search);
     const SITE = params.get("site") || "Kitchen";
     const LOAD_ID = params.get("load") || "";
