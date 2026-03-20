@@ -43,25 +43,28 @@ body{
   align-items:center;
 }
 
-.mdk-btn--back,
-.mdk-btn--pill,
-.mdk-btn--primary,
-.mdk-btn--edit{
+.mdk-btn{
   border:none;
   border-radius:12px;
-  padding:10px 18px;
+  padding:10px 16px;
   font-weight:700;
   cursor:pointer;
   text-decoration:none;
-  display:flex;
+  display:inline-flex;
   align-items:center;
   justify-content:center;
   gap:6px;
+  font-family:inherit;
+  box-shadow:0 2px 8px rgba(0,0,0,.12);
 }
 
 .mdk-btn--back{
   background:#ffc107;
   color:#4b0082;
+}
+
+.mdk-btn--back:hover{
+  background:#e0a800;
 }
 
 .mdk-btn--pill{
@@ -70,14 +73,26 @@ body{
   color:#222;
 }
 
+.mdk-btn--pill:hover{
+  background:#e5eaf0;
+}
+
 .mdk-btn--primary{
   background:#007bff;
   color:#fff;
 }
 
+.mdk-btn--primary:hover{
+  background:#0056b3;
+}
+
 .mdk-btn--edit{
   background:#16a34a;
   color:#fff;
+}
+
+.mdk-btn--edit:hover{
+  background:#15803d;
 }
 
 .sheet-card{
@@ -185,10 +200,7 @@ td.left input{
     align-items:stretch;
   }
 
-  .mdk-btn--back,
-  .mdk-btn--pill,
-  .mdk-btn--primary,
-  .mdk-btn--edit{
+  .mdk-btn{
     width:100%;
   }
 
@@ -261,17 +273,18 @@ td.left input{
 <div class="wash"></div>
 
 <main class="page">
-  <div class="mdk-toolbar">
-    <a id="backBtn" href="dashboard.html" class="mdk-btn--back">← Back</a>
-    <a href="dashboard.html" class="mdk-btn--pill">🏠 Home</a>
-    <button class="mdk-btn--pill" onclick="window.print()" type="button">🖨 Print</button>
-    <button id="editBtn" class="mdk-btn--edit" onclick="unlockForEdit()" type="button" style="display:none;">✏ Edit</button>
-    <button class="mdk-btn--pill" onclick="clearForm()" type="button">🧹 Clear</button>
-    <button class="mdk-btn--primary" onclick="saveForm()" type="button">💾 Save</button>
-  </div>
+  <nav class="mdk-toolbar">
+    <button class="mdk-btn mdk-btn--back" type="button" onclick="goBackSmart()">← Back</button>
+    <a href="dashboard.html" class="mdk-btn mdk-btn--pill">🏠 Home</a>
+    <button class="mdk-btn mdk-btn--pill" onclick="window.print()" type="button">🖨 Print</button>
+    <button id="editBtn" class="mdk-btn mdk-btn--edit" onclick="unlockForEdit()" type="button" style="display:none;">✏ Edit</button>
+    <button class="mdk-btn mdk-btn--pill" onclick="clearForm()" type="button">🧹 Clear</button>
+    <button class="mdk-btn mdk-btn--primary" onclick="saveForm()" type="button">💾 Save</button>
+  </nav>
 
   <section class="sheet-card">
     <h1 id="pageTitle" class="sheet-title">Record 5b – Transport Log</h1>
+
     <div class="meta-line">
       Driver's Name:
       <input id="driverName" type="text" style="display:inline-block;width:220px;max-width:100%;border:1px solid #bbb;border-radius:8px;padding:6px 8px;background:#fff;text-align:left;">
@@ -322,28 +335,29 @@ td.left input{
 
 <script>
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js")
-      .then(() => console.log("Service worker registered"))
-      .catch((err) => console.error("Service worker failed", err));
+  window.addEventListener("load", async () => {
+    try {
+      const res = await fetch("/sw.js", { method: "HEAD" });
+      if (res.ok) {
+        navigator.serviceWorker.register("/sw.js")
+          .then(() => console.log("Service worker registered"))
+          .catch((err) => console.error("Service worker failed", err));
+      }
+    } catch (err) {
+      console.warn("sw.js not available");
+    }
   });
 }
 </script>
 
 <script src="firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="firebase-loader.js"></script>
 <script src="archive_shared.js"></script>
 
 <script>
-if (!firebase.apps.length) {
-  firebase.initializeApp(window.MDK_FIREBASE_CONFIG);
-}
-
-const auth = firebase.auth();
 const IDLE_LIMIT_MS = 30 * 60 * 1000;
 let idleTimer;
 
@@ -351,13 +365,9 @@ function markActivity() {
   localStorage.setItem("mdk_last_activity", String(Date.now()));
 }
 
-async function forceLogout() {
-  try {
-    await auth.signOut();
-  } catch (e) {
-    console.error(e);
-  }
+function forceLogout() {
   localStorage.removeItem("mdk_logged_in");
+  localStorage.removeItem("mdk_user_email");
   localStorage.removeItem("mdk_last_activity");
   location.replace("login.html?msg=expired");
 }
@@ -369,24 +379,24 @@ function resetIdleTimer() {
 }
 
 function checkSessionAge() {
+  const loggedIn = localStorage.getItem("mdk_logged_in") === "1";
   const last = Number(localStorage.getItem("mdk_last_activity") || "0");
-  if (!last) {
+
+  if (!loggedIn || !last) {
     location.replace("login.html");
-    return;
+    return false;
   }
+
   if (Date.now() - last > IDLE_LIMIT_MS) {
     forceLogout();
+    return false;
   }
+
+  resetIdleTimer();
+  return true;
 }
 
-auth.onAuthStateChanged(function(user){
-  if(!user){
-    location.replace("login.html");
-    return;
-  }
-  checkSessionAge();
-  resetIdleTimer();
-});
+checkSessionAge();
 
 document.addEventListener("click", resetIdleTimer);
 document.addEventListener("keydown", resetIdleTimer);
@@ -402,17 +412,24 @@ const STORAGE_KEY = SITE === "Brewer St" ? "transport_log_brewer_v1" : "transpor
 let loadedRecordId = LOAD_ID || "";
 
 const pageTitle = document.getElementById("pageTitle");
-const backBtn = document.getElementById("backBtn");
 const notesText = document.getElementById("notesText");
 
 if (SITE === "Brewer St") {
   pageTitle.textContent = "Record 5b – Brewer St Transport Log";
-  backBtn.href = "brewer_st.html";
   notesText.textContent = "Record meal dispatch and delivery details for Brewer St transport. Save records regularly and print if needed for hard-copy filing.";
 } else {
   pageTitle.textContent = "Record 5b – Kitchen Transport Log";
-  backBtn.href = "kitchen.html";
   notesText.textContent = "Record meal dispatch and delivery details for Kitchen transport. Save records regularly and print if needed for hard-copy filing.";
+}
+
+function goBackSmart() {
+  const fromArchive = sessionStorage.getItem("mdk_from_archive");
+  if (fromArchive === "1") {
+    sessionStorage.removeItem("mdk_from_archive");
+    window.location.href = "audit_archive.html";
+    return;
+  }
+  window.location.href = SITE === "Brewer St" ? "brewer_st.html" : "kitchen.html";
 }
 
 function todayDate() {
@@ -602,6 +619,11 @@ async function loadSavedArchiveRecord() {
     inputs.forEach((input, i) => {
       input.value = values[i] || "";
     });
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      driverName: record.fields.driverName || "",
+      rows: record.fields.rows || []
+    }));
 
     lockAllFields();
   } catch (err) {
