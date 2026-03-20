@@ -1,24 +1,30 @@
 <nav class="mdk-toolbar">
-  <!-- Back Button -->
-  <a class="mdk-btn mdk-btn--back" href="kitchen.html">
+  <button class="mdk-btn mdk-btn--back" type="button" onclick="goBackSmart()">
     <span class="mdk-ico">←</span>
     <span>Back</span>
+  </button>
+
+  <a class="mdk-btn mdk-btn--pill" href="dashboard.html">
+    <span class="mdk-ico">🏠</span>
+    <span>Home</span>
   </a>
 
-  <!-- Print Button -->
   <button class="mdk-btn mdk-btn--pill" type="button" onclick="window.print()">
     <span class="mdk-ico">🖨️</span>
     <span>Print</span>
   </button>
 
-  <!-- Clear Button -->
-  <button class="mdk-btn mdk-btn--pill" type="button" onclick="clearForm?.()">
+  <button id="editBtn" class="mdk-btn mdk-btn--edit" type="button" onclick="unlockForEdit()" style="display:none;">
+    <span class="mdk-ico">✏️</span>
+    <span>Edit</span>
+  </button>
+
+  <button class="mdk-btn mdk-btn--pill" type="button" onclick="clearForm()">
     <span class="mdk-ico">✖️</span>
     <span>Clear</span>
   </button>
 
-  <!-- Save Button -->
-  <button class="mdk-btn mdk-btn--primary" type="button" onclick="saveForm?.()">
+  <button class="mdk-btn mdk-btn--primary" type="button" onclick="saveForm()">
     <span class="mdk-ico">💾</span>
     <span>Save</span>
   </button>
