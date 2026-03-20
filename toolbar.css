@@ -6,53 +6,67 @@
   align-items: center;
 }
 
+/* Base button (IMPORTANT) */
+.mdk-btn {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+  font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0,0,0,.12);
+}
+
 /* Back button (yellow) */
 .mdk-btn--back {
   background: #ffc107;
-  border: none;
-  color: #4b0082; /* deep purple */
-  font-weight: 700;
-  padding: 10px 18px;
-  border-radius: 12px;
-  cursor: pointer;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  color: #4b0082;
 }
 .mdk-btn--back:hover {
   background: #e0a800;
 }
 
-/* Grey pill buttons (Print / Clear) */
+/* Grey buttons (Print / Clear / Home) */
 .mdk-btn--pill {
   background: #f8fafc;
   border: 1px solid #cfd6dd;
-  border-radius: 12px;
-  padding: 8px 14px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  color: #222;
 }
 .mdk-btn--pill:hover {
   background: #e5eaf0;
 }
 
-/* Blue primary Save button */
+/* Save button (blue) */
 .mdk-btn--primary {
   background: #007bff;
-  border: none;
-  border-radius: 12px;
-  padding: 10px 18px;
-  font-weight: 600;
-  color: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  color: #fff;
 }
 .mdk-btn--primary:hover {
   background: #0056b3;
+}
+
+/* Edit button (green) */
+.mdk-btn--edit {
+  background: #16a34a;
+  color: #fff;
+}
+.mdk-btn--edit:hover {
+  background: #15803d;
+}
+
+/* Mobile fix */
+@media (max-width:768px){
+  .mdk-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mdk-btn {
+    width: 100%;
+  }
 }
