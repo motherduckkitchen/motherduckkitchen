@@ -1,3 +1,4 @@
+cat > ~/motherduckkitchen/transport_log.html <<'EOF'
 <!doctype html>
 <html lang="en">
 <head>
@@ -116,6 +117,17 @@ body{
   font-weight:700;
   margin-bottom:12px;
   color:#222;
+}
+
+.sync-note{
+  margin-bottom:12px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:#eff6ff;
+  color:#1d4ed8;
+  border:1px solid #93c5fd;
+  font-weight:700;
+  text-align:center;
 }
 
 .locked-note{
@@ -263,7 +275,8 @@ td.left input{
     font-size:11px;
     padding:2px;
   }
-  .locked-note{
+  .locked-note,
+  .sync-note{
     display:none !important;
   }
 }
@@ -279,11 +292,13 @@ td.left input{
     <button class="mdk-btn mdk-btn--pill" onclick="window.print()" type="button">🖨 Print</button>
     <button id="editBtn" class="mdk-btn mdk-btn--edit" onclick="unlockForEdit()" type="button" style="display:none;">✏ Edit</button>
     <button class="mdk-btn mdk-btn--pill" onclick="clearForm()" type="button">🧹 Clear</button>
-    <button class="mdk-btn mdk-btn--primary" onclick="saveForm()" type="button">💾 Save</button>
+    <button class="mdk-btn mdk-btn--primary" onclick="saveToArchive()" type="button">📦 Save to Archive</button>
   </nav>
 
   <section class="sheet-card">
     <h1 id="pageTitle" class="sheet-title">Record 5b – Transport Log</h1>
+
+    <div id="syncNote" class="sync-note">Loading shared live form...</div>
 
     <div class="meta-line">
       Driver's Name:
@@ -324,7 +339,7 @@ td.left input{
 
     <div class="footer-notes">
       <strong>Notes</strong>
-      <span id="notesText">Record meal dispatch from Kitchen and delivery to Brewer St. Save records regularly and print if needed for hard-copy filing.</span>
+      <span id="notesText">Record meal dispatch from Kitchen and delivery to Brewer St. Save to Archive only when the record is final.</span>
       <br><br>
       Food Safety Program - Mother Duck Kallangur (1) January 2021 - Transport Amendment.docx
       <br>
@@ -332,16 +347,6 @@ td.left input{
     </div>
   </section>
 </main>
-
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js")
-      .then(() => console.log("Service worker registered"))
-      .catch((err) => console.error("Service worker failed", err));
-  });
-}
-</script>
 
 <script src="firebase-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -357,8 +362,23 @@ if (!firebase.apps.length) {
 }
 
 const auth = firebase.auth();
+const db = firebase.firestore();
+
 const IDLE_LIMIT_MS = 30 * 60 * 1000;
 let idleTimer;
+let saveTimer = null;
+let suspendAutosave = false;
+let liveUnsub = null;
+let lastRemoteJson = "";
+
+const LOAD_ID = new URLSearchParams(location.search).get("load") || "";
+const SITE = "Transport";
+const LIVE_DOC_ID = "transport_log_shared";
+const LOCAL_DRAFT_KEY = "transport_log_shared_v2";
+
+let loadedRecordId = LOAD_ID || "";
+
+document.getElementById("pageTitle").textContent = "Record 5b – Transport Log";
 
 function markActivity() {
   localStorage.setItem("mdk_last_activity", String(Date.now()));
@@ -389,16 +409,25 @@ function checkSessionAge() {
   }
   if (Date.now() - last > IDLE_LIMIT_MS) {
     forceLogout();
+    return;
   }
+  resetIdleTimer();
 }
 
-auth.onAuthStateChanged(function(user){
+auth.onAuthStateChanged(async function(user){
   if(!user){
     location.replace("login.html");
     return;
   }
   checkSessionAge();
-  resetIdleTimer();
+
+  if (loadedRecordId) {
+    await loadSavedArchiveRecord();
+  } else {
+    loadLocalDraft();
+    startLiveSync();
+    setupAutosave();
+  }
 });
 
 document.addEventListener("click", resetIdleTimer);
@@ -406,14 +435,6 @@ document.addEventListener("keydown", resetIdleTimer);
 document.addEventListener("touchstart", resetIdleTimer);
 document.addEventListener("mousemove", resetIdleTimer);
 document.addEventListener("scroll", resetIdleTimer);
-
-const LOAD_ID = new URLSearchParams(location.search).get("load") || "";
-const SITE = "Transport";
-const STORAGE_KEY = "transport_log_shared_v1";
-
-let loadedRecordId = LOAD_ID || "";
-
-document.getElementById("pageTitle").textContent = "Record 5b – Transport Log";
 
 function goBackSmart() {
   const fromArchive = sessionStorage.getItem("mdk_from_archive");
@@ -537,15 +558,135 @@ function flattenRows(rows) {
   return values;
 }
 
-async function saveForm() {
-  const payload = {
+function collectPayload() {
+  return {
     driverName: document.getElementById("driverName").value || "",
     rows: getRowsAsObjects()
   };
+}
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+function applyPayload(data) {
+  suspendAutosave = true;
+
+  document.getElementById("driverName").value = data.driverName || "";
+
+  const values = flattenRows(data.rows || []);
+  const inputs = document.querySelectorAll("#tbody input");
+  inputs.forEach((input, i) => {
+    input.value = values[i] || "";
+  });
+
+  setTimeout(() => {
+    suspendAutosave = false;
+  }, 150);
+}
+
+function saveLocalDraft(data) {
+  localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(data));
+}
+
+function loadLocalDraft() {
+  const saved = localStorage.getItem(LOCAL_DRAFT_KEY);
+  if (!saved) return;
+  try {
+    applyPayload(JSON.parse(saved));
+  } catch (e) {}
+}
+
+async function saveLiveForm(data) {
+  lastRemoteJson = JSON.stringify({
+    driverName: data.driverName || "",
+    rows: data.rows || []
+  });
+
+  const user = auth.currentUser;
+  await db.collection("live_forms").doc(LIVE_DOC_ID).set({
+    type: "Transport Log",
+    site: SITE,
+    driverName: data.driverName || "",
+    rows: data.rows || [],
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedBy: user?.email || ""
+  }, { merge: true });
+}
+
+function startLiveSync() {
+  if (liveUnsub) liveUnsub();
+
+  liveUnsub = db.collection("live_forms").doc(LIVE_DOC_ID).onSnapshot(
+    (doc) => {
+      const note = document.getElementById("syncNote");
+
+      if (!doc.exists) {
+        if (note) {
+          note.style.display = "block";
+          note.textContent = "Shared live form ready";
+          setTimeout(() => {
+            note.style.display = "none";
+          }, 1200);
+        }
+        return;
+      }
+
+      const data = doc.data() || {};
+      const json = JSON.stringify({
+        driverName: data.driverName || "",
+        rows: data.rows || []
+      });
+
+      if (json === lastRemoteJson) return;
+      lastRemoteJson = json;
+
+      applyPayload(data);
+
+      if (note) {
+        note.style.display = "block";
+        note.textContent = "Live updates connected";
+      }
+
+      setTimeout(() => {
+        if (note) note.style.display = "none";
+      }, 1200);
+    },
+    (err) => {
+      console.error("Live sync error:", err);
+      const note = document.getElementById("syncNote");
+      if (note) {
+        note.style.display = "block";
+        note.textContent = "Live sync error";
+      }
+    }
+  );
+}
+
+function queueAutosave() {
+  if (loadedRecordId || suspendAutosave) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    const data = collectPayload();
+    saveLocalDraft(data);
+    try {
+      await saveLiveForm(data);
+    } catch (err) {
+      console.error("Autosave failed:", err);
+    }
+  }, 1000);
+}
+
+function setupAutosave() {
+  getAllFields().forEach(el => {
+    el.addEventListener("input", queueAutosave);
+    el.addEventListener("change", queueAutosave);
+  });
+}
+
+async function saveToArchive() {
+  const payload = collectPayload();
+  saveLocalDraft(payload);
 
   try {
+    await saveLiveForm(payload);
+
     if (window.MDKArchive) {
       let recordDate = "";
       for (const row of payload.rows) {
@@ -577,25 +718,11 @@ async function saveForm() {
       lockAllFields();
     }
 
-    alert("Saved");
+    alert("Saved to Archive");
   } catch (err) {
     console.error(err);
-    alert("Saved locally, but archive sync failed");
+    alert("Archive save failed");
   }
-}
-
-function loadForm() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (!saved) return;
-
-  const data = JSON.parse(saved);
-  document.getElementById("driverName").value = data.driverName || "";
-
-  const values = flattenRows(data.rows || []);
-  const inputs = document.querySelectorAll("#tbody input");
-  inputs.forEach((input, i) => {
-    input.value = values[i] || "";
-  });
 }
 
 async function loadSavedArchiveRecord() {
@@ -605,18 +732,10 @@ async function loadSavedArchiveRecord() {
     const record = await window.MDKArchive.loadRecord(loadedRecordId);
     if (!record || !record.fields) return;
 
-    document.getElementById("driverName").value = record.fields.driverName || "";
-
-    const values = flattenRows(record.fields.rows || []);
-    const inputs = document.querySelectorAll("#tbody input");
-    inputs.forEach((input, i) => {
-      input.value = values[i] || "";
-    });
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    applyPayload({
       driverName: record.fields.driverName || "",
       rows: record.fields.rows || []
-    }));
+    });
 
     lockAllFields();
   } catch (err) {
@@ -639,17 +758,12 @@ function clearForm() {
   document.getElementById("editBtn").style.display = loadedRecordId ? "inline-flex" : "none";
 
   if (!loadedRecordId) {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(LOCAL_DRAFT_KEY);
+    queueAutosave();
   }
 }
 
 buildTable();
-
-if (loadedRecordId) {
-  loadSavedArchiveRecord();
-} else {
-  loadForm();
-}
 </script>
 </body>
 </html>
