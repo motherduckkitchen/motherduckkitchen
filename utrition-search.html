@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Nutrition Search</title>
+  <style>
+    body { font-family: Arial; background:#dff3ff; padding:20px; }
+    .box { background:white; padding:20px; border-radius:16px; max-width:900px; margin:auto; }
+    input, button { padding:12px; font-size:16px; border-radius:10px; margin:5px; }
+    button { background:#ffd84d; font-weight:bold; cursor:pointer; }
+    .item { background:#f5f5f5; padding:12px; margin:10px 0; border-radius:12px; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    td, th { border:1px solid #ccc; padding:8px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <button onclick="location.href='index.html'">Home</button>
+    <h1>Nutrition Auto Search</h1>
+
+    <input id="searchBox" placeholder="Search product e.g corn flakes, apple, milk">
+    <button onclick="searchFood()">Search</button>
+
+    <div id="results"></div>
+  </div>
+
+<script>
+async function searchFood() {
+  const query = document.getElementById("searchBox").value.trim();
+  const results = document.getElementById("results");
+
+  if (!query) {
+    results.innerHTML = "Type a food first.";
+    return;
+  }
+
+  results.innerHTML = "Searching...";
+
+  const url =
+    "https://world.openfoodfacts.org/cgi/search.pl?search_terms=" +
+    encodeURIComponent(query) +
+    "&search_simple=1&action=process&json=1&page_size=10";
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!data.products || data.products.length === 0) {
+      results.innerHTML = "No result found. Add manually from packet.";
+      return;
+    }
+
+    results.innerHTML = "";
+
+    data.products.forEach(product => {
+      const n = product.nutriments || {};
+
+      const food = {
+        name: product.product_name || "Unknown product",
+        brand: product.brands || "",
+        barcode: product.code || "",
+        calories: n["energy-kcal_100g"] || "",
+        protein: n["proteins_100g"] || "",
+        carbs: n["carbohydrates_100g"] || "",
+        sugar: n["sugars_100g"] || "",
+        fat: n["fat_100g"] || "",
+        saturatedFat: n["saturated-fat_100g"] || "",
+        sodium: n["sodium_100g"] || "",
+        salt: n["salt_100g"] || ""
+      };
+
+      const div = document.createElement("div");
+      div.className = "item";
+
+      div.innerHTML = `
+        <h3>${food.name}</h3>
+        <p><b>Brand:</b> ${food.brand}</p>
+        <p><b>Barcode:</b> ${food.barcode}</p>
+
+        <table>
+          <tr><th>Nutrition</th><th>Per 100g</th></tr>
+          <tr><td>Calories</td><td>${food.calories}</td></tr>
+          <tr><td>Protein</td><td>${food.protein} g</td></tr>
+          <tr><td>Carbs</td><td>${food.carbs} g</td></tr>
+          <tr><td>Sugar</td><td>${food.sugar} g</td></tr>
+          <tr><td>Fat</td><td>${food.fat} g</td></tr>
+          <tr><td>Saturated Fat</td><td>${food.saturatedFat} g</td></tr>
+          <tr><td>Sodium</td><td>${food.sodium} g</td></tr>
+          <tr><td>Salt</td><td>${food.salt} g</td></tr>
+        </table>
+
+        <button onclick='saveFood(${JSON.stringify(food)})'>Save To My Nutrition List</button>
+      `;
+
+      results.appendChild(div);
+    });
+
+  } catch (error) {
+    results.innerHTML = "Search failed. Check internet connection.";
+  }
+}
+
+function saveFood(food) {
+  let list = JSON.parse(localStorage.getItem("nutritionFoods") || "[]");
+
+  const existing = list.find(x => x.barcode && x.barcode === food.barcode);
+  if (existing) {
+    alert("Already saved.");
+    return;
+  }
+
+  list.push(food);
+  localStorage.setItem("nutritionFoods", JSON.stringify(list));
+  alert("Saved: " + food.name);
+}
+</script>
+</body>
+</html>
